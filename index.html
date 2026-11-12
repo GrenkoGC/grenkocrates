@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Grenko Crates</title>
+<style>
+:root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--red:#ff4444;--acc:#fff;--sh:0 12px 32px rgba(0,0,0,.8);--ease:cubic-bezier(.25,.8,.25,1)}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 50% -200px,rgba(255,255,255,.03),transparent 60%),var(--bg);color:var(--txt);font-family:'Iowan Old Style',Georgia,serif;user-select:none;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+svg{display:block}
+.music-widget{position:fixed;bottom:20px;right:20px;z-index:100;display:flex;align-items:center;gap:10px;background:rgba(30,30,30,.85);backdrop-filter:blur(6px);border:1px solid var(--lin);border-radius:6px;padding:8px 12px;font-family:ui-monospace,monospace;font-size:11px;color:var(--txt2);box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.music-widget:hover{border-color:var(--acc)}
+.music-widget .note{font-size:14px;color:var(--acc)}
+.music-widget b{color:var(--acc);font-weight:600}
+.music-widget input[type=range]{-webkit-appearance:none;width:60px;height:4px;background:var(--lin);border-radius:2px;outline:none;cursor:pointer}
+.music-widget input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--acc);border-radius:50%;cursor:pointer}
+button,.crate-btn,.auto-sell-btn,.icon-btn,.pill,.inv-item{transition:transform .2s var(--ease),background .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease),color .3s var(--ease),opacity .2s}
+button:active:not(:disabled),.crate-btn:active,.auto-sell-btn:active,.icon-btn:active{transform:scale(.96)}
+.crate-btn:hover,.auto-sell-btn:hover,.icon-btn:hover{background:var(--pan2);border-color:var(--acc)}
+.slot .icon img,.drop-card .d-icon img,.inv-item .icon img,.chance-row .ci img,.multi-item img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px;background:rgba(255,255,255,.03)}
+.layout{display:grid;grid-template-columns:260px 1fr;height:100vh;position:relative;z-index:1;overflow:hidden}
+.sidebar{border-right:1px solid var(--lin);background:rgba(30,30,30,.6);padding:24px 16px;display:flex;flex-direction:column;gap:24px;overflow-y:auto}
+.sidebar h2{font-size:16px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt);text-align:center;padding-bottom:12px;border-bottom:1px solid var(--lin);margin-bottom:8px}
+.crate-list{display:flex;flex-direction:column;gap:8px}
+.crate-btn,.auto-sell-btn{background:var(--pan);border:1px solid var(--lin);color:var(--txt2);padding:12px 16px;border-radius:4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;display:flex;align-items:center;gap:12px;text-align:left;width:100%}
+.crate-btn img{width:24px;height:24px;object-fit:contain}
+.crate-btn.active,.auto-sell-btn.active{border-color:var(--acc);color:var(--acc);background:linear-gradient(180deg,rgba(255,255,255,.1),transparent);box-shadow:inset 0 0 10px rgba(255,255,255,.1);text-shadow:0 0 5px rgba(255,255,255,.5)}
+.auto-sell-btn{justify-content:center;font-family:monospace;padding:8px 10px;font-size:11px}
+.main-content{display:flex;flex-direction:column;align-items:center;padding:24px;overflow-y:auto;gap:20px}
+h1{font-size:26px;font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:14px;text-align:center;color:var(--txt)}
+h1::before,h1::after{content:'';display:block;width:30px;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);flex-shrink:0;box-shadow:0 0 10px rgba(255,255,255,.4)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:stretch;width:100%;max-width:900px}
+.pill{background:var(--pan);border:1px solid var(--lin);padding:9px 14px;border-radius:3px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;flex:1 1 auto;min-width:130px}
+.pill:hover{border-color:var(--acc)}
+.pill span{color:var(--acc);font-weight:700}
+.icon-btn{background:var(--pan);border:1px solid var(--lin);border-radius:3px;padding:9px 12px;font-size:14px;color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.scene{position:relative;width:100%;max-width:800px;height:300px;display:flex;align-items:center;justify-content:center;background:var(--pan);border:1px solid var(--lin);border-radius:4px;overflow:hidden;box-shadow:var(--sh)}
+.scene::before,.scene::after{content:'';position:absolute;width:20px;height:20px;border:1px solid var(--acc);opacity:.5;transition:.2s}
+.scene::before{top:8px;left:8px;border-right:none;border-bottom:none}
+.scene::after{bottom:8px;right:8px;border-left:none;border-top:none}
+.scene:hover::before,.scene:hover::after{opacity:1;transform:scale(1.05)}
+.scene.tension{border-color:var(--acc);animation:ten 1.1s infinite alternate}
+@keyframes ten{to{box-shadow:var(--sh),inset 0 0 80px rgba(255,255,255,.15)}}
+.slot{display:flex;flex-direction:column;align-items:center;gap:12px}
+.slot .icon{width:90px;height:90px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 10px rgba(0,0,0,.8))}
+.slot .name{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#fff;min-height:18px;text-align:center;font-family:monospace}
+.slot .icon.tick img{animation:tk .12s}
+@keyframes tk{45%{transform:scale(1.1)}}
+.btn-group{display:flex;gap:8px;width:100%;max-width:800px}
+button{background:var(--pan);border:1px solid var(--lin);padding:13px 20px;border-radius:3px;font-family:inherit;font-size:14px;font-weight:600;color:var(--txt);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1}
+button:hover:not(:disabled){border-color:var(--acc);color:var(--acc);background:var(--pan2)}
+button:disabled{opacity:.4;cursor:not-allowed}
+#openBtn{border-color:var(--acc);color:var(--acc);background:linear-gradient(180deg,rgba(255,255,255,.1),transparent)}
+#openBtn:hover:not(:disabled){background:linear-gradient(180deg,rgba(255,255,255,.2),transparent)}
+#open10Btn{border-color:#ffaa00;color:#ffaa00;background:linear-gradient(180deg,rgba(255,170,0,.1),transparent)}
+#open10Btn:hover:not(:disabled){background:linear-gradient(180deg,rgba(255,170,0,.2),transparent)}
+.auto-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(255,255,255,.08);box-shadow:inset 0 0 10px rgba(255,255,255,.1)}
+.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:80}
+.flash.on{animation:fl .8s forwards}
+@keyframes fl{0%{opacity:0}20%{opacity:1}55%{opacity:1}100%{opacity:0}}
+.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:85;opacity:0;visibility:hidden;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);transition:all .3s var(--ease);padding:20px}
+.overlay.show{opacity:1;visibility:visible}
+.modal-card{background:var(--pan);border:1px solid var(--lin);border-radius:4px;padding:24px 20px;text-align:center;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;transform:translateY(20px) scale(.95);transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;position:relative}
+.overlay.show .modal-card{transform:translateY(0) scale(1);opacity:1}
+.close-x{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--txt2);font-size:20px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:.2s}
+.close-x:hover{background:rgba(255,255,255,.1);color:#fff}
+.d-icon{width:80px;height:80px;margin-bottom:12px;flex-shrink:0;filter:drop-shadow(0 0 20px currentColor);overflow:hidden;display:flex;justify-content:center;align-items:center}
+.d-icon img{max-width:100%;max-height:100%;object-fit:contain}
+.modal-card h2{font-size:20px;margin-bottom:6px;color:#fff}
+.d-rarity{font-size:10px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:12px;font-family:monospace}
+.d-price{font-size:16px;font-weight:700;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--lin);width:100%;transition:color .2s}
+.unit-stats{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:left;background:rgba(255,255,255,.02);padding:10px 12px;border-radius:4px;border:1px solid var(--lin);width:100%}
+.stat-row{display:grid;grid-template-columns:max-content 1fr;gap:12px;font-family:monospace;font-size:11px;color:#fff;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:4px}
+.stat-row:last-child{border-bottom:none;padding-bottom:0}
+.gacha-reel{display:flex;gap:10px;overflow:hidden;margin-bottom:20px;width:100%;height:80px;justify-content:center;align-items:center}
+.gacha-item{width:60px;height:60px;flex-shrink:0}
+.chances-list{width:100%;overflow-y:auto;text-align:left;display:flex;flex-direction:column;gap:4px}
+.chance-row{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,.02);border-left:3px solid transparent;transition:background .2s}
+.chance-row:hover{background:rgba(255,255,255,.06)}
+.chance-row .ci{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chance-row .ci img{width:100%;height:100%;object-fit:contain}
+.chance-row .cn{flex:1;font-size:13px;font-weight:600;line-height:1.1}
+.chance-row .cr{font-size:9px;opacity:.7;text-transform:uppercase;font-family:monospace;margin-top:2px}
+.chance-row .cp{font-size:13px;font-weight:700;font-family:monospace;flex-shrink:0}
+.chance-bar{height:3px;background:rgba(255,255,255,.1);margin-top:4px;width:100%}
+.chance-bar div{height:100%;width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.inv-section{width:100%;max-width:800px;display:flex;flex-direction:column;gap:8px}
+.inv-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;max-height:300px;overflow-y:auto;background:var(--pan);border:1px solid var(--lin);padding:8px}
+.inv-grid:empty::after{content:attr(data-empty);color:var(--txt2);grid-column:1/-1;text-align:center;padding:20px;font-style:italic;font-size:12px}
+.inv-item{position:relative;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;text-align:center;background:var(--pan2);border:1px solid var(--lin);cursor:pointer}
+.inv-item:hover{border-color:var(--acc);transform:translateY(-2px)}
+.inv-item .icon{width:28px;height:28px}
+.inv-item .price{font-size:10px;color:var(--acc);font-family:monospace}
+.inv-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;transition:.2s}
+.inv-item.common::before{background:#6cb862}
+.inv-item.rare::before{background:#2557a6}
+.inv-item.epic::before{background:#b554e8}
+.inv-item.legendary::before{background:#fef605}
+.inv-item.mythic::before{background:#b51500}
+.inv-item.leader::before{background:#4bb152}
+.inv-item.secret::before{background:#fff}
+.inv-item.exclusive::before{background:#eec5ff}
+.history{font-size:11px;color:var(--txt2);text-align:center;padding:0 10px}
+.sold-toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;background:var(--pan);border:1px solid var(--acc);color:var(--acc);padding:10px 18px;border-radius:3px;font-size:13px;transition:all .3s var(--ease);z-index:100;pointer-events:none;box-shadow:0 5px 15px rgba(0,0,0,.5)}
+.sold-toast.show{opacity:1;transform:translate(-50%,0)}
+.gacha-badge{background:var(--pan);border:1px solid var(--lin);border-radius:3px;padding:0 15px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;position:relative;color:var(--txt2);flex:0 1 auto}
+.gacha-badge:hover{border-color:var(--acc);color:var(--acc)}
+.gacha-badge .badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:sans-serif;box-shadow:0 0 10px rgba(239,68,68,.5);animation:badgePulse 2s infinite}
+@keyframes badgePulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.multi-list{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;margin-bottom:20px}
+.multi-item{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03);padding:6px;border-radius:6px;border:1px solid var(--lin);text-align:center}
+.multi-item .mi-icon{width:48px;height:48px;display:flex;justify-content:center;align-items:center}
+.multi-item .mi-icon img{width:100%;height:100%;object-fit:contain}
+.multi-item .mi-name{font-size:9px;font-weight:600;word-break:break-word;line-height:1.1;color:#fff}
+.confirm-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:95;opacity:0;visibility:hidden;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);transition:all .3s var(--ease);padding:20px}
+.confirm-overlay.show{opacity:1;visibility:visible}
+.confirm-card{background:var(--pan);border:1px solid var(--lin);border-radius:4px;padding:24px 20px;text-align:center;width:100%;max-width:360px;transform:translateY(20px) scale(.95);transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;gap:12px}
+.confirm-overlay.show .confirm-card{transform:translateY(0) scale(1);opacity:1}
+.confirm-card .warn-icon{font-size:42px;filter:drop-shadow(0 0 16px #ffaa00aa)}
+.confirm-card h2{font-size:18px;color:#fff;margin:0}
+.confirm-card p{font-size:13px;color:var(--txt2);line-height:1.4;margin:0}
+.confirm-card .unit-preview{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;background:rgba(255,255,255,.03);border:1px solid var(--lin);border-radius:4px;width:100%}
+.confirm-card .unit-preview .pi{width:56px;height:56px;filter:drop-shadow(0 0 12px currentColor)}
+.confirm-card .unit-preview .pn{font-size:13px;font-weight:700;color:#fff}
+.confirm-card .unit-preview .pr{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-family:monospace}
+.confirm-card .unit-preview .pp{font-size:14px;font-weight:700;color:var(--acc);font-family:monospace}
+.confirm-card .btn-row{display:flex;gap:8px;width:100%}
+.confirm-card .btn-row button{flex:1;padding:11px 14px;font-size:13px}
+.confirm-card .btn-danger{border-color:var(--red);color:var(--red);background:linear-gradient(180deg,rgba(255,68,68,.12),transparent)}
+.confirm-card .btn-danger:hover{background:linear-gradient(180deg,rgba(255,68,68,.25),transparent)}
+@media(max-width:900px){.layout{grid-template-columns:220px 1fr}.sidebar{padding:16px 12px}.multi-list{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.layout{display:flex;flex-direction:column;height:auto;min-height:100vh;overflow:visible}body{overflow-y:auto}.sidebar{flex-direction:row;overflow-x:auto;align-items:center;border-right:none;border-bottom:1px solid var(--lin);padding:10px 16px;gap:12px;background:var(--bg);position:sticky;top:0;z-index:10}.sidebar>div{display:flex;gap:8px;align-items:center}.sidebar h2{display:none}.crate-list{flex-direction:row;gap:8px}.crate-btn{width:auto;white-space:nowrap;padding:8px 12px;font-size:11px}.auto-sell-btn{width:auto;white-space:nowrap;padding:6px 10px}.main-content{padding:16px;gap:16px}h1{font-size:22px;gap:10px}.bar{gap:6px}.pill{font-size:12px;padding:8px 10px;min-width:100px}.icon-btn{padding:8px 10px}.scene{height:220px}.slot .icon{width:70px;height:70px}.btn-group{flex-direction:column;gap:8px}button{padding:12px;font-size:13px}.inv-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}.inv-item{padding:6px 2px}.inv-item .icon{width:24px;height:24px}.modal-card{padding:16px}.multi-list{grid-template-columns:repeat(2,1fr)}.music-widget{bottom:10px;right:10px;font-size:10px;padding:6px 10px;gap:6px;flex-direction:column;align-items:flex-end}.music-widget input[type=range]{width:50px}}
+@media(max-height:500px) and (orientation:landscape){.layout{flex-direction:row;height:100vh}.sidebar{flex-direction:column;width:180px;border-bottom:none;border-right:1px solid var(--lin);padding:10px;gap:10px;overflow-y:auto}.sidebar>div{flex-direction:column;align-items:stretch}.crate-list{flex-direction:column}.crate-btn{width:100%;padding:8px;font-size:10px}.main-content{padding:10px;gap:10px;overflow-y:auto}h1{display:none}.scene{height:150px}.slot .icon{width:50px;height:50px}.slot .name{font-size:11px}.bar{max-width:100%}.pill{flex:1;min-width:80px;font-size:11px;padding:6px 8px}.btn-group{flex-direction:row}button{padding:8px;font-size:12px}.inv-grid{max-height:150px;grid-template-columns:repeat(auto-fill,minmax(60px,1fr))}.inv-item .icon{width:20px;height:20px}.inv-item .price{font-size:9px}}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="sidebar">
+    <div>
+      <h2>Crates</h2>
+      <div class="crate-list" id="crateList"></div>
+    </div>
+    <div>
+      <h2>Авто-продажа</h2>
+      <div class="crate-list">
+        <button class="auto-sell-btn" data-r="common">Common</button>
+        <button class="auto-sell-btn" data-r="rare">Rare</button>
+        <button class="auto-sell-btn" data-r="epic">Epic</button>
+        <button class="auto-sell-btn" data-r="legendary">Legendary</button>
+        <button class="auto-sell-btn" data-r="mythic">Mythic</button>
+        <button class="auto-sell-btn" data-r="leader">Leader</button>
+        <button class="auto-sell-btn" data-r="secret">Secret</button>
+        <button class="auto-sell-btn" data-r="exclusive">Exclusive</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <h1 id="title">Grenko Crates</h1>
+    <div class="bar">
+      <div class="pill"><span id="lblBal">Баланс</span>&nbsp;<span id="balance">1000</span> $</div>
+      <div class="pill"><span id="lblGems">Гемы</span>&nbsp;<span id="gems">50</span> 💎</div>
+      <div class="pill"><span id="lblInv">Инвентарь</span>&nbsp;<span id="invCount">0</span>/1000</div>
+      <button class="icon-btn" id="chancesBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V5M4 19h16M7 12h3v7H7zM12 8h3v11h-3zM17 5h3v14h-3z"/></svg><span id="lblChances" style="color:var(--acc)">Шансы</span></button>
+      <div class="gacha-badge" id="gachaBtn" title="Рулетка гемов">🎰<div class="badge" id="gachaBadge" style="display:none;">0</div></div>
+      <button class="icon-btn" id="langBtn">EN</button>
+      <button class="icon-btn" id="muteBtn"><svg id="soundOn" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12"/></svg><svg id="soundOff" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9l5 6M21 9l-5 6"/></svg></button>
+      <button class="icon-btn" id="resetBtn" title="Сброс прогресса">🗑️</button>
+    </div>
+
+    <div class="scene" id="scene">
+      <div class="slot">
+        <div class="icon" id="slotIcon"></div>
+        <div class="name" id="slotName">Нажми «Открыть»</div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button id="openBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h18v12H3zM3 12h18M12 8v12M8 8c-1.5-1.5-2-4 0-5s4 1.5 4 5M16 8c1.5-1.5 2-4 0-5s-4 1.5-4 5"/></svg><span id="lblOpen">Открыть · 100 $</span></button>
+      <button id="open10Btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h18v12H3zM3 12h18M12 8v12M8 8c-1.5-1.5-2-4 0-5s4 1.5 4 5M16 8c1.5-1.5 2-4 0-5s-4 1.5-4 5"/></svg><span id="lblOpen10">x10 · 1000 $</span></button>
+    </div>
+
+    <div class="btn-group">
+      <button id="autoBtn" class="auto-btn">⚡ Авто-открытие</button>
+    </div>
+
+    <div class="history" id="history">История открытий появится здесь</div>
+
+    <div class="inv-section">
+      <div class="inv-header">
+        <h2 id="lblInvTitle">Инвентарь</h2>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="lblInvHint">Клик — продать</span>
+          <button id="sellAllBtn" style="flex:0 0 auto;padding:6px 12px;font-size:12px;color:var(--acc);border-color:var(--acc);">Продать всё</button>
+        </div>
+      </div>
+      <div class="inv-grid" id="invGrid" data-empty="Инвентарь пуст"></div>
+    </div>
+  </div>
+</div>
+
+<audio id="bgMusic" src="https://audio.jukehost.co.uk/01a1d07f-0f26-72db-8c80-4b6e3bcbe6cb" loop preload="auto"></audio>
+
+<div class="music-widget">
+  <div style="display:flex;align-items:center;gap:6px;"><span class="note">🎵</span><span>Музыка на фоне (Bebop Chiptune) от <b>Alex McCulloch</b></span></div>
+  <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.2" title="Громкость музыки">
+</div>
+
+<div class="flash" id="flash"></div>
+
+<div class="overlay" id="dropOverlay">
+  <div class="modal-card" id="dropCard">
+    <button class="close-x" onclick="document.getElementById('dropOverlay').classList.remove('show')">✕</button>
+    <div class="d-icon" id="dIcon"></div>
+    <h2 id="dName">Предмет</h2>
+    <div class="d-rarity" id="dRarity">редкость</div>
+    <div class="d-price" id="dPrice">0 $</div>
+    <div class="unit-stats" id="dStats"></div>
+    <button id="dClose">Забрать в инвентарь</button>
+  </div>
+</div>
+
+<div class="overlay" id="multiOverlay">
+  <div class="modal-card" style="max-width:480px;">
+    <button class="close-x" onclick="document.getElementById('multiOverlay').classList.remove('show')">✕</button>
+    <h2 style="margin-bottom:15px;font-size:20px;">Результаты x10</h2>
+    <div class="multi-list" id="multiList"></div>
+    <button id="multiClose" style="margin-top:15px;width:100%">Забрать всё</button>
+  </div>
+</div>
+
+<div class="overlay" id="chancesOverlay">
+  <div class="modal-card" style="max-width:500px;padding:20px;">
+    <button class="close-x" onclick="document.getElementById('chancesOverlay').classList.remove('show')">✕</button>
+    <h2 id="lblChancesTitle" style="margin-bottom:15px;font-size:18px;">Шансы</h2>
+    <div class="rarity-summary" id="raritySummary" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:15px"></div>
+    <div class="chances-list" id="chancesList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="gachaOverlay">
+  <div class="modal-card">
+    <button class="close-x" onclick="document.getElementById('gachaOverlay').classList.remove('show')">✕</button>
+    <h2 style="color:var(--acc);margin-bottom:10px;">Крутка Гемов</h2>
+    <div class="gacha-reel" id="gachaReel" style="display:flex;justify-content:center;margin-bottom:15px;min-height:60px;"></div>
+    <div id="gachaResult" style="font-size:20px;font-weight:bold;color:#fff;margin-bottom:15px;min-height:24px;"></div>
+    <button id="gachaSpinBtn" style="border-color:var(--acc);color:var(--acc);width:100%">Крутить (1 🎟️)</button>
+    <div id="gachaTimer" style="margin-top:10px;font-size:12px;color:var(--txt2)">Спинов: 0</div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-card">
+    <div class="warn-icon">⚠️</div>
+    <h2 id="confirmTitle">Продать дорогой юнит?</h2>
+    <p id="confirmText">Этот юнит редкий и/или имеет шанс выпадения ниже 1%. Точно продать?</p>
+    <div class="unit-preview" id="confirmPreview"></div>
+    <div class="btn-row">
+      <button id="confirmCancel">Отмена</button>
+      <button id="confirmOk" class="btn-danger">Продать</button>
+    </div>
+  </div>
+</div>
+
+<div class="sold-toast" id="toast"></div>
+
+<script>
+/* ===== SAVE SYSTEM ===== */
+const SAVE_KEY='grenko_save_v1';
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({balance,gems,inventory,activeCrate,lang,autoSell:[...autoSellRarities],gachaSpins,gachaLastTick,vol:bgMusic.volume,muted}));}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(!s)return;if(typeof s.balance==='number')balance=s.balance;if(typeof s.gems==='number')gems=s.gems;if(Array.isArray(s.inventory))inventory=s.inventory;if(s.activeCrate&&CRATES[s.activeCrate])activeCrate=s.activeCrate;if(s.lang)lang=s.lang;if(Array.isArray(s.autoSell))autoSellRarities=new Set(s.autoSell);if(typeof s.gachaSpins==='number')gachaSpins=s.gachaSpins;if(typeof s.gachaLastTick==='number')gachaLastTick=s.gachaLastTick;if(typeof s.muted==='boolean')muted=s.muted;if(typeof s.vol==='number'){bgMusic.volume=s.vol;volumeSlider.value=s.vol;}}catch(e){}}
+
+/* ===== CONFIG ===== */
+const GIFT_IMG='https://yourimageshare.com/ib/cwwrwslAaB.png';
+const GEM_CRATE_IMG='https://yourimageshare.com/ib/fKPwU3NRf6.png';
+const RARITY={common:{label:'Common',color:'#6cb862',w:1000},rare:{label:'Rare',color:'#2557a6',w:300},epic:{label:'Epic',color:'#b554e8',w:80},legendary:{label:'Legendary',color:'#fef605',w:20},mythic:{label:'Mythic',color:'#b51500',w:6},leader:{label:'Leader',color:'#4bb152',w:2},secret:{label:'Secret',color:'#fff',w:1},exclusive:{label:'Exclusive',color:'#eec5ff',w:100}};
+const CRATES={
+  crate1:{name:'Season Crate 1',img:GIFT_IMG,currency:'$',cost:100,pool:[
+    {name:'GrenkBot-A1',r:'common',price:50,img:'https://yourimageshare.com/ib/zwYuDDfH8D.jpg',stats:{Type:'Single',Damage:'15 - 35',Range:'10 - 13',Cooldown:'1.75 - 0.5',Limit:'5'}},
+    {name:'GrenkTurret-A1',r:'rare',price:150,img:'https://yourimageshare.com/ib/4Qf4kNjKEl.jpg',stats:{Type:'Splash',Damage:'45 - 125',Range:'13 - 15',Cooldown:'2 - 1',Limit:'3'}},
+    {name:'Gronke',r:'epic',price:400,img:'https://yourimageshare.com/ib/u4qJyiSjUY.jpg',stats:{Type:'Stun',Damage:'125 - 425',Range:'16 - 20',Cooldown:'5 - 3','Stun Time':'0.3',Limit:'2'}},
+    {name:'GrenkerDroid',r:'legendary',price:900,img:'https://yourimageshare.com/ib/fxvI30kSzR.jpg',stats:{Type:'Support','Damage Boost':'15% - 22%',Range:'13 - 14.75',Limit:'3'}},
+    {name:'The ElderGrenk',r:'mythic',price:1800,img:'https://yourimageshare.com/ib/yScfKp7Eir.jpg',stats:{Type:'Double',Damage:'95 - 240',Range:'12 - 15',Cooldown:'2.5 - 0.4',Limit:'3'}},
+    {name:'Grenko',r:'leader',price:3500,img:'https://yourimageshare.com/ib/iCcdyCqr3N.jpg',secret:true,stats:{Type:'Spawner + Pierce',Damage:'150 - 430',Range:'11 - 14',Cooldown:'3 - 2','Spawn Cooldown':'30 - 25','Ally HP':'450 - 1000','Ally DPS':'0 - 275',Limit:'1'}},
+    {name:'Paradoxed Grenko',r:'secret',price:7500,img:'https://yourimageshare.com/ib/qqH26h3kBO.jpg',secret:true,stats:{Type:'Knockback',Damage:'500 - 1450',Range:'13.5 - 15',Cooldown:'2 - 0.75','Knockback Strength':'1 Studs - 2.25 Studs',Limit:'2'}}
+  ]},
+  crate2:{name:'Gem Crate 1',img:GEM_CRATE_IMG,currency:'💎',cost:50,pool:[
+    {name:'Gem GrenkTurret-A3',r:'exclusive',price:500,customChance:89,img:'https://yourimageshare.com/ib/uEaf0uwYY6.jpg',stats:{Type:'Slow',Damage:'300 - 550',Range:'14 - 16',Cooldown:'3 - 1.5',Limit:'3'}},
+    {name:'Gem The ElderGrenk',r:'exclusive',price:1200,customChance:10,img:'https://yourimageshare.com/ib/98RnJ4wA8h.jpg',stats:{Type:'Stun + Double',Damage:'600 - 1300',Range:'12 - 13.5',Cooldown:'4 - 2.25','Stun Time':'0.35',Limit:'3'}},
+    {name:'Gem Lord Grenko',r:'exclusive',price:2500,customChance:1,img:'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg',secret:true,stats:{Type:'Slow + Stun + Spawner',Damage:'650 - 2250',Range:'14.5 - 20',Cooldown:'3 - 1.25','Ally HP':'600 - 1250','Ally DPS':'200 - 550','Spawn Cooldown':'25 - 20','Stun Time':'0.4',Limit:'1'}}
+  ]}
+};
+
+/* ===== STATE ===== */
+let balance=1000,gems=50,inventory=[],spinning=false,muted=false,isAutoOpen=false,autoSellRarities=new Set(),lang='ru',activeCrate='crate1';
+let gachaSpins=0,gachaLastTick=Date.now();
+const GACHA_POOL=[{amount:10,w:50,color:'#888'},{amount:25,w:30,color:'#3b82f6'},{amount:50,w:15,color:'#a855f7'},{amount:100,w:5,color:'#eab308'}];
+const GACHA_COOLDOWN=600000,MAX_GACHA_SPINS=5;
+const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength'}}};
+
+/* ===== DOM ===== */
+const $=id=>document.getElementById(id);
+const scene=$('scene'),slotIcon=$('slotIcon'),slotName=$('slotName'),flash=$('flash'),dropOverlay=$('dropOverlay'),multiOverlay=$('multiOverlay'),invGrid=$('invGrid');
+const bgMusic=$('bgMusic'),volumeSlider=$('volumeSlider');
+let lastTickTime=0;
+
+/* ===== AUDIO ===== */
+let AC=null,master=null;
+function ac(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC;}
+function getMaster(){if(master)return master;const ctx=ac(),comp=ctx.createDynamicsCompressor(),conv=ctx.createConvolver();comp.threshold.value=-18;comp.knee.value=20;comp.ratio.value=4;const buf=ctx.createBuffer(2,ctx.sampleRate*1.6,ctx.sampleRate);for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.2);}conv.buffer=buf;const w=ctx.createGain();w.gain.value=.22;const dg=ctx.createGain();dg.gain.value=.85;const inN=ctx.createGain();inN.connect(comp);inN.connect(conv);conv.connect(w).connect(ctx.destination);comp.connect(dg).connect(ctx.destination);master={in:inN,ctx};return master;}
+function tone({freq=440,dur=.3,type='sine',vol=.12,freq2=null,delay=0,vib=0}){if(muted)return;const{in:out,ctx}=getMaster(),t=ctx.currentTime+delay,o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(Math.min(freq*3+800,6000),t);o.type=type;o.frequency.setValueAtTime(freq,t);if(freq2)o.frequency.exponentialRampToValueAtTime(Math.max(freq2,1),t+dur);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);if(vib>0){const l=ctx.createOscillator(),lg=ctx.createGain();l.frequency.value=5.5;lg.gain.value=vib;l.connect(lg).connect(o.frequency);l.start(t);l.stop(t+dur);}o.connect(f).connect(g).connect(out);o.start(t);o.stop(t+dur+.05);}
+function noise({dur=.35,vol=.12,delay=0,filterFreq=1400,q=.6}){if(muted)return;const{in:out,ctx}=getMaster(),t=ctx.currentTime+delay,b=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=filterFreq;f.Q.value=q;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f).connect(g).connect(out);s.start(t);s.stop(t+dur+.05);}
+const sfx={
+  tick:p=>{if(muted)return;const now=performance.now();if(now-lastTickTime<40)return;lastTickTime=now;tone({freq:200+p*180,dur:.07,type:'triangle',vol:.05+p*.035});noise({dur:.05,vol:.02+p*.02,filterFreq:600,q:2});},
+  flash:()=>{noise({dur:.5,vol:.16,filterFreq:900,q:.4});tone({freq:220,freq2:65,dur:.7,vol:.08});tone({freq:440,freq2:110,dur:.5,type:'triangle',vol:.05});},
+  click:()=>tone({freq:520,dur:.09,vol:.06}),
+  sell:()=>{tone({freq:660,freq2:990,dur:.22,vol:.08,vib:2});tone({freq:990,dur:.18,type:'triangle',vol:.04,delay:.08});},
+  drop:r=>{const c={common:[392,523],rare:[392,494,587,784],epic:[440,554,659,880,1109],legendary:[523,659,784,988,1175,1568],mythic:[587,740,880,1175,1480,1760],leader:[659,880,1046,1318,1760,2093],secret:[784,988,1175,1568,1975,2350],exclusive:[880,1108,1318,1760,2217,2637]}[r]||[392,523];noise({dur:.22,vol:.1,filterFreq:800,q:.5});c.forEach((f,i)=>{tone({freq:f,dur:.55,vol:.11,delay:i*.07,vib:3});tone({freq:f*2,dur:.35,type:'triangle',vol:.03,delay:i*.07});});}
+};
+
+/* ===== UTILS ===== */
+const iconOf=(name,hide=false)=>{let it=null;for(const crate of Object.values(CRATES)){const f=crate.pool.find(i=>i.name===name);if(f){it=f;break;}}if(!it)return`<img src="${GIFT_IMG}">`;if(hide&&it.secret)return`<img src="https://yourimageshare.com/ib/w1HE053pTL.jpg">`;return it.img?`<img src="${it.img}" alt="${name}">`:`<img src="${GIFT_IMG}">`;};
+const randomItem=()=>{const pool=CRATES[activeCrate].pool;if(pool[0].customChance!==undefined){let r=Math.random()*100;for(const it of pool){r-=it.customChance;if(r<=0)return it;}return pool[pool.length-1];}const total=pool.reduce((s,it)=>s+RARITY[it.r].w,0);let r=Math.random()*total;for(const it of pool){r-=RARITY[it.r].w;if(r<=0)return it;}return pool[0];};
+
+/* ===== RARE-SELL CONFIRM ===== */
+const RARE_TIER=new Set(['mythic','leader','secret','exclusive']);
+function chanceOfInCrate(itemName){
+  const pool=CRATES[activeCrate].pool,totalW=pool.reduce((s,it)=>s+RARITY[it.r].w,0);
+  const byR={};pool.forEach(it=>{(byR[it.r]||=[]).push(it);});
+  const it=pool.find(x=>x.name===itemName);
+  if(!it)return 100;
+  if(it.customChance!==undefined)return it.customChance;
+  return (RARITY[it.r].w/totalW/byR[it.r].length)*100;
+}
+function isRareItem(it){return RARE_TIER.has(it.r)||chanceOfInCrate(it.name)<1;}
+let pendingSellIndex=null;
+function askConfirmSell(index,it){
+  pendingSellIndex=index;
+  const r=RARITY[it.r],chance=chanceOfInCrate(it.name).toFixed(2);
+  $('confirmTitle').textContent='Продать дорогой юнит?';
+  $('confirmPreview').innerHTML=`<div class="pi" style="color:${r.color}">${iconOf(it.name,false)}</div><div class="pn">${it.name}</div><div class="pr" style="color:${r.color}">${r.label}</div><div class="pp">${it.price} $</div>`;
+  $('confirmText').textContent=`Шанс выпадения: ${chance}%. Точно продать этот юнит?`;
+  rebindConfirmOk();
+  $('confirmOverlay').classList.add('show');
+}
+function closeConfirm(){pendingSellIndex=null;$('confirmOverlay').classList.remove('show');}
+function rebindConfirmOk(){
+  $('confirmOk').onclick=()=>{
+    if(pendingSellIndex===null)return;
+    const i=pendingSellIndex;closeConfirm();
+    const it=inventory[i];if(!it)return;
+    inventory.splice(i,1);balance+=it.price;
+    updateUI();renderInventory();sfx.sell();toast(`${L10N[lang].sold} ${it.name}`);save();
+  };
+}
+rebindConfirmOk();
+$('confirmCancel').onclick=()=>{sfx.click();closeConfirm();};
+$('confirmOverlay').onclick=e=>{if(e.target===$('confirmOverlay'))closeConfirm();};
+
+/* ===== UI ===== */
+function updateUI(){
+  $('invCount').textContent=inventory.length;
+  $('balance').textContent=Math.floor(balance);
+  $('gems').textContent=Math.floor(gems);
+  $('openBtn').disabled=spinning;$('open10Btn').disabled=spinning;
+  const c=CRATES[activeCrate],l=L10N[lang];
+  $('lblOpen').textContent=`${l.lblOpen} · ${c.cost} ${c.currency}`;
+  $('lblOpen10').textContent=`${l.lblOpen10} · ${c.cost*10} ${c.currency}`;
+  $('sellAllBtn').textContent=l.sellAll;
+}
+function renderInventory(){
+  invGrid.innerHTML='';
+  inventory.forEach((it,i)=>{
+    const el=document.createElement('div');el.className=`inv-item ${it.r}`;
+    el.innerHTML=`<div class="icon" style="filter:drop-shadow(0 0 6px ${RARITY[it.r].color}80)">${iconOf(it.name,false)}</div><div style="color:var(--txt);margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${it.name}</div><div class="price">${it.price} $</div>`;
+    el.onclick=()=>{
+      if(isRareItem(it)){askConfirmSell(i,it);}
+      else{inventory.splice(i,1);balance+=it.price;updateUI();renderInventory();sfx.sell();toast(`${L10N[lang].sold} ${it.name}`);save();}
+    };
+    invGrid.appendChild(el);
+  });
+  updateUI();
+}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000);}
+function renderChances(){
+  const pool=CRATES[activeCrate].pool,list=$('chancesList'),sum=$('raritySummary');
+  list.innerHTML='';sum.innerHTML='';
+  const totalW=pool.reduce((s,it)=>s+RARITY[it.r].w,0),raritiesInCrate=new Set(pool.map(it=>it.r));
+  Object.entries(RARITY).forEach(([k,v])=>{
+    if(!raritiesInCrate.has(k))return;
+    let pct=pool[0].customChance!==undefined?pool.filter(it=>it.r===k).reduce((s,it)=>s+it.customChance,0).toFixed(2):(v.w/totalW*100).toFixed(2);
+    const s=document.createElement('span');s.style.color=v.color;s.innerHTML=`${v.label} <b>${pct}%</b>`;sum.appendChild(s);
+  });
+  const byR={};pool.forEach(it=>{(byR[it.r]||=[]).push(it);});
+  pool.map(it=>{let chance=it.customChance!==undefined?it.customChance:(RARITY[it.r].w/totalW/byR[it.r].length)*100;return{it,chance};}).sort((a,b)=>b.chance-a.chance).forEach(({it,chance})=>{
+    const r=RARITY[it.r],row=document.createElement('div');row.className='chance-row';row.style.borderLeftColor=r.color;
+    const displayName=it.secret?'???':it.name;
+    row.innerHTML=`<div class="ci" style="width:30px;height:30px;filter:drop-shadow(0 0 4px ${r.color}80)">${iconOf(it.name,true)}</div><div class="cn">${displayName}<div class="cr" style="color:${r.color}">${r.label} · ${it.price} $</div><div class="chance-bar"><div data-w="${Math.min(chance*10,100)}" style="background:${r.color}"></div></div></div><div class="cp" style="color:${r.color}">${chance.toFixed(2)}%</div>`;
+    list.appendChild(row);
+  });
+  setTimeout(()=>{list.querySelectorAll('.chance-bar div').forEach(el=>{el.style.width=el.dataset.w+'%';});},50);
+}
+function showDrop(it){
+  const r=RARITY[it.r];
+  $('dIcon').innerHTML=iconOf(it.name,false);
+  $('dIcon').style.filter=`drop-shadow(0 0 20px ${r.color}cc)`;
+  $('dName').textContent=it.name;
+  $('dRarity').textContent=r.label;$('dRarity').style.color=r.color;
+  $('dPrice').textContent=`${L10N[lang].priceAfter}: ${it.price} $`;
+  $('dPrice').style.color=r.color;
+  $('dropCard').style.borderColor=r.color;
+  $('dropCard').style.boxShadow=`0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
+  const s=$('dStats');
+  if(it.stats){s.style.display='flex';s.innerHTML=Object.entries(it.stats).filter(([k,v])=>v).map(([k,v],idx)=>{const tk=L10N[lang].typeTrans[k]||k;return`<div class="stat-row" style="${idx===0?'color:#fff;font-weight:bold;margin-bottom:4px':''}"><span>${tk}:</span><span>${v}</span></div>`;}).join('');}else s.style.display='none';
+  dropOverlay.classList.add('show');sfx.drop(it.r);
+}
+function showMultiDrop(items){
+  const list=$('multiList');list.innerHTML='';
+  items.forEach(it=>{const r=RARITY[it.r];const el=document.createElement('div');el.className='multi-item';el.innerHTML=`<div class="mi-icon" style="filter:drop-shadow(0 0 6px ${r.color}cc)">${iconOf(it.name,false)}</div><div class="mi-name">${it.name}</div>`;list.appendChild(el);});
+  multiOverlay.classList.add('show');
+  const best=items.reduce((p,c)=>Object.keys(RARITY).indexOf(c.r)>Object.keys(RARITY).indexOf(p.r)?c:p,items[0]);
+  sfx.drop(best.r);
+}
+function sellItemIfNeeded(item){if(autoSellRarities.has(item.r)){balance+=item.price;updateUI();sfx.sell();toast(`${L10N[lang].sold} ${item.name}`);save();return true;}return false;}
+
+/* ===== SPIN (FIXED: списание всегда, авто-стоп при нехватке) ===== */
+function processSpin(won,isAuto=false){
+  spinning=true;updateUI();
+  const c=CRATES[activeCrate];
+  // проверка и списание стоимости — ВСЕГДА, включая авто
+  if(c.currency==='💎'){
+    if(gems<c.cost){spinning=false;isAutoOpen=false;$('autoBtn').classList.remove('active');updateUI();save();return toast(L10N[lang].lblGems+' не хватает!');}
+    gems-=c.cost;
+  }else{
+    if(balance<c.cost){spinning=false;isAutoOpen=false;$('autoBtn').classList.remove('active');updateUI();save();return toast('Недостаточно $');}
+    balance-=c.cost;
+  }
+  updateUI();save();
+
+  const duration=isAuto?800:2600,startT=performance.now(),ease=t=>t*t*t;
+  (function spin(){
+    const el=performance.now()-startT,prog=Math.min(el/duration,1),interval=170-135*ease(prog),pool=c.pool,it=pool[Math.floor(Math.random()*pool.length)];
+    slotIcon.innerHTML=iconOf(it.name,true);slotName.textContent=it.secret?'???':it.name;
+    slotIcon.classList.remove('tick');void slotIcon.offsetWidth;slotIcon.classList.add('tick');
+    sfx.tick(prog);
+    if(prog>=1){
+      scene.classList.remove('tension');flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');sfx.flash();
+      setTimeout(()=>{
+        slotIcon.innerHTML=iconOf(won.name,false);slotName.textContent=won.secret?'???':won.name;
+        const isSold=sellItemIfNeeded(won);if(!isSold)inventory.push(won);
+        renderInventory();if(!isAuto)showDrop(won);
+        spinning=false;updateUI();save();
+        if(!isAuto){$('history').innerHTML=L10N[lang].history+': '+inventory.slice(-5).reverse().map(x=>x.secret?'???':x.name).join(' · ');}
+        else{setTimeout(()=>{if(isAutoOpen)processSpin(randomItem(),true);},500);}
+      },isAuto?200:800*.35);
+    }else setTimeout(spin,interval);
+  })();
+  scene.classList.add('tension');
+}
+
+function openCase(isMulti=false){
+  if(spinning)return;
+  const c=CRATES[activeCrate],needSpace=isMulti?10:1;
+  if(inventory.length+needSpace>1000)return toast('Инвентарь переполнен! Продай что-нибудь');
+  const totalCost=isMulti?c.cost*10:c.cost;
+  if(c.currency==='💎'&&gems<totalCost)return toast(L10N[lang].lblGems+' не хватает!');
+  if(c.currency==='$'&&balance<totalCost)return toast('Недостаточно $');
+  sfx.click();
+  if(isMulti){
+    const wonItems=[];let totalProfit=0;
+    if(c.currency==='💎')gems-=totalCost;else balance-=totalCost;updateUI();save();
+    for(let i=0;i<10;i++){const it=randomItem();if(autoSellRarities.has(it.r))totalProfit+=it.price;else wonItems.push(it);}
+    balance+=totalProfit;inventory.push(...wonItems);renderInventory();updateUI();save();showMultiDrop(wonItems);
+  }else processSpin(randomItem(),false);
+}
+
+/* ===== CRATE BUTTONS ===== */
+const crateListEl=$('crateList');
+Object.keys(CRATES).forEach(id=>{
+  const btn=document.createElement('button');
+  btn.className=`crate-btn ${id===activeCrate?'active':''}`;btn.dataset.id=id;
+  btn.innerHTML=`<img src="${CRATES[id].img}" alt="crate"> ${CRATES[id].name}`;
+  btn.onclick=()=>{document.querySelectorAll('.crate-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');sfx.click();activeCrate=id;slotIcon.innerHTML=`<img src="${CRATES[id].img}">`;renderChances();updateUI();save();};
+  crateListEl.appendChild(btn);
+});
+$('slotIcon').innerHTML=`<img src="${CRATES[activeCrate].img}">`;
+
+/* ===== MUSIC ===== */
+let musicStarted=false;
+bgMusic.volume=0.2;volumeSlider.value=0.2;
+function startMusic(){if(musicStarted)return;bgMusic.play().then(()=>{musicStarted=true;}).catch(()=>{});}
+document.addEventListener('click',startMusic,{once:true});
+document.addEventListener('keydown',startMusic,{once:true});
+volumeSlider.addEventListener('input',e=>{bgMusic.volume=e.target.value;save();});
+
+/* ===== GACHA ===== */
+function updateGachaUI(){
+  const now=Date.now(),timePassed=now-gachaLastTick,earnedSpins=Math.floor(timePassed/GACHA_COOLDOWN);
+  if(earnedSpins>0){gachaSpins=Math.min(gachaSpins+earnedSpins,MAX_GACHA_SPINS);gachaLastTick=now-(timePassed%GACHA_COOLDOWN);save();}
+  const badge=$('gachaBadge');
+  if(gachaSpins>0){badge.style.display='flex';badge.textContent=gachaSpins;}else badge.style.display='none';
+  if(gachaSpins>=MAX_GACHA_SPINS){$('gachaTimer').textContent='Максимум спинов!';}
+  else{const nextSpin=GACHA_COOLDOWN-(now-gachaLastTick),m=Math.floor(nextSpin/60000),s=Math.floor((nextSpin%60000)/1000);$('gachaTimer').textContent=`Спинов: ${gachaSpins}. Следующий через: ${m}м ${s}с`;}
+}
+setInterval(updateGachaUI,1000);
+$('gachaBtn').onclick=()=>{sfx.click();$('gachaOverlay').classList.add('show');updateGachaUI();$('gachaResult').textContent='';};
+function playGacha(){
+  if(gachaSpins<=0)return;
+  gachaSpins--;save();updateGachaUI();
+  $('gachaSpinBtn').disabled=true;
+  const reel=$('gachaReel');reel.innerHTML='';let ticks=0;const maxTicks=20;
+  const interval=setInterval(()=>{
+    ticks++;
+    const rand=GACHA_POOL[Math.floor(Math.random()*GACHA_POOL.length)];
+    reel.innerHTML=`<div class="gacha-item" style="color:${rand.color};font-size:24px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:8px;width:100%;max-width:80px;transform:scale(1.1);transition:transform .1s;">${rand.amount}</div>`;
+    sfx.tick(ticks/maxTicks);
+    if(ticks>=maxTicks){
+      clearInterval(interval);
+      const totalW=GACHA_POOL.reduce((s,i)=>s+i.w,0);let r=Math.random()*totalW,won=GACHA_POOL[0];
+      for(const it of GACHA_POOL){r-=it.w;if(r<=0){won=it;break;}}
+      reel.innerHTML=`<div class="gacha-item" style="color:${won.color};font-size:32px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border-radius:8px;width:100%;max-width:80px;transform:scale(1.2);transition:transform .3s var(--ease);">${won.amount}</div>`;
+      $('gachaResult').innerHTML=`Вы выиграли <span style="color:${won.color}">${won.amount} 💎</span>!`;
+      gems+=won.amount;updateUI();save();sfx.drop('exclusive');
+      $('gachaSpinBtn').disabled=false;updateGachaUI();
+    }
+  },50);
+}
+$('gachaSpinBtn').onclick=playGacha;
+
+/* ===== SELL ALL (Variant A) ===== */
+$('sellAllBtn').onclick=()=>{
+  if(!inventory.length)return;
+  const rareItems=inventory.filter(isRareItem);
+  if(rareItems.length>0){
+    const total=inventory.reduce((s,i)=>s+i.price,0);
+    pendingSellIndex=-1;
+    $('confirmTitle').textContent='Продать всё?';
+    $('confirmPreview').innerHTML=`<div style="font-size:42px;filter:drop-shadow(0 0 16px #ff4444aa)">⚠️</div><div class="pn">${rareItems.length} дорогих юнитов</div><div class="pp">Всего: ${total} $</div>`;
+    $('confirmText').textContent='В инвентаре есть дорогие юниты. Точно продать ВСЁ, включая их?';
+    $('confirmOk').onclick=()=>{
+      closeConfirm();
+      const t=inventory.reduce((s,i)=>s+i.price,0),c=inventory.length;
+      balance+=t;inventory=[];renderInventory();sfx.sell();
+      toast(`${L10N[lang].soldAll} ${c} ${L10N[lang].for} ${t} $`);save();
+      rebindConfirmOk();
+    };
+    $('confirmOverlay').classList.add('show');
+    return;
+  }
+  const t=inventory.reduce((s,i)=>s+i.price,0),c=inventory.length;
+  balance+=t;inventory=[];renderInventory();sfx.sell();
+  toast(`${L10N[lang].soldAll} ${c} ${L10N[lang].for} ${t} $`);save();
+};
+
+/* ===== EVENTS ===== */
+$('openBtn').onclick=()=>openCase(false);
+$('open10Btn').onclick=()=>openCase(true);
+$('autoBtn').onclick=()=>{isAutoOpen=!isAutoOpen;$('autoBtn').classList.toggle('active',isAutoOpen);save();if(isAutoOpen&&!spinning)processSpin(randomItem(),true);};
+$('dClose').onclick=()=>{sfx.click();dropOverlay.classList.remove('show');setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320);};
+$('multiClose').onclick=()=>{sfx.click();multiOverlay.classList.remove('show');setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320);};
+$('chancesBtn').onclick=()=>{sfx.click();renderChances();$('chancesOverlay').classList.add('show');};
+$('muteBtn').onclick=()=>{muted=!muted;$('soundOn').style.display=muted?'none':'block';$('soundOff').style.display=muted?'block':'none';if(!muted)sfx.click();save();};
+$('resetBtn').onclick=()=>{
+  if(!confirm('Сбросить весь прогресс? Это нельзя отменить.'))return;
+  localStorage.removeItem(SAVE_KEY);
+  balance=1000;gems=50;inventory=[];activeCrate='crate1';lang='ru';autoSellRarities=new Set();gachaSpins=0;gachaLastTick=Date.now();muted=false;
+  document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id==='crate1'));
+  $('soundOn').style.display='block';$('soundOff').style.display='none';
+  slotIcon.innerHTML=`<img src="${CRATES.crate1.img}">`;
+  renderInventory();updateUI();updateGachaUI();applyLang();toast('Прогресс сброшен');
+};
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.onclick=e=>{
+    if(e.target===el){
+      el.classList.remove('show');
+      if(el.id==='dropOverlay'||el.id==='multiOverlay'){setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320);}
+    }
+  };
+});
+document.querySelectorAll('.auto-sell-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    const r=btn.dataset.r;
+    if(autoSellRarities.has(r)){autoSellRarities.delete(r);btn.classList.remove('active');}
+    else{autoSellRarities.add(r);btn.classList.add('active');}
+    sfx.click();save();
+  };
+});
+
+function applyLang(){
+  const t=L10N[lang];
+  document.getElementById('title').textContent=t.title;
+  document.getElementById('lblBal').textContent=t.lblBal;
+  document.getElementById('lblGems').textContent=t.lblGems;
+  document.getElementById('lblInv').textContent=t.lblInv;
+  document.getElementById('lblChances').textContent=t.lblChances;
+  document.getElementById('lblInvTitle').textContent=t.lblInvTitle;
+  document.getElementById('lblInvHint').textContent=t.lblInvHint;
+  document.getElementById('invGrid').setAttribute('data-empty',t.emptyInv);
+  document.getElementById('lblChancesTitle').textContent=t.lblChancesTitle;
+  document.getElementById('dClose').textContent=t.takeInv;
+  document.getElementById('langBtn').textContent=lang==='ru'?'EN':'RU';
+  document.getElementById('autoBtn').textContent=t.autoOpen;
+  if(!inventory.length)document.getElementById('history').textContent=t.noHist;
+  if(!spinning&&!dropOverlay.classList.contains('show')&&!multiOverlay.classList.contains('show'))document.getElementById('slotName').textContent=t.clickOpen;
+  if(document.getElementById('chancesOverlay').classList.contains('show'))renderChances();
+  updateUI();renderInventory();
+}
+document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.click();applyLang();save();};
+
+/* ===== BOOT ===== */
+load();
+document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===activeCrate));
+document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.toggle('active',autoSellRarities.has(b.dataset.r)));
+$('soundOn').style.display=muted?'none':'block';
+$('soundOff').style.display=muted?'block':'none';
+$('autoBtn').classList.toggle('active',isAutoOpen);
+slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;
+applyLang();
+updateGachaUI();
+</script>
+</body>
+</html>
