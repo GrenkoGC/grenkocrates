@@ -132,12 +132,23 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .confirm-card .btn-row button{flex:1;padding:11px 14px;font-size:13px}
 .confirm-card .btn-danger{border-color:var(--red);color:var(--red);background:linear-gradient(180deg,rgba(255,68,68,.12),transparent)}
 .confirm-card .btn-danger:hover{background:linear-gradient(180deg,rgba(255,68,68,.25),transparent)}
+#tg-login-container{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;background:var(--pan);padding:15px;border:1px solid var(--lin);border-radius:6px;text-align:center;box-shadow:var(--sh)}
 @media(max-width:900px){.layout{grid-template-columns:220px 1fr}.sidebar{padding:16px 12px}.multi-list{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:768px){.layout{display:flex;flex-direction:column;height:auto;min-height:100vh;overflow:visible}body{overflow-y:auto}.sidebar{flex-direction:row;overflow-x:auto;align-items:center;border-right:none;border-bottom:1px solid var(--lin);padding:10px 16px;gap:12px;background:var(--bg);position:sticky;top:0;z-index:10}.sidebar>div{display:flex;gap:8px;align-items:center}.sidebar h2{display:none}.crate-list{flex-direction:row;gap:8px}.crate-btn{width:auto;white-space:nowrap;padding:8px 12px;font-size:11px}.auto-sell-btn{width:auto;white-space:nowrap;padding:6px 10px}.main-content{padding:16px;gap:16px}h1{font-size:22px;gap:10px}.bar{gap:6px}.pill{font-size:12px;padding:8px 10px;min-width:100px}.icon-btn{padding:8px 10px}.scene{height:220px}.slot .icon{width:70px;height:70px}.btn-group{flex-direction:column;gap:8px}button{padding:12px;font-size:13px}.inv-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}.inv-item{padding:6px 2px}.inv-item .icon{width:24px;height:24px}.modal-card{padding:16px}.multi-list{grid-template-columns:repeat(2,1fr)}.music-widget{bottom:10px;right:10px;font-size:10px;padding:6px 10px;gap:6px;flex-direction:column;align-items:flex-end}.music-widget input[type=range]{width:50px}}
 @media(max-height:500px) and (orientation:landscape){.layout{flex-direction:row;height:100vh}.sidebar{flex-direction:column;width:180px;border-bottom:none;border-right:1px solid var(--lin);padding:10px;gap:10px;overflow-y:auto}.sidebar>div{flex-direction:column;align-items:stretch}.crate-list{flex-direction:column}.crate-btn{width:100%;padding:8px;font-size:10px}.main-content{padding:10px;gap:10px;overflow-y:auto}h1{display:none}.scene{height:150px}.slot .icon{width:50px;height:50px}.slot .name{font-size:11px}.bar{max-width:100%}.pill{flex:1;min-width:80px;font-size:11px;padding:6px 8px}.btn-group{flex-direction:row}button{padding:8px;font-size:12px}.inv-grid{max-height:150px;grid-template-columns:repeat(auto-fill,minmax(60px,1fr))}.inv-item .icon{width:20px;height:20px}.inv-item .price{font-size:9px}}
 </style>
 </head>
 <body>
+
+<!-- Блок входа для сайта (Скрыт, если зашли из Telegram) -->
+<div id="tg-login-container">
+  <p style="margin-bottom:10px; font-size:14px;">Войдите, чтобы сохранять прогресс везде</p>
+  <script async src="https://telegram.org/js/telegram-widget.js?22" 
+          data-telegram-login="grenkocrates_bot" 
+          data-size="medium" 
+          data-onauth="onTelegramAuth(user)" 
+          data-request-access="write"></script>
+</div>
 
 <div class="layout">
   <div class="sidebar">
@@ -271,58 +282,50 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
 <script>
 /* ===== CLOUD SAVE SYSTEM ===== */
-const SAVE_KEY = 'grenko_save_v1'; // оставляем для локального кэша
+const SAVE_KEY = 'grenko_save_v1'; 
 const API_URL = 'https://grenko-api.treugalnik.workers.dev';
-let isCloudLoaded = false;
+let tgWebData = null; // Данные от сайта (Login Widget)
 
-// Функция сохранения (отправляет данные на сервер)
 async function save() {
   const saveData = { balance, gems, inventory, activeCrate, lang, autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, vol: bgMusic.volume, muted };
-  localStorage.setItem(SAVE_KEY, JSON.stringify(saveData)); // локальный кэш
+  localStorage.setItem(SAVE_KEY, JSON.stringify(saveData)); 
   
-  if (!window.Telegram?.WebApp?.initData) return; // если игра открыта в браузере, облако не сработает
+  const initData = window.Telegram?.WebApp?.initData;
+  if (!initData && !tgWebData) return; 
 
   try {
     await fetch(`${API_URL}/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData: window.Telegram.WebApp.initData, saveData })
+      body: JSON.stringify({ initData: initData || null, tgData: tgWebData, saveData })
     });
-    console.log('Сохранено в облако');
-  } catch (e) {
-    console.error('Ошибка сохранения в облако:', e);
-  }
+  } catch (e) { console.error('Ошибка сохранения:', e); }
 }
 
-// Функция загрузки (берет данные с сервера)
 async function load() {
-  // 1. Сначала грузим локальный кэш (чтобы игра запустилась быстро)
   try {
     const local = JSON.parse(localStorage.getItem(SAVE_KEY));
     if (local) applySaveData(local);
   } catch (e) {}
 
-  // 2. Если мы в Telegram — стучимся в облако
-  if (window.Telegram?.WebApp?.initData) {
+  const initData = window.Telegram?.WebApp?.initData;
+  if (initData || tgWebData) {
     try {
       const res = await fetch(`${API_URL}/load`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+        body: JSON.stringify({ initData: initData || null, tgData: tgWebData })
       });
       if (res.ok) {
         const cloudData = await res.json();
         if (cloudData && Object.keys(cloudData).length > 0) {
           applySaveData(cloudData);
-          save(); // перезаписываем локальный кэш актуальными данными из облака
+          save(); 
           toast('Прогресс загружен из облака');
         }
       }
-    } catch (e) {
-      console.error('Ошибка загрузки из облака:', e);
-    }
+    } catch (e) { console.error('Ошибка загрузки:', e); }
   }
-  isCloudLoaded = true;
 }
 
 function applySaveData(s) {
@@ -338,6 +341,7 @@ function applySaveData(s) {
   if (typeof s.muted === 'boolean') muted = s.muted;
   if (typeof s.vol === 'number') { bgMusic.volume = s.vol; volumeSlider.value = s.vol; }
 }
+
 /* ===== CONFIG ===== */
 const GIFT_IMG='https://yourimageshare.com/ib/cwwrwslAaB.png';
 const GEM_CRATE_IMG='https://yourimageshare.com/ib/fKPwU3NRf6.png';
@@ -491,11 +495,10 @@ function showMultiDrop(items){
 }
 function sellItemIfNeeded(item){if(autoSellRarities.has(item.r)){balance+=item.price;updateUI();sfx.sell();toast(`${L10N[lang].sold} ${item.name}`);save();return true;}return false;}
 
-/* ===== SPIN (FIXED: списание всегда, авто-стоп при нехватке) ===== */
+/* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
   spinning=true;updateUI();
   const c=CRATES[activeCrate];
-  // проверка и списание стоимости — ВСЕГДА, включая авто
   if(c.currency==='💎'){
     if(gems<c.cost){spinning=false;isAutoOpen=false;$('autoBtn').classList.remove('active');updateUI();save();return toast(L10N[lang].lblGems+' не хватает!');}
     gems-=c.cost;
@@ -595,7 +598,7 @@ function playGacha(){
 }
 $('gachaSpinBtn').onclick=playGacha;
 
-/* ===== SELL ALL (Variant A) ===== */
+/* ===== SELL ALL ===== */
 $('sellAllBtn').onclick=()=>{
   if(!inventory.length)return;
   const rareItems=inventory.filter(isRareItem);
@@ -676,18 +679,39 @@ function applyLang(){
 }
 document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.click();applyLang();save();};
 
+/* ===== TELEGRAM LOGIN FOR WEB ===== */
+window.onTelegramAuth = function(user) {
+  tgWebData = user;
+  toast('Вход выполнен! Синхронизация...');
+  load().then(() => {
+    renderInventory();
+    updateUI();
+    document.getElementById('tg-login-container').style.display = 'none';
+  });
+};
+
+function checkTelegramAuth() {
+  if (window.Telegram?.WebApp?.initData) {
+    document.getElementById('tg-login-container').style.display = 'none'; 
+    return;
+  }
+  document.getElementById('tg-login-container').style.display = 'block';
+}
+
 /* ===== BOOT ===== */
-// ===== BOOT =====
-window.Telegram?.WebApp?.ready(); // Сообщаем Telegram, что игра готова
-load();
-document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===activeCrate));
-document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.toggle('active',autoSellRarities.has(b.dataset.r)));
-$('soundOn').style.display=muted?'none':'block';
-$('soundOff').style.display=muted?'block':'none';
-$('autoBtn').classList.toggle('active',isAutoOpen);
-slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;
-applyLang();
-updateGachaUI();
+window.Telegram?.WebApp?.ready();
+checkTelegramAuth(); 
+
+load().then(() => {
+  document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===activeCrate));
+  document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.toggle('active',autoSellRarities.has(b.dataset.r)));
+  $('soundOn').style.display=muted?'none':'block';
+  $('soundOff').style.display=muted?'block':'none';
+  $('autoBtn').classList.toggle('active',isAutoOpen);
+  slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;
+  applyLang();
+  updateGachaUI();
+});
 </script>
 </body>
 </html>
