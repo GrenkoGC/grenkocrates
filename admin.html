@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grenko Admin Panel</title>
+<style>
+  :root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--acc:#fff;--red:#ff4444;--grn:#48bb78;--blue:#4299e1}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:ui-monospace,monospace;padding:20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+  .box{background:var(--pan);border:1px solid var(--lin);padding:20px;border-radius:6px;width:100%;max-width:650px;display:flex;flex-direction:column;gap:15px;margin-bottom:20px}
+  h2{text-align:center;margin-bottom:5px;color:var(--acc);font-size:18px;text-transform:uppercase;letter-spacing:1px}
+  h3{font-size:13px;color:var(--blue);margin-bottom:5px;border-bottom:1px solid var(--lin);padding-bottom:5px;text-transform:uppercase}
+  input,select,button{padding:10px;background:var(--pan2);border:1px solid var(--lin);color:#fff;border-radius:4px;font-family:inherit;font-size:13px;outline:none;transition:0.2s}
+  input:focus,select:focus{border-color:var(--acc)}
+  button{cursor:pointer;font-weight:bold;text-transform:uppercase;letter-spacing:.05em}
+  button:hover{background:var(--lin);border-color:var(--acc)}
+  .btn-main{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn-main:hover{background:#3182ce;border-color:#3182ce}
+  .btn-danger{background:rgba(255,68,68,0.1);border-color:var(--red);color:var(--red)}
+  .btn-danger:hover{background:rgba(255,68,68,0.2)}
+  .btn-success{background:rgba(72,187,120,0.1);border-color:var(--grn);color:var(--grn)}
+  .btn-success:hover{background:rgba(72,187,120,0.2)}
+  .hidden{display:none !important}
+  .msg{font-size:12px;text-align:center;min-height:16px;font-weight:bold}
+  .row{display:flex;gap:10px;align-items:center}
+  .row input, .row select{flex:1}
+  .row button{white-space:nowrap;flex:0 0 auto}
+  
+  /* Сетка инвентаря */
+  .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:250px;overflow-y:auto;background:rgba(0,0,0,0.3);border:1px solid var(--lin);padding:8px;border-radius:4px}
+  .inv-item{position:relative;display:flex;flex-direction:column;align-items:center;padding:6px;background:var(--pan2);border:1px solid var(--lin);border-radius:4px;font-size:10px;text-align:center;cursor:pointer}
+  .inv-item:hover{border-color:var(--red)}
+  .inv-item img{width:32px;height:32px;object-fit:contain;margin-bottom:4px}
+  .inv-item .del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;opacity:0;transition:.2s}
+  .inv-item:hover .del{opacity:1}
+  
+  /* Сетка выдачи */
+  .spawn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:10px}
+  .spawn-item{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.03);border:1px dashed var(--lin);padding:6px;border-radius:4px;cursor:pointer;transition:.2s;text-align:center}
+  .spawn-item:hover{border-color:var(--grn);background:rgba(72,187,120,0.1);transform:translateY(-2px)}
+  .spawn-item img{width:36px;height:36px;object-fit:contain;margin-bottom:4px}
+  .spawn-item span{font-size:9px;line-height:1.1;color:var(--txt2)}
+</style>
+</head>
+<body>
+
+<!-- ЭКРАН АВТОРИЗАЦИИ -->
+<div class="box" id="loginBox">
+  <h2>🔐 Админ-панель</h2>
+  <div id="setupStep" class="hidden">
+    <p style="font-size:12px;margin-bottom:10px;color:var(--txt2)">Первый вход. Придумайте пароль:</p>
+    <input type="password" id="newPass" placeholder="Новый пароль" style="width:100%;margin-bottom:10px">
+    <input type="password" id="newPassConfirm" placeholder="Повторите пароль" style="width:100%;margin-bottom:10px">
+    <button class="btn-main" style="width:100%" onclick="setupPass()">Сохранить пароль</button>
+  </div>
+  <div id="loginStep">
+    <input type="password" id="loginPass" placeholder="Введите пароль" style="width:100%;margin-bottom:10px">
+    <button class="btn-main" style="width:100%" onclick="login()">Войти</button>
+    <button style="width:100%;margin-top:10px;font-size:11px;background:none;border:none;color:var(--txt2)" onclick="showSetup()">Сбросить пароль (удалить всё)</button>
+  </div>
+  <div class="msg" id="loginMsg"></div>
+</div>
+
+<!-- ЭКРАН АДМИНКИ -->
+<div class="box hidden" id="adminBox" style="max-width: 700px;">
+  <h2>🛠 Управление игрой</h2>
+  <div class="msg" id="adminMsg" style="color:var(--grn)"></div>
+  
+  <!-- Валюты -->
+  <div>
+    <h3>💰 Ресурсы</h3>
+    <div class="row" style="margin-bottom:8px">
+      <label style="width:80px;font-size:12px">Баланс ($)</label>
+      <input type="number" id="inpBal">
+      <button onclick="saveVal('balance', 'inpBal')">ОК</button>
+    </div>
+    <div class="row" style="margin-bottom:8px">
+      <label style="width:80px;font-size:12px">Гемы (💎)</label>
+      <input type="number" id="inpGems">
+      <button onclick="saveVal('gems', 'inpGems')">ОК</button>
+    </div>
+    <div class="row">
+      <label style="width:80px;font-size:12px">Спины (0-5)</label>
+      <input type="number" id="inpSpins" max="5">
+      <button onclick="saveVal('gachaSpins', 'inpSpins')">ОК</button>
+    </div>
+  </div>
+
+  <!-- Инвентарь -->
+  <div>
+    <h3 style="display:flex;justify-content:space-between">
+      <span>📦 Инвентарь</span>
+      <span id="invCountText" style="color:var(--txt2);font-size:11px">0/1000</span>
+    </h3>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn-danger" style="flex:1" onclick="clearInv()">Очистить инвентарь</button>
+    </div>
+    <div class="inv-grid" id="adminInvGrid"></div>
+  </div>
+
+  <!-- Выдача предметов -->
+  <div>
+    <h3>🎁 Выдать предмет</h3>
+    <div class="row" style="margin-bottom:8px">
+      <select id="spawnCrate" onchange="renderSpawnGrid()">
+        <option value="crate1">Season Crate 1</option>
+        <option value="crate2">Gem Crate 1</option>
+      </select>
+    </div>
+    <div class="spawn-grid" id="spawnGrid"></div>
+  </div>
+
+  <!-- Таймеры -->
+  <div>
+    <h3>⏱ Кулдауны и Таймеры</h3>
+    <div style="display:flex;gap:8px">
+      <button class="btn-success" style="flex:1" onclick="resetGachaTimer()">Сбросить таймер рулетки</button>
+    </div>
+  </div>
+
+  <!-- Бэкап -->
+  <div>
+    <h3>💾 Сохранения (JSON)</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button style="flex:1" onclick="exportSave()">📤 Скачать сейв</button>
+      <button style="flex:1" onclick="document.getElementById('importFile').click()">📥 Загрузить сейв</button>
+      <input type="file" id="importFile" class="hidden" accept=".json" onchange="importSave(event)">
+    </div>
+  </div>
+  
+  <hr style="border-color:var(--lin);margin:10px 0">
+  <div style="display:flex;gap:8px">
+    <button class="btn-danger" style="flex:1" onclick="resetGame()">⚠️ ПОЛНЫЙ СБРОС</button>
+    <button style="flex:1;background:none" onclick="location.reload()">Выйти</button>
+  </div>
+</div>
+
+<script>
+const SAVE_KEY = 'grenko_save_v1';
+const AUTH_KEY = 'grenko_admin_auth';
+
+// Копия данных с полными статами для корректной выдачи
+const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
+const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
+const CRATES = {
+  crate1: { pool: [
+    {name:'GrenkBot-A1', r:'common', price:50, img:'https://yourimageshare.com/ib/zwYuDDfH8D.jpg', stats:{Type:'Single',Damage:'15 - 35',Range:'10 - 13',Cooldown:'1.75 - 0.5',Limit:'5'}},
+    {name:'GrenkTurret-A1', r:'rare', price:150, img:'https://yourimageshare.com/ib/4Qf4kNjKEl.jpg', stats:{Type:'Splash',Damage:'45 - 125',Range:'13 - 15',Cooldown:'2 - 1',Limit:'3'}},
+    {name:'Gronke', r:'epic', price:400, img:'https://yourimageshare.com/ib/u4qJyiSjUY.jpg', stats:{Type:'Stun',Damage:'125 - 425',Range:'16 - 20',Cooldown:'5 - 3','Stun Time':'0.3',Limit:'2'}},
+    {name:'GrenkerDroid', r:'legendary', price:900, img:'https://yourimageshare.com/ib/fxvI30kSzR.jpg', stats:{Type:'Support','Damage Boost':'15% - 22%',Range:'13 - 14.75',Limit:'3'}},
+    {name:'The ElderGrenk', r:'mythic', price:1800, img:'https://yourimageshare.com/ib/yScfKp7Eir.jpg', stats:{Type:'Double',Damage:'95 - 240',Range:'12 - 15',Cooldown:'2.5 - 0.4',Limit:'3'}},
+    {name:'Grenko', r:'leader', price:3500, img:'https://yourimageshare.com/ib/iCcdyCqr3N.jpg', secret:true, stats:{Type:'Spawner + Pierce',Damage:'150 - 430',Range:'11 - 14',Cooldown:'3 - 2','Spawn Cooldown':'30 - 25','Ally HP':'450 - 1000','Ally DPS':'0 - 275',Limit:'1'}},
+    {name:'Paradoxed Grenko', r:'secret', price:7500, img:'https://yourimageshare.com/ib/qqH26h3kBO.jpg', secret:true, stats:{Type:'Knockback',Damage:'500 - 1450',Range:'13.5 - 15',Cooldown:'2 - 0.75','Knockback Strength':'1 Studs - 2.25 Studs',Limit:'2'}}
+  ]},
+  crate2: { pool: [
+    {name:'Gem GrenkTurret-A3', r:'exclusive', price:500, img:'https://yourimageshare.com/ib/uEaf0uwYY6.jpg', stats:{Type:'Slow',Damage:'300 - 550',Range:'14 - 16',Cooldown:'3 - 1.5',Limit:'3'}},
+    {name:'Gem The ElderGrenk', r:'exclusive', price:1200, img:'https://yourimageshare.com/ib/98RnJ4wA8h.jpg', stats:{Type:'Stun + Double',Damage:'600 - 1300',Range:'12 - 13.5',Cooldown:'4 - 2.25','Stun Time':'0.35',Limit:'3'}},
+    {name:'Gem Lord Grenko', r:'exclusive', price:2500, img:'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg', secret:true, stats:{Type:'Slow + Stun + Spawner',Damage:'650 - 2250',Range:'14.5 - 20',Cooldown:'3 - 1.25','Ally HP':'600 - 1250','Ally DPS':'200 - 550','Spawn Cooldown':'25 - 20','Stun Time':'0.4',Limit:'1'}}
+  ]}
+};
+
+// --- КРИПТОГРАФИЯ ---
+async function hashPass(pass, salt) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' }, key, 256);
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// --- АВТОРИЗАЦИЯ ---
+function checkAuthExist() {
+  const auth = localStorage.getItem(AUTH_KEY);
+  if (!auth) {
+    document.getElementById('setupStep').classList.remove('hidden');
+    document.getElementById('loginStep').classList.add('hidden');
+  } else {
+    document.getElementById('setupStep').classList.add('hidden');
+    document.getElementById('loginStep').classList.remove('hidden');
+  }
+}
+
+async function setupPass() {
+  const p1 = document.getElementById('newPass').value;
+  const p2 = document.getElementById('newPassConfirm').value;
+  if (p1.length < 4) return showLoginMsg('Пароль слишком короткий');
+  if (p1 !== p2) return showLoginMsg('Пароли не совпадают');
+  const salt = Math.random().toString(36).substring(2, 15);
+  const hash = await hashPass(p1, salt);
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ salt, hash }));
+  showLoginMsg('Пароль установлен!', '#48bb78');
+  checkAuthExist();
+}
+
+function showSetup() {
+  if(!confirm('Удалить пароль и все сохранения игры?')) return;
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+
+async function login() {
+  const p = document.getElementById('loginPass').value;
+  const auth = JSON.parse(localStorage.getItem(AUTH_KEY));
+  if (!auth) return;
+  const hash = await hashPass(p, auth.salt);
+  if (hash === auth.hash) {
+    document.getElementById('loginBox').classList.add('hidden');
+    document.getElementById('adminBox').classList.remove('hidden');
+    initAdminPanel();
+  } else {
+    showLoginMsg('Неверный пароль');
+  }
+}
+
+function showLoginMsg(text, color = '#ffaa00') {
+  const el = document.getElementById('loginMsg');
+  el.textContent = text;
+  el.style.color = color;
+  setTimeout(() => el.textContent = '', 3000);
+}
+
+// --- РАБОТА С ДАННЫМИ ---
+function getSave() {
+  try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || { balance:1000, gems:50, inventory:[], gachaSpins:0, gachaLastTick:Date.now() }; }
+  catch(e) { return { balance:1000, gems:50, inventory:[], gachaSpins:0, gachaLastTick:Date.now() }; }
+}
+
+function writeSave(s, showToast = true) {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+  if(showToast) {
+    document.getElementById('adminMsg').textContent = 'Изменения сохранены!';
+    setTimeout(() => document.getElementById('adminMsg').textContent = '', 2000);
+  }
+  renderAdminInv();
+}
+
+function saveVal(key, inputId) {
+  const s = getSave();
+  s[key] = Number(document.getElementById(inputId).value);
+  writeSave(s);
+}
+
+// --- ОТРИСОВКА ИНВЕНТАРЯ ---
+function renderAdminInv() {
+  const s = getSave();
+  const inv = s.inventory || [];
+  document.getElementById('invCountText').textContent = `${inv.length}/1000`;
+  
+  const grid = document.getElementById('adminInvGrid');
+  grid.innerHTML = '';
+  
+  if (inv.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--txt2);font-size:12px;padding:20px">Инвентарь пуст</div>';
+    return;
+  }
+  
+  inv.forEach((item, index) => {
+    let imgUrl = FALLBACK_IMG;
+    for (let c in CRATES) {
+      let found = CRATES[c].pool.find(i => i.name === item.name);
+      if (found && found.img) { imgUrl = found.img; break; }
+    }
+    
+    const el = document.createElement('div');
+    el.className = 'inv-item';
+    el.innerHTML = `
+      <div class="del">✕</div>
+      <img src="${imgUrl}" alt="${item.name}">
+      <span>${item.name}</span>
+    `;
+    el.onclick = () => {
+      if(confirm(`Удалить ${item.name} из инвентаря?`)) {
+        const s = getSave();
+        s.inventory.splice(index, 1);
+        writeSave(s);
+      }
+    };
+    grid.appendChild(el);
+  });
+}
+
+function clearInv() {
+  if(!confirm('Полностью очистить инвентарь?')) return;
+  const s = getSave();
+  s.inventory = [];
+  writeSave(s);
+}
+
+// --- ВЫДАЧА ПРЕДМЕТОВ ---
+function renderSpawnGrid() {
+  const crateId = document.getElementById('spawnCrate').value;
+  const pool = CRATES[crateId].pool;
+  const grid = document.getElementById('spawnGrid');
+  grid.innerHTML = '';
+  
+  pool.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'spawn-item';
+    el.innerHTML = `
+      <img src="${item.img || GIFT_IMG}" alt="${item.name}">
+      <span>${item.name}</span>
+    `;
+    el.onclick = () => {
+      const s = getSave();
+      if(s.inventory.length >= 1000) return alert('Инвентарь переполнен!');
+      // Создаем полноценную копию предмета, включая статы и цену
+      s.inventory.push({ 
+        name: item.name, 
+        r: item.r, 
+        price: item.price || 100, 
+        stats: item.stats || {} 
+      }); 
+      writeSave(s);
+    };
+    grid.appendChild(el);
+  });
+}
+
+// --- ТАЙМЕРЫ И БЭКАП ---
+function resetGachaTimer() {
+  const s = getSave();
+  s.gachaLastTick = Date.now() - (10 * 60 * 1000); // Сдвигаем на 10 минут назад
+  s.gachaSpins = 5; // Сразу даем 5 спинов
+  writeSave(s);
+  alert('Таймер рулетки сброшен. Выдано 5 спинов!');
+}
+
+function exportSave() {
+  const s = getSave();
+  const blob = new Blob([JSON.stringify(s, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `grenko_save_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importSave(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const parsed = JSON.parse(event.target.result);
+      if (typeof parsed !== 'object') throw new Error();
+      writeSave(parsed);
+      alert('Сохранение успешно загружено!');
+      initAdminPanel();
+    } catch (err) {
+      alert('Ошибка: неверный формат файла сохранения.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // Сброс инпута
+}
+
+function resetGame() {
+  if(!confirm('ПОЛНЫЙ СБРОС ИГРЫ. Вы уверены?')) return;
+  localStorage.removeItem(SAVE_KEY);
+  initAdminPanel();
+}
+
+// --- ИНИЦИАЛИЗАЦИЯ ---
+function initAdminPanel() {
+  const s = getSave();
+  document.getElementById('inpBal').value = s.balance ?? 1000;
+  document.getElementById('inpGems').value = s.gems ?? 50;
+  document.getElementById('inpSpins').value = s.gachaSpins ?? 0;
+  renderAdminInv();
+  renderSpawnGrid();
+}
+
+checkAuthExist();
+</script>
+</body>
+</html>
