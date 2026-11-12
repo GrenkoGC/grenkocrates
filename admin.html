@@ -27,15 +27,13 @@
   .row input, .row select{flex:1}
   .row button{white-space:nowrap;flex:0 0 auto}
   
-  /* Сетка инвентаря */
   .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:250px;overflow-y:auto;background:rgba(0,0,0,0.3);border:1px solid var(--lin);padding:8px;border-radius:4px}
   .inv-item{position:relative;display:flex;flex-direction:column;align-items:center;padding:6px;background:var(--pan2);border:1px solid var(--lin);border-radius:4px;font-size:10px;text-align:center;cursor:pointer}
   .inv-item:hover{border-color:var(--red)}
   .inv-item img{width:32px;height:32px;object-fit:contain;margin-bottom:4px}
   .inv-item .del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;opacity:0;transition:.2s}
   .inv-item:hover .del{opacity:1}
-  
-  /* Сетка выдачи */
+
   .spawn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:10px}
   .spawn-item{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.03);border:1px dashed var(--lin);padding:6px;border-radius:4px;cursor:pointer;transition:.2s;text-align:center}
   .spawn-item:hover{border-color:var(--grn);background:rgba(72,187,120,0.1);transform:translateY(-2px)}
@@ -67,8 +65,17 @@
   <h2>🛠 Управление игрой</h2>
   <div class="msg" id="adminMsg" style="color:var(--grn)"></div>
   
-  <!-- Валюты -->
+  <!-- Выбор игрока -->
   <div>
+    <h3>👤 Выбрать игрока (по Telegram ID)</h3>
+    <div class="row">
+      <input type="number" id="inpUserId" placeholder="Например: 123456789">
+      <button class="btn-main" onclick="loadUser()">Загрузить</button>
+    </div>
+  </div>
+
+  <!-- Валюты -->
+  <div id="userControls" style="display:none; flex-direction:column; gap:15px;">
     <h3>💰 Ресурсы</h3>
     <div class="row" style="margin-bottom:8px">
       <label style="width:80px;font-size:12px">Баланс ($)</label>
@@ -80,15 +87,8 @@
       <input type="number" id="inpGems">
       <button onclick="saveVal('gems', 'inpGems')">ОК</button>
     </div>
-    <div class="row">
-      <label style="width:80px;font-size:12px">Спины (0-5)</label>
-      <input type="number" id="inpSpins" max="5">
-      <button onclick="saveVal('gachaSpins', 'inpSpins')">ОК</button>
-    </div>
-  </div>
 
-  <!-- Инвентарь -->
-  <div>
+    <!-- Инвентарь -->
     <h3 style="display:flex;justify-content:space-between">
       <span>📦 Инвентарь</span>
       <span id="invCountText" style="color:var(--txt2);font-size:11px">0/1000</span>
@@ -97,10 +97,8 @@
       <button class="btn-danger" style="flex:1" onclick="clearInv()">Очистить инвентарь</button>
     </div>
     <div class="inv-grid" id="adminInvGrid"></div>
-  </div>
 
-  <!-- Выдача предметов -->
-  <div>
+    <!-- Выдача предметов -->
     <h3>🎁 Выдать предмет</h3>
     <div class="row" style="margin-bottom:8px">
       <select id="spawnCrate" onchange="renderSpawnGrid()">
@@ -111,36 +109,17 @@
     <div class="spawn-grid" id="spawnGrid"></div>
   </div>
 
-  <!-- Таймеры -->
-  <div>
-    <h3>⏱ Кулдауны и Таймеры</h3>
-    <div style="display:flex;gap:8px">
-      <button class="btn-success" style="flex:1" onclick="resetGachaTimer()">Сбросить таймер рулетки</button>
-    </div>
-  </div>
-
-  <!-- Бэкап -->
-  <div>
-    <h3>💾 Сохранения (JSON)</h3>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button style="flex:1" onclick="exportSave()">📤 Скачать сейв</button>
-      <button style="flex:1" onclick="document.getElementById('importFile').click()">📥 Загрузить сейв</button>
-      <input type="file" id="importFile" class="hidden" accept=".json" onchange="importSave(event)">
-    </div>
-  </div>
-  
   <hr style="border-color:var(--lin);margin:10px 0">
   <div style="display:flex;gap:8px">
-    <button class="btn-danger" style="flex:1" onclick="resetGame()">⚠️ ПОЛНЫЙ СБРОС</button>
     <button style="flex:1;background:none" onclick="location.reload()">Выйти</button>
   </div>
 </div>
 
 <script>
-const SAVE_KEY = 'grenko_save_v1';
 const AUTH_KEY = 'grenko_admin_auth';
+const API_URL = 'https://grenko-api.treugalnik.workers.dev';
 
-// Копия данных с полными статами для корректной выдачи
+// Копия данных для отрисовки
 const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
 const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
 const CRATES = {
@@ -159,6 +138,9 @@ const CRATES = {
     {name:'Gem Lord Grenko', r:'exclusive', price:2500, img:'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg', secret:true, stats:{Type:'Slow + Stun + Spawner',Damage:'650 - 2250',Range:'14.5 - 20',Cooldown:'3 - 1.25','Ally HP':'600 - 1250','Ally DPS':'200 - 550','Spawn Cooldown':'25 - 20','Stun Time':'0.4',Limit:'1'}}
   ]}
 };
+
+let currentSave = null;
+let currentUserId = null;
 
 // --- КРИПТОГРАФИЯ ---
 async function hashPass(pass, salt) {
@@ -193,9 +175,8 @@ async function setupPass() {
 }
 
 function showSetup() {
-  if(!confirm('Удалить пароль и все сохранения игры?')) return;
+  if(!confirm('Удалить пароль?')) return;
   localStorage.removeItem(AUTH_KEY);
-  localStorage.removeItem(SAVE_KEY);
   location.reload();
 }
 
@@ -207,7 +188,6 @@ async function login() {
   if (hash === auth.hash) {
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('adminBox').classList.remove('hidden');
-    initAdminPanel();
   } else {
     showLoginMsg('Неверный пароль');
   }
@@ -220,33 +200,69 @@ function showLoginMsg(text, color = '#ffaa00') {
   setTimeout(() => el.textContent = '', 3000);
 }
 
-// --- РАБОТА С ДАННЫМИ ---
-function getSave() {
-  try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || { balance:1000, gems:50, inventory:[], gachaSpins:0, gachaLastTick:Date.now() }; }
-  catch(e) { return { balance:1000, gems:50, inventory:[], gachaSpins:0, gachaLastTick:Date.now() }; }
-}
-
-function writeSave(s, showToast = true) {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(s));
-  if(showToast) {
-    document.getElementById('adminMsg').textContent = 'Изменения сохранены!';
-    setTimeout(() => document.getElementById('adminMsg').textContent = '', 2000);
-  }
-  renderAdminInv();
-}
-
-function saveVal(key, inputId) {
-  const s = getSave();
-  s[key] = Number(document.getElementById(inputId).value);
-  writeSave(s);
-}
-
-// --- ОТРИСОВКА ИНВЕНТАРЯ ---
-function renderAdminInv() {
-  const s = getSave();
-  const inv = s.inventory || [];
-  document.getElementById('invCountText').textContent = `${inv.length}/1000`;
+// --- РАБОТА С СЕРВЕРОМ ---
+async function loadUser() {
+  const id = document.getElementById('inpUserId').value;
+  if (!id) return alert('Введите Telegram ID');
+  currentUserId = id;
   
+  document.getElementById('adminMsg').textContent = 'Загрузка...';
+  
+  try {
+    // Отправляем запрос на сервер (но т.к. у нас нет initData, шлем фейковый ключ для админки)
+    // ВАЖНО: для реальной безопасности нужно добавить секретный ключ админа на сервер.
+    // Пока что мы просто читаем базу напрямую через API.
+    const res = await fetch(`${API_URL}/admin/load`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminId: currentUserId }) 
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      currentSave = data || { balance: 1000, gems: 50, inventory: [] };
+      renderAdmin();
+      document.getElementById('userControls').style.display = 'flex';
+      document.getElementById('adminMsg').textContent = 'Пользователь загружен';
+    } else {
+      // Если эндпоинта нет, создаем пустой сейв
+      currentSave = { balance: 1000, gems: 50, inventory: [] };
+      renderAdmin();
+      document.getElementById('userControls').style.display = 'flex';
+    }
+  } catch(e) {
+    document.getElementById('adminMsg').textContent = 'Ошибка сервера';
+  }
+}
+
+async function saveChanges() {
+  if (!currentUserId) return;
+  document.getElementById('adminMsg').textContent = 'Сохранение...';
+  
+  try {
+    await fetch(`${API_URL}/admin/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminId: currentUserId, saveData: currentSave })
+    });
+    document.getElementById('adminMsg').textContent = 'Успешно сохранено на сервере!';
+    setTimeout(() => document.getElementById('adminMsg').textContent = '', 2000);
+  } catch(e) {
+    document.getElementById('adminMsg').textContent = 'Ошибка при сохранении';
+  }
+}
+
+// --- ОТРИСОВКА ---
+function renderAdmin() {
+  document.getElementById('inpBal').value = currentSave.balance;
+  document.getElementById('inpGems').value = currentSave.gems;
+  renderInv();
+  renderSpawnGrid();
+}
+
+function renderInv() {
+  const inv = currentSave.inventory || [];
+  document.getElementById('invCountText').textContent = `${inv.length}/1000`;
   const grid = document.getElementById('adminInvGrid');
   grid.innerHTML = '';
   
@@ -261,33 +277,20 @@ function renderAdminInv() {
       let found = CRATES[c].pool.find(i => i.name === item.name);
       if (found && found.img) { imgUrl = found.img; break; }
     }
-    
     const el = document.createElement('div');
     el.className = 'inv-item';
-    el.innerHTML = `
-      <div class="del">✕</div>
-      <img src="${imgUrl}" alt="${item.name}">
-      <span>${item.name}</span>
-    `;
+    el.innerHTML = `<div class="del">✕</div><img src="${imgUrl}"><span>${item.name}</span>`;
     el.onclick = () => {
-      if(confirm(`Удалить ${item.name} из инвентаря?`)) {
-        const s = getSave();
-        s.inventory.splice(index, 1);
-        writeSave(s);
+      if(confirm(`Удалить ${item.name}?`)) {
+        currentSave.inventory.splice(index, 1);
+        saveChanges();
+        renderAdmin();
       }
     };
     grid.appendChild(el);
   });
 }
 
-function clearInv() {
-  if(!confirm('Полностью очистить инвентарь?')) return;
-  const s = getSave();
-  s.inventory = [];
-  writeSave(s);
-}
-
-// --- ВЫДАЧА ПРЕДМЕТОВ ---
 function renderSpawnGrid() {
   const crateId = document.getElementById('spawnCrate').value;
   const pool = CRATES[crateId].pool;
@@ -297,79 +300,27 @@ function renderSpawnGrid() {
   pool.forEach(item => {
     const el = document.createElement('div');
     el.className = 'spawn-item';
-    el.innerHTML = `
-      <img src="${item.img || GIFT_IMG}" alt="${item.name}">
-      <span>${item.name}</span>
-    `;
+    el.innerHTML = `<img src="${item.img || GIFT_IMG}"><span>${item.name}</span>`;
     el.onclick = () => {
-      const s = getSave();
-      if(s.inventory.length >= 1000) return alert('Инвентарь переполнен!');
-      // Создаем полноценную копию предмета, включая статы и цену
-      s.inventory.push({ 
-        name: item.name, 
-        r: item.r, 
-        price: item.price || 100, 
-        stats: item.stats || {} 
-      }); 
-      writeSave(s);
+      if(currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
+      currentSave.inventory.push({ name: item.name, r: item.r, price: item.price || 100, stats: item.stats || {} }); 
+      saveChanges();
+      renderAdmin();
     };
     grid.appendChild(el);
   });
 }
 
-// --- ТАЙМЕРЫ И БЭКАП ---
-function resetGachaTimer() {
-  const s = getSave();
-  s.gachaLastTick = Date.now() - (10 * 60 * 1000); // Сдвигаем на 10 минут назад
-  s.gachaSpins = 5; // Сразу даем 5 спинов
-  writeSave(s);
-  alert('Таймер рулетки сброшен. Выдано 5 спинов!');
+function saveVal(key, inputId) {
+  currentSave[key] = Number(document.getElementById(inputId).value);
+  saveChanges();
 }
 
-function exportSave() {
-  const s = getSave();
-  const blob = new Blob([JSON.stringify(s, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `grenko_save_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importSave(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    try {
-      const parsed = JSON.parse(event.target.result);
-      if (typeof parsed !== 'object') throw new Error();
-      writeSave(parsed);
-      alert('Сохранение успешно загружено!');
-      initAdminPanel();
-    } catch (err) {
-      alert('Ошибка: неверный формат файла сохранения.');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = ''; // Сброс инпута
-}
-
-function resetGame() {
-  if(!confirm('ПОЛНЫЙ СБРОС ИГРЫ. Вы уверены?')) return;
-  localStorage.removeItem(SAVE_KEY);
-  initAdminPanel();
-}
-
-// --- ИНИЦИАЛИЗАЦИЯ ---
-function initAdminPanel() {
-  const s = getSave();
-  document.getElementById('inpBal').value = s.balance ?? 1000;
-  document.getElementById('inpGems').value = s.gems ?? 50;
-  document.getElementById('inpSpins').value = s.gachaSpins ?? 0;
-  renderAdminInv();
-  renderSpawnGrid();
+function clearInv() {
+  if(!confirm('Очистить инвентарь?')) return;
+  currentSave.inventory = [];
+  saveChanges();
+  renderAdmin();
 }
 
 checkAuthExist();
