@@ -679,9 +679,9 @@ function applyLang(){
 }
 document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.click();applyLang();save();};
 
-/* ===== TELEGRAM LOGIN FOR WEB ===== */
 window.onTelegramAuth = function(user) {
   tgWebData = user;
+  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); // <-- ЗАПОМИНАЕМ ВХОД
   toast('Вход выполнен! Синхронизация...');
   load().then(() => {
     renderInventory();
@@ -691,10 +691,25 @@ window.onTelegramAuth = function(user) {
 };
 
 function checkTelegramAuth() {
+  // 1. Если мы внутри Telegram (Mini App) — кнопка не нужна
   if (window.Telegram?.WebApp?.initData) {
     document.getElementById('tg-login-container').style.display = 'none'; 
     return;
   }
+  
+  // 2. Если мы на сайте — проверяем, заходили ли мы раньше
+  const savedUser = localStorage.getItem('grenko_tg_user');
+  if (savedUser) {
+    try {
+      tgWebData = JSON.parse(savedUser); // Восстанавливаем данные пользователя
+      document.getElementById('tg-login-container').style.display = 'none'; // Прячем кнопку
+      return; // Выходим, авторизация уже есть
+    } catch(e) {
+      localStorage.removeItem('grenko_tg_user'); // Если данные битые — удаляем
+    }
+  }
+
+  // 3. Если не внутри ТГ и нет сохраненного входа — показываем кнопку
   document.getElementById('tg-login-container').style.display = 'block';
 }
 
