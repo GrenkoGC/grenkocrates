@@ -50,10 +50,12 @@
     display: flex !important; 
     flex-direction: row !important; 
     overflow-x: auto !important; 
+    overflow-y: hidden !important; /* Отключаем вертикальную прокрутку */
     width: 100% !important; 
     padding-bottom: 6px !important; 
     gap: 6px !important; 
-    -webkit-overflow-scrolling: touch !important;
+    -webkit-overflow-scrolling: touch !important; /* Плавный скролл на iOS */
+    scroll-behavior: smooth !important;
   }
   .crate-list::-webkit-scrollbar { height: 4px; }
   .crate-list::-webkit-scrollbar-thumb { background: var(--lin); border-radius: 4px; }
@@ -854,33 +856,36 @@ function checkTelegramAuth() {
 /* ===== УЛУЧШЕННЫЙ СКРОЛЛ КЕЙСОВ И АВТО-ПРОДАЖИ ===== */
 function setupScrollArrows() {
   document.querySelectorAll('.crate-list').forEach(list => {
-    // 1. Прокрутка колесиком мыши (работает на ПК и некоторых WebView)
+    
+    // 1. ЖЕСТКИЙ ПЕРЕХВАТ КОЛЕСИКА МЫШИ
     list.addEventListener('wheel', (evt) => {
+      // Если это вертикальная прокрутка (колесико вверх/вниз)
       if (evt.deltaY !== 0) {
-        evt.preventDefault();
+        evt.preventDefault(); // Блокируем прокрутку страницы
+        evt.stopPropagation();
+        // Прокручиваем сам список вбок
         list.scrollLeft += evt.deltaY;
       }
-    }, { passive: false });
+    }, { passive: false }); // passive: false обязательно для preventDefault
 
-    // 2. Добавляем кнопки-стрелочки для мобилок
-    // Проверяем, не добавили ли мы уже стрелки
+    // 2. Кнопки-стрелочки для мобилок
     if (list.parentElement.querySelector('.scroll-arrows')) return;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'scroll-arrows';
-    wrapper.style.cssText = 'display:flex; align-items:center; gap:4px; width:100%; margin-bottom:4px;';
+    wrapper.style.cssText = 'display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:-5px; position:relative; z-index:2; pointer-events:none;';
 
     const leftBtn = document.createElement('button');
     leftBtn.innerHTML = '◀';
-    leftBtn.style.cssText = 'padding:0 8px; font-size:12px; background:transparent; border:none; color:var(--acc); cursor:pointer; flex:0 0 auto; height:24px;';
+    leftBtn.style.cssText = 'pointer-events:auto; padding:5px 10px; font-size:12px; background:rgba(18,18,18,0.8); border:1px solid var(--lin); color:var(--acc); border-radius:4px; cursor:pointer; height:26px; margin-left:2px;';
     leftBtn.onclick = () => list.scrollBy({ left: -200, behavior: 'smooth' });
 
     const rightBtn = document.createElement('button');
     rightBtn.innerHTML = '▶';
-    rightBtn.style.cssText = 'padding:0 8px; font-size:12px; background:transparent; border:none; color:var(--acc); cursor:pointer; flex:0 0 auto; height:24px;';
+    rightBtn.style.cssText = 'pointer-events:auto; padding:5px 10px; font-size:12px; background:rgba(18,18,18,0.8); border:1px solid var(--lin); color:var(--acc); border-radius:4px; cursor:pointer; height:26px; margin-right:2px;';
     rightBtn.onclick = () => list.scrollBy({ left: 200, behavior: 'smooth' });
 
-    // Вставляем стрелки перед списком
+    // Вставляем кнопки ПОВЕРХ списка
     list.parentNode.insertBefore(wrapper, list);
     wrapper.appendChild(leftBtn);
     wrapper.appendChild(rightBtn);
@@ -889,7 +894,7 @@ function setupScrollArrows() {
 /* ===== BOOT ===== */
 window.Telegram?.WebApp?.ready();
 checkTelegramAuth(); 
-
+setupScrollArrows();
 load().then(() => {
   document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===activeCrate));
   document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.toggle('active',autoSellRarities.has(b.dataset.r)));
