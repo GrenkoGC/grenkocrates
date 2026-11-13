@@ -137,12 +137,19 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .confirm-card .btn-danger{border-color:var(--red);color:var(--red);background:linear-gradient(180deg,rgba(255,68,68,.12),transparent)}
 .confirm-card .btn-danger:hover{background:linear-gradient(180deg,rgba(255,68,68,.25),transparent)}
 #tg-login-container{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;background:var(--pan);padding:15px;border:1px solid var(--lin);border-radius:6px;text-align:center;box-shadow:var(--sh)}
-.stat-tooltip{position:fixed;background:var(--pan);border:1px solid var(--acc);border-radius:6px;padding:10px;font-family:monospace;font-size:11px;color:#fff;z-index:1000;pointer-events:none;box-shadow:0 5px 20px rgba(0,0,0,0.8);opacity:0;visibility:hidden;transition:opacity 0.2s,visibility 0.2s;max-width:200px;}
-.stat-tooltip.show{opacity:1;visibility:visible;}
-.stat-tooltip .st-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:2px 0;}
-.stat-tooltip .st-row:last-child{border-bottom:none;}
-.stat-tooltip .st-name{color:var(--txt2);}
-.stat-tooltip .st-val{color:var(--acc);font-weight:bold;text-align:right;}
+
+/* --- СТИЛИ ДЛЯ ИНДЕКСА --- */
+.index-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; max-height: 60vh; padding-right: 5px; }
+.index-grid::-webkit-scrollbar { width: 6px; }
+.index-grid::-webkit-scrollbar-thumb { background: var(--lin); border-radius: 3px; }
+.index-section-title { font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 5px 0; border-bottom: 1px solid var(--lin); margin-bottom: 5px; text-align: left; }
+.index-items-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+.index-item { background: var(--pan2); border: 1px solid var(--lin); border-radius: 6px; padding: 8px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+.index-item img { width: 36px; height: 36px; object-fit: contain; margin-bottom: 5px; }
+.index-item span { font-size: 10px; font-weight: bold; line-height: 1.1; }
+.index-item.locked { filter: grayscale(100%) opacity(0.3); }
+.index-item.locked span { color: var(--txt2); }
+.index-item .chance-badge { position: absolute; top: 4px; right: 4px; font-size: 9px; padding: 2px 4px; background: rgba(0,0,0,0.5); border-radius: 3px; border: 1px solid var(--lin); }
 
 /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
 @media (max-width: 768px) {
@@ -163,7 +170,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .pill { font-size: 13px; padding: 10px; justify-content: space-between; width: 100%; min-width: 0; }
   .icon-btn { padding: 10px; justify-content: center; font-size: 14px; width: 100%; height: 100%; }
-  #chancesBtn, #muteBtn, #resetBtn, #langBtn { grid-column: span 1; }
+  #chancesBtn, #muteBtn, #resetBtn, #langBtn, #indexBtn { grid-column: span 1; }
   .scene { height: 180px; margin: 5px 0; }
   .slot .icon { width: 60px; height: 60px; }
   .slot .name { font-size: 11px; }
@@ -184,6 +191,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .music-widget > div:first-child { display: none; }
   .music-widget input[type=range] { width: 40px; }
   #tg-login-container { top: 10px; left: 10px; transform: none; width: calc(100vw - 20px); padding: 10px; }
+  .index-grid { max-height: 70vh; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .layout { flex-direction: row; height: 100vh; }
@@ -237,6 +245,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
       <div class="pill"><span id="lblGems">Гемы</span>&nbsp;<span id="gems">50</span> 💎</div>
       <div class="pill"><span id="lblInv">Инвентарь</span>&nbsp;<span id="invCount">0</span>/1000</div>
       <button class="icon-btn" id="chancesBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V5M4 19h16M7 12h3v7H7zM12 8h3v11h-3zM17 5h3v14h-3z"/></svg><span id="lblChances" style="color:var(--acc)">Шансы</span></button>
+      <button class="icon-btn" id="indexBtn">📖 <span id="lblIndex">Индекс</span></button>
       <div class="gacha-badge" id="gachaBtn" title="Рулетка гемов">🎰<div class="badge" id="gachaBadge" style="display:none;">0</div></div>
       <button class="icon-btn" id="langBtn">EN</button>
       <button class="icon-btn" id="muteBtn"><svg id="soundOn" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12"/></svg><svg id="soundOff" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9l5 6M21 9l-5 6"/></svg></button>
@@ -313,6 +322,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
   </div>
 </div>
 
+<div class="overlay" id="indexOverlay">
+  <div class="modal-card" style="max-width:550px;padding:20px;">
+    <button class="close-x" onclick="document.getElementById('indexOverlay').classList.remove('show')">✕</button>
+    <h2 style="margin-bottom:15px;font-size:18px;">📖 Индекс юнитов</h2>
+    <div id="indexGrid" class="index-grid"></div>
+  </div>
+</div>
+
 <div class="overlay" id="gachaOverlay">
   <div class="modal-card">
     <button class="close-x" onclick="document.getElementById('gachaOverlay').classList.remove('show')">✕</button>
@@ -337,7 +354,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
   </div>
 </div>
 
-<div class="stat-tooltip" id="invTooltip"></div>
 <div class="sold-toast" id="toast"></div>
 
 <script>
@@ -427,7 +443,7 @@ let balance=1000,gems=50,inventory=[],spinning=false,muted=false,isAutoOpen=fals
 let gachaSpins=0,gachaLastTick=Date.now();
 const GACHA_POOL=[{amount:10,w:50,color:'#888'},{amount:25,w:30,color:'#3b82f6'},{amount:50,w:15,color:'#a855f7'},{amount:100,w:5,color:'#eab308'}];
 const GACHA_COOLDOWN=600000,MAX_GACHA_SPINS=5;
-const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength'}}};
+const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblIndex:'Индекс',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblIndex:'Index',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength'}}};
 
 /* ===== DOM ===== */
 const $=id=>document.getElementById(id);
@@ -505,48 +521,51 @@ function renderInventory(){
     const el=document.createElement('div');el.className=`inv-item ${it.r}`;
     el.innerHTML=`<div class="icon" style="filter:drop-shadow(0 0 6px ${RARITY[it.r].color}80)">${iconOf(it.name,false)}</div><div style="color:var(--txt);margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${it.name}</div><div class="price">${it.price} $</div>`;
     
-    let statsHtml = '';
-    if(it.stats){
-      statsHtml = Object.entries(it.stats).map(([k,v])=>{
-        const tk = L10N[lang].typeTrans[k] || k;
-        return `<div class="st-row"><span class="st-name">${tk}:</span><span class="st-val">${v}</span></div>`;
-      }).join('');
-    } else {
-      statsHtml = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
-    }
-
-    const tooltip = document.getElementById('invTooltip');
-    
-    el.onmouseenter = () => {
-      if(window.innerWidth < 768) return;
-      tooltip.innerHTML = statsHtml;
-      tooltip.classList.add('show');
-      const rect = el.getBoundingClientRect();
-      tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width/2 - 100)) + 'px';
-      tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
-    };
-    
-    el.onmouseleave = () => {
-      tooltip.classList.remove('show');
-    };
-    
-    // Тап на мобилке (показывает статы на 1.5 сек)
-    el.ontouchstart = (e) => {
-      tooltip.innerHTML = statsHtml;
-      tooltip.classList.add('show');
-      const rect = el.getBoundingClientRect();
-      tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width/2 - 100)) + 'px';
-      tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
-    };
-    
-    el.ontouchend = (e) => {
-      setTimeout(() => tooltip.classList.remove('show'), 1500);
-    };
-
-    // Клик (продажа)
     el.onclick=()=>{
-      if(isRareItem(it)){askConfirmSell(i,it);}
-      else{inventory.splice(i,1);balance+=it.price;updateUI();renderInventory();sfx.sell();toast(`${L10N[lang].sold} ${it.name}`);save();}
+      const r = RARITY[it.r];
+      $('dIcon').innerHTML=iconOf(it.name,false);
+      $('dIcon').style.filter=`drop-shadow(0 0 20px ${r.color}cc)`;
+      $('dName').textContent=it.name;
+      $('dRarity').textContent=r.label; $('dRarity').style.color=r.color;
+      $('dPrice').textContent=`${L10N[lang].priceAfter}: ${it.price} $`;
+      $('dPrice').style.color=r.color;
+      $('dropCard').style.borderColor=r.color;
+      $('dropCard').style.boxShadow=`0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
+      
+      const s=$('dStats');
+      if(it.stats){
+        s.style.display='flex';
+        s.innerHTML=Object.entries(it.stats).filter(([k,v])=>v).map(([k,v],idx)=>{
+          const tk=L10N[lang].typeTrans[k]||k;
+          return`<div class="stat-row" style="${idx===0?'color:#fff;font-weight:bold;margin-bottom:4px':''}"><span>${tk}:</span><span>${v}</span></div>`;
+        }).join('');
+      } else {
+        s.style.display='none';
+      }
+
+      const btn = $('dClose');
+      btn.textContent = `Продать за ${it.price} $`;
+      btn.style.borderColor = 'var(--red)';
+      btn.style.color = 'var(--red)';
+      
+      btn.onclick = () => {
+        sfx.click();
+        dropOverlay.classList.remove('show');
+        inventory.splice(i,1);
+        balance += it.price;
+        updateUI(); renderInventory(); sfx.sell();
+        toast(`${L10N[lang].sold} ${it.name}`);
+        save();
+        
+        btn.textContent = L10N[lang].takeInv;
+        btn.style.borderColor = 'var(--lin)';
+        btn.style.color = 'var(--txt)';
+        btn.onclick = () => { sfx.click(); dropOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
+        setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320);
+      };
+
+      dropOverlay.classList.add('show');
+      sfx.drop(it.r);
     };
     
     invGrid.appendChild(el);
@@ -594,6 +613,59 @@ function showMultiDrop(items){
   sfx.drop(best.r);
 }
 function sellItemIfNeeded(item){if(autoSellRarities.has(item.r)){balance+=item.price;updateUI();sfx.sell();toast(`${L10N[lang].sold} ${item.name}`);save();return true;}return false;}
+
+/* ===== ИНДЕКС ЮНИТОВ ===== */
+function renderIndex() {
+  const grid = document.getElementById('indexGrid');
+  grid.innerHTML = '';
+  
+  // Собираем всех уникальных юнитов со всех кейсов
+  const allUnits = {};
+  for (const crateId in CRATES) {
+    for (const it of CRATES[crateId].pool) {
+      allUnits[it.name] = it; // Сохраняем по имени, чтобы не было дублей
+    }
+  }
+  
+  const foundItems = new Set(inventory.map(it => it.name));
+  
+  // Группируем по редкости (сначала самые редкие)
+  const rarityOrder = ['exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
+  
+  rarityOrder.forEach(rKey => {
+    const unitsInRarity = Object.values(allUnits).filter(u => u.r === rKey);
+    if (unitsInRarity.length === 0) return;
+    
+    const r = RARITY[rKey];
+    const section = document.createElement('div');
+    section.innerHTML = `<div class="index-section-title" style="color:${r.color}">${r.label}</div>`;
+    
+    const row = document.createElement('div');
+    row.className = 'index-items-row';
+    
+    unitsInRarity.forEach(it => {
+      const hasFound = foundItems.has(it.name);
+      const isSecret = it.secret;
+      const displayName = (!hasFound || isSecret) ? '???' : it.name;
+      
+      const el = document.createElement('div');
+      el.className = `index-item ${hasFound ? '' : 'locked'}`;
+      el.innerHTML = `
+        <img src="${hasFound && !isSecret ? it.img : 'https://yourimageshare.com/ib/w1HE053pTL.jpg'}" alt="${displayName}">
+        <span style="color:${hasFound ? r.color : 'var(--txt2)'}">${displayName}</span>
+      `;
+      row.appendChild(el);
+    });
+    section.appendChild(row);
+    grid.appendChild(section);
+  });
+}
+
+$('indexBtn').onclick = () => {
+  sfx.click();
+  document.getElementById('indexOverlay').classList.add('show');
+  renderIndex();
+};
 
 /* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
@@ -765,6 +837,7 @@ function applyLang(){
   document.getElementById('lblGems').textContent=t.lblGems;
   document.getElementById('lblInv').textContent=t.lblInv;
   document.getElementById('lblChances').textContent=t.lblChances;
+  document.getElementById('lblIndex').textContent=t.lblIndex || 'Индекс';
   document.getElementById('lblInvTitle').textContent=t.lblInvTitle;
   document.getElementById('lblInvHint').textContent=t.lblInvHint;
   document.getElementById('invGrid').setAttribute('data-empty',t.emptyInv);
@@ -820,11 +893,6 @@ document.querySelectorAll('.crate-list').forEach(list => {
     }
   }, { passive: false });
 });
-
-/* ===== СКРЫТИЕ ТУЛТИПА ПРИ СКРОЛЛЕ ===== */
-window.addEventListener('scroll', () => {
-  document.getElementById('invTooltip').classList.remove('show');
-}, { passive: true });
 
 /* ===== BOOT ===== */
 window.Telegram?.WebApp?.ready();
