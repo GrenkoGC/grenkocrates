@@ -851,7 +851,17 @@ function checkTelegramAuth() {
 
   document.getElementById('tg-login-container').style.display = 'block';
 }
-
+/* ===== ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КОЛЕСИКОМ ===== */
+document.querySelectorAll('.crate-list').forEach(list => {
+  list.addEventListener('wheel', (evt) => {
+    // Если это обычная прокрутка вниз/вверх
+    if (evt.deltaY !== 0) {
+      evt.preventDefault(); // Отменяем вертикальную прокрутку страницы
+      // Прокручиваем элемент влево/вправо
+      list.scrollLeft += evt.deltaY;
+    }
+  }, { passive: false });
+});
 /* ===== BOOT ===== */
 window.Telegram?.WebApp?.ready();
 checkTelegramAuth(); 
