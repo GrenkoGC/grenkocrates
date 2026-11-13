@@ -33,9 +33,10 @@ button:active:not(:disabled),.crate-btn:active,.auto-sell-btn:active,.icon-btn:a
 h1{font-size:26px;font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:14px;text-align:center;color:var(--txt)}
 h1::before,h1::after{content:'';display:block;width:30px;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);flex-shrink:0;box-shadow:0 0 10px rgba(255,255,255,.4)}
 .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:stretch;width:100%;max-width:900px}
-.pill{background:var(--pan);border:1px solid var(--lin);padding:9px 14px;border-radius:3px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;flex:1 1 auto;min-width:130px}
+.pill{background:var(--pan);border:1px solid var(--lin);padding:9px 14px;border-radius:3px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;flex:1 1 auto;min-width:130px;overflow:hidden;white-space:nowrap;}
 .pill:hover{border-color:var(--acc)}
 .pill span{color:var(--acc);font-weight:700}
+.pill .val{text-overflow:ellipsis;overflow:hidden;max-width:120px;}
 .icon-btn{background:var(--pan);border:1px solid var(--lin);border-radius:3px;padding:9px 12px;font-size:14px;color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .scene{position:relative;width:100%;max-width:800px;height:300px;display:flex;align-items:center;justify-content:center;background:var(--pan);border:1px solid var(--lin);border-radius:4px;overflow:hidden;box-shadow:var(--sh)}
 .scene::before,.scene::after{content:'';position:absolute;width:20px;height:20px;border:1px solid var(--acc);opacity:.5;transition:.2s}
@@ -241,11 +242,19 @@ button:disabled{opacity:.4;cursor:not-allowed}
   <div class="main-content">
     <h1 id="title">Grenko Crates</h1>
     <div class="bar">
-      <div class="pill"><span id="lblBal">Баланс</span>&nbsp;<span id="balance">1000</span> $</div>
-      <div class="pill"><span id="lblGems">Гемы</span>&nbsp;<span id="gems">50</span> 💎</div>
+      <div class="pill"><span id="lblBal">Баланс</span>&nbsp;<span id="balance" class="val">1000</span> $</div>
+      <div class="pill"><span id="lblGems">Гемы</span>&nbsp;<span id="gems" class="val">50</span> 💎</div>
       <div class="pill"><span id="lblInv">Инвентарь</span>&nbsp;<span id="invCount">0</span>/1000</div>
-      <button class="icon-btn" id="chancesBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V5M4 19h16M7 12h3v7H7zM12 8h3v11h-3zM17 5h3v14h-3z"/></svg><span id="lblChances" style="color:var(--acc)">Шансы</span></button>
-      <button class="icon-btn" id="indexBtn">📖 <span id="lblIndex">Индекс</span></button>
+      
+      <button class="icon-btn" id="chancesBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V5M4 19h16M7 12h3v7H7zM12 8h3v11h-3zM17 5h3v14h-3z"/></svg>
+        <span id="lblChances" style="color:var(--acc)">Шансы</span>
+      </button>
+      
+      <button class="icon-btn" id="indexBtn" style="border-color:var(--acc); color:var(--acc);">
+        📖 <span id="lblIndex">Индекс</span>
+      </button>
+      
       <div class="gacha-badge" id="gachaBtn" title="Рулетка гемов">🎰<div class="badge" id="gachaBadge" style="display:none;">0</div></div>
       <button class="icon-btn" id="langBtn">EN</button>
       <button class="icon-btn" id="muteBtn"><svg id="soundOn" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12"/></svg><svg id="soundOff" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9l5 6M21 9l-5 6"/></svg></button>
@@ -619,17 +628,14 @@ function renderIndex() {
   const grid = document.getElementById('indexGrid');
   grid.innerHTML = '';
   
-  // Собираем всех уникальных юнитов со всех кейсов
   const allUnits = {};
   for (const crateId in CRATES) {
     for (const it of CRATES[crateId].pool) {
-      allUnits[it.name] = it; // Сохраняем по имени, чтобы не было дублей
+      allUnits[it.name] = it; 
     }
   }
   
   const foundItems = new Set(inventory.map(it => it.name));
-  
-  // Группируем по редкости (сначала самые редкие)
   const rarityOrder = ['exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
   
   rarityOrder.forEach(rKey => {
@@ -837,7 +843,8 @@ function applyLang(){
   document.getElementById('lblGems').textContent=t.lblGems;
   document.getElementById('lblInv').textContent=t.lblInv;
   document.getElementById('lblChances').textContent=t.lblChances;
-  document.getElementById('lblIndex').textContent=t.lblIndex || 'Индекс';
+  const elIndex = document.getElementById('lblIndex');
+  if (elIndex) elIndex.textContent = t.lblIndex || 'Индекс';
   document.getElementById('lblInvTitle').textContent=t.lblInvTitle;
   document.getElementById('lblInvHint').textContent=t.lblInvHint;
   document.getElementById('invGrid').setAttribute('data-empty',t.emptyInv);
