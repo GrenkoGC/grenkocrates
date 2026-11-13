@@ -63,7 +63,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @keyframes fl{0%{opacity:0}20%{opacity:1}55%{opacity:1}100%{opacity:0}}
 .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:85;opacity:0;visibility:hidden;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);transition:all .3s var(--ease);padding:20px}
 .overlay.show{opacity:1;visibility:visible}
-.modal-card{background:var(--pan);border:1px solid var(--lin);border-radius:4px;padding:24px 20px;text-align:center;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;transform:translateY(20px) scale(.95);transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;position:relative}
+.modal-card{background:var(--pan);border:1px solid var(--lin);border-radius:4px;padding:24px 20px;text-align:center;width:100%;max-width:400px;max-height:90vh;transform:translateY(20px) scale(.95);transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;position:relative}
 .overlay.show .modal-card{transform:translateY(0) scale(1);opacity:1}
 .close-x{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--txt2);font-size:20px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:.2s}
 .close-x:hover{background:rgba(255,255,255,.1);color:#fff}
@@ -72,7 +72,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .modal-card h2{font-size:20px;margin-bottom:6px;color:#fff}
 .d-rarity{font-size:10px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:12px;font-family:monospace}
 .d-price{font-size:16px;font-weight:700;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--lin);width:100%;transition:color .2s}
-.unit-stats{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:left;background:rgba(255,255,255,.02);padding:10px 12px;border-radius:4px;border:1px solid var(--lin);width:100%}
+.unit-stats{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:left;background:rgba(255,255,255,.02);padding:10px 12px;border-radius:4px;border:1px solid var(--lin);width:100%;max-height:35vh;overflow-y:auto;flex-shrink:0;padding-right:8px}
+.unit-stats::-webkit-scrollbar{width:6px}
+.unit-stats::-webkit-scrollbar-track{background:rgba(0,0,0,0.2);border-radius:3px}
+.unit-stats::-webkit-scrollbar-thumb{background:var(--lin);border-radius:3px}
+.unit-stats::-webkit-scrollbar-thumb:hover{background:var(--txt2)}
 .stat-row{display:grid;grid-template-columns:max-content 1fr;gap:12px;font-family:monospace;font-size:11px;color:#fff;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:4px}
 .stat-row:last-child{border-bottom:none;padding-bottom:0}
 .gacha-reel{display:flex;gap:10px;overflow:hidden;margin-bottom:20px;width:100%;height:80px;justify-content:center;align-items:center}
@@ -133,14 +137,62 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .confirm-card .btn-danger{border-color:var(--red);color:var(--red);background:linear-gradient(180deg,rgba(255,68,68,.12),transparent)}
 .confirm-card .btn-danger:hover{background:linear-gradient(180deg,rgba(255,68,68,.25),transparent)}
 #tg-login-container{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;background:var(--pan);padding:15px;border:1px solid var(--lin);border-radius:6px;text-align:center;box-shadow:var(--sh)}
-@media(max-width:900px){.layout{grid-template-columns:220px 1fr}.sidebar{padding:16px 12px}.multi-list{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:768px){.layout{display:flex;flex-direction:column;height:auto;min-height:100vh;overflow:visible}body{overflow-y:auto}.sidebar{flex-direction:row;overflow-x:auto;align-items:center;border-right:none;border-bottom:1px solid var(--lin);padding:10px 16px;gap:12px;background:var(--bg);position:sticky;top:0;z-index:10}.sidebar>div{display:flex;gap:8px;align-items:center}.sidebar h2{display:none}.crate-list{flex-direction:row;gap:8px}.crate-btn{width:auto;white-space:nowrap;padding:8px 12px;font-size:11px}.auto-sell-btn{width:auto;white-space:nowrap;padding:6px 10px}.main-content{padding:16px;gap:16px}h1{font-size:22px;gap:10px}.bar{gap:6px}.pill{font-size:12px;padding:8px 10px;min-width:100px}.icon-btn{padding:8px 10px}.scene{height:220px}.slot .icon{width:70px;height:70px}.btn-group{flex-direction:column;gap:8px}button{padding:12px;font-size:13px}.inv-grid{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}.inv-item{padding:6px 2px}.inv-item .icon{width:24px;height:24px}.modal-card{padding:16px}.multi-list{grid-template-columns:repeat(2,1fr)}.music-widget{bottom:10px;right:10px;font-size:10px;padding:6px 10px;gap:6px;flex-direction:column;align-items:flex-end}.music-widget input[type=range]{width:50px}}
-@media(max-height:500px) and (orientation:landscape){.layout{flex-direction:row;height:100vh}.sidebar{flex-direction:column;width:180px;border-bottom:none;border-right:1px solid var(--lin);padding:10px;gap:10px;overflow-y:auto}.sidebar>div{flex-direction:column;align-items:stretch}.crate-list{flex-direction:column}.crate-btn{width:100%;padding:8px;font-size:10px}.main-content{padding:10px;gap:10px;overflow-y:auto}h1{display:none}.scene{height:150px}.slot .icon{width:50px;height:50px}.slot .name{font-size:11px}.bar{max-width:100%}.pill{flex:1;min-width:80px;font-size:11px;padding:6px 8px}.btn-group{flex-direction:row}button{padding:8px;font-size:12px}.inv-grid{max-height:150px;grid-template-columns:repeat(auto-fill,minmax(60px,1fr))}.inv-item .icon{width:20px;height:20px}.inv-item .price{font-size:9px}}
+
+/* --- МОБИЛЬНАЯ АДАПТАЦИЯ ДЛЯ MINI APP --- */
+@media (max-width: 768px) {
+  .layout { display: flex; flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
+  body { overflow-y: auto; padding-top: 0; }
+  .sidebar { flex-direction: column; border-right: none; border-bottom: 1px solid var(--lin); padding: 10px; gap: 10px; background: var(--bg); position: sticky; top: 0; z-index: 10; }
+  .sidebar > div { display: flex; gap: 8px; align-items: center; width: 100%; }
+  .sidebar h2 { display: none; }
+  .crate-list { flex-direction: row; overflow-x: auto; width: 100%; padding-bottom: 4px; gap: 6px; -webkit-overflow-scrolling: touch; }
+  .crate-list::-webkit-scrollbar { display: none; }
+  .crate-btn { width: auto; white-space: nowrap; padding: 10px 14px; font-size: 12px; flex-shrink: 0; }
+  .auto-sell-btn { width: auto; white-space: nowrap; padding: 8px 12px; font-size: 10px; flex-shrink: 0; }
+  .main-content { padding: 10px; gap: 14px; align-items: stretch; }
+  h1 { font-size: 20px; text-align: center; display: block; margin: 10px 0; }
+  h1::before, h1::after { display: none; }
+  .bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pill { font-size: 13px; padding: 10px; justify-content: space-between; width: 100%; min-width: 0; }
+  .icon-btn { padding: 10px; justify-content: center; font-size: 14px; width: 100%; height: 100%; }
+  #chancesBtn, #muteBtn, #resetBtn, #langBtn { grid-column: span 1; }
+  .scene { height: 180px; margin: 5px 0; }
+  .slot .icon { width: 60px; height: 60px; }
+  .slot .name { font-size: 11px; }
+  .btn-group { flex-direction: column; gap: 8px; width: 100%; }
+  button { padding: 14px; font-size: 14px; width: 100%; justify-content: center; }
+  .inv-grid { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); max-height: 250px; padding: 6px; }
+  .inv-item { padding: 6px 2px; }
+  .inv-item .icon { width: 22px; height: 22px; }
+  .inv-item .price { font-size: 9px; }
+  .inv-header { flex-direction: column; align-items: stretch; text-align: center; }
+  #sellAllBtn { width: 100%; margin-top: 5px; }
+  .modal-card { padding: 15px; max-width: 95vw; width: 100%; }
+  .d-icon { width: 60px; height: 60px; }
+  .unit-stats { max-height: 30vh; }
+  .multi-list { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .multi-item .mi-icon { width: 40px; height: 40px; }
+  .music-widget { bottom: 10px; right: 10px; padding: 6px 10px; gap: 6px; flex-direction: column; align-items: flex-end; border-radius: 8px; }
+  .music-widget > div:first-child { display: none; }
+  .music-widget input[type=range] { width: 40px; }
+  #tg-login-container { top: 10px; left: 10px; transform: none; width: calc(100vw - 20px); padding: 10px; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .layout { flex-direction: row; height: 100vh; }
+  .sidebar { flex-direction: column; width: 180px; border-bottom: none; border-right: 1px solid var(--lin); padding: 10px; gap: 10px; overflow-y: auto; }
+  .crate-list { flex-direction: column; overflow-x: visible; }
+  .crate-btn { width: 100%; padding: 8px; font-size: 10px; }
+  .main-content { padding: 10px; gap: 10px; overflow-y: auto; }
+  h1 { display: none; }
+  .scene { height: 120px; }
+  .bar { grid-template-columns: repeat(4, 1fr); }
+  .btn-group { flex-direction: row; }
+}
 </style>
 </head>
 <body>
 
-<!-- Блок входа для сайта (Скрыт, если зашли из Telegram) -->
+<!-- Блок входа для сайта -->
 <div id="tg-login-container">
   <p style="margin-bottom:10px; font-size:14px;">Войдите, чтобы сохранять прогресс везде</p>
   <script async src="https://telegram.org/js/telegram-widget.js?22" 
@@ -679,9 +731,10 @@ function applyLang(){
 }
 document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.click();applyLang();save();};
 
+/* ===== TELEGRAM LOGIN FOR WEB ===== */
 window.onTelegramAuth = function(user) {
   tgWebData = user;
-  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); // <-- ЗАПОМИНАЕМ ВХОД
+  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); // ЗАПОМИНАЕМ ВХОД
   toast('Вход выполнен! Синхронизация...');
   load().then(() => {
     renderInventory();
@@ -691,25 +744,22 @@ window.onTelegramAuth = function(user) {
 };
 
 function checkTelegramAuth() {
-  // 1. Если мы внутри Telegram (Mini App) — кнопка не нужна
   if (window.Telegram?.WebApp?.initData) {
     document.getElementById('tg-login-container').style.display = 'none'; 
     return;
   }
   
-  // 2. Если мы на сайте — проверяем, заходили ли мы раньше
   const savedUser = localStorage.getItem('grenko_tg_user');
   if (savedUser) {
     try {
-      tgWebData = JSON.parse(savedUser); // Восстанавливаем данные пользователя
-      document.getElementById('tg-login-container').style.display = 'none'; // Прячем кнопку
-      return; // Выходим, авторизация уже есть
+      tgWebData = JSON.parse(savedUser); 
+      document.getElementById('tg-login-container').style.display = 'none'; 
+      return; 
     } catch(e) {
-      localStorage.removeItem('grenko_tg_user'); // Если данные битые — удаляем
+      localStorage.removeItem('grenko_tg_user'); 
     }
   }
 
-  // 3. Если не внутри ТГ и нет сохраненного входа — показываем кнопку
   document.getElementById('tg-login-container').style.display = 'block';
 }
 
