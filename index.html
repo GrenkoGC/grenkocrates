@@ -7,123 +7,6 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--red:#ff4444;--acc:#fff;--sh:0 12px 32px rgba(0,0,0,.8);--ease:cubic-bezier(.25,.8,.25,1)}
-  /* === ЖЕСТКИЙ МОБИЛЬНЫЙ ФИКС ДЛЯ TELEGRAM === */
-  body { overflow-x: hidden !important; }
-  
-  /* Контейнер меню */
-  .sidebar {
-    flex-direction: column !important;
-    overflow-x: hidden !important;
-    align-items: stretch !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--lin) !important;
-    padding: 10px !important;
-    background: var(--bg) !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 10 !important;
-    gap: 12px !important;
-  }
-  
-  /* Блоки внутри меню (Кейсы и Авто-продажа) */
-  .sidebar > div { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    gap: 6px !important; 
-    width: 100% !important;
-  }
-  
-  /* Заголовки (CRATES и АВТО-ПРОДАЖА) */
-  .sidebar h2 { 
-    display: block !important; 
-    font-size: 11px !important; 
-    color: var(--txt2) !important; 
-    margin: 0 !important; 
-    padding: 0 0 4px 0 !important; 
-    border-bottom: 1px solid var(--lin) !important; 
-    text-align: left !important;
-    letter-spacing: 1px !important;
-  }
-  
-  /* --- АДАПТАЦИЯ ДЛЯ ТЕЛЕФОНОВ --- */
-  .crate-list { 
-    display: flex !important; 
-    flex-direction: row !important; 
-    overflow-x: auto !important; 
-    overflow-y: hidden !important; 
-    width: 100% !important; 
-    padding-bottom: 8px !important; /* Место под ползунок */
-    gap: 8px !important; 
-    -webkit-overflow-scrolling: touch !important; /* Плавный свайп на iOS */
-    scroll-behavior: smooth !important;
-  }
-  
-  /* Делаем ползунок видимым и аккуратным */
-  .crate-list::-webkit-scrollbar { 
-    height: 5px !important; 
-  }
-  .crate-list::-webkit-scrollbar-track { 
-    background: rgba(255,255,255,0.05) !important; 
-    border-radius: 3px !important; 
-  }
-  .crate-list::-webkit-scrollbar-thumb { 
-    background: var(--txt2) !important; 
-    border-radius: 3px !important; 
-  }
-
-  /* Настраиваем кнопки */
-  .crate-btn, .auto-sell-btn { 
-    width: auto !important; 
-    white-space: nowrap !important; 
-    flex-shrink: 0 !important; 
-    padding: 10px 16px !important;
-  }
-
-  /* Скрываем старые кнопки-стрелочки, если они остались в коде */
-  .scroll-arrows {
-    display: none !important;
-  }
-  .crate-list::-webkit-scrollbar { height: 4px; }
-  .crate-list::-webkit-scrollbar-thumb { background: var(--lin); border-radius: 4px; }
-  
-  /* Кнопки внутри списков */
-  .crate-btn, .auto-sell-btn { 
-    width: auto !important; 
-    white-space: nowrap !important; 
-    flex-shrink: 0 !important; 
-    padding: 10px 14px !important;
-  }
-
-  /* Перестраиваем основной контент в колонку */
-  .layout { display: flex !important; flex-direction: column !important; height: auto !important; overflow: visible !important; }
-  .main-content { padding: 10px !important; gap: 12px !important; align-items: stretch !important; }
-
-  /* Баланс и кнопки в 2 колонки */
-  .bar { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-  .pill { width: 100% !important; justify-content: space-between !important; font-size: 13px !important; padding: 10px !important; min-width: 0 !important; }
-  .icon-btn { width: 100% !important; justify-content: center !important; padding: 10px !important; }
-  #chancesBtn, #muteBtn, #resetBtn, #langBtn { grid-column: span 1 !important; }
-
-  /* Кнопки открытия друг под другом */
-  .btn-group { flex-direction: column !important; gap: 8px !important; }
-  button { width: 100% !important; padding: 14px !important; font-size: 14px !important; }
-
-  /* Инвентарь */
-  .inv-header { flex-direction: column !important; align-items: stretch !important; text-align: center !important; }
-  #sellAllBtn { width: 100% !important; margin-top: 5px !important; }
-
-  /* Плашка музыки - уменьшаем и убираем наложение */
-  .music-widget { 
-    bottom: 10px !important; 
-    right: 10px !important; 
-    padding: 6px 10px !important; 
-    width: auto !important; 
-    max-width: 80px !important; 
-    border-radius: 50% !important;
-    justify-content: center !important;
-  }
-  .music-widget > div:first-child { display: none !important; }
-  .music-widget input[type=range] { display: none !important; }
 *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
 body{min-height:100vh;background:radial-gradient(1200px 600px at 50% -200px,rgba(255,255,255,.03),transparent 60%),var(--bg);color:var(--txt);font-family:'Iowan Old Style',Georgia,serif;user-select:none;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
@@ -260,12 +143,21 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .layout { display: flex; flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
   body { overflow-y: auto; padding-top: 0; }
   .sidebar { flex-direction: column; border-right: none; border-bottom: 1px solid var(--lin); padding: 10px; gap: 10px; background: var(--bg); position: sticky; top: 0; z-index: 10; }
-  .sidebar > div { display: flex; gap: 8px; align-items: center; width: 100%; }
-  .sidebar h2 { display: none; }
-  .crate-list { flex-direction: row; overflow-x: auto; width: 100%; padding-bottom: 4px; gap: 6px; -webkit-overflow-scrolling: touch; }
-  .crate-list::-webkit-scrollbar { display: none; }
-  .crate-btn { width: auto; white-space: nowrap; padding: 10px 14px; font-size: 12px; flex-shrink: 0; }
-  .auto-sell-btn { width: auto; white-space: nowrap; padding: 8px 12px; font-size: 10px; flex-shrink: 0; }
+  .sidebar > div { display: flex; flex-direction: column; gap: 4px; align-items: stretch; width: 100%; }
+  .sidebar h2 { display: block !important; font-size: 11px !important; margin: 0 !important; padding: 0 0 4px 0 !important; border-bottom: 1px solid var(--lin) !important; white-space: nowrap !important; text-align: left !important; }
+  
+  /* Горизонтальный скролл со свайпом и ползунком */
+  .crate-list { 
+    display: flex !important; flex-direction: row !important; overflow-x: auto !important; overflow-y: hidden !important; 
+    width: 100% !important; padding-bottom: 6px !important; gap: 6px !important; -webkit-overflow-scrolling: touch !important; 
+  }
+  .crate-list::-webkit-scrollbar { height: 4px !important; }
+  .crate-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05) !important; border-radius: 2px !important; }
+  .crate-list::-webkit-scrollbar-thumb { background: var(--txt2) !important; border-radius: 2px !important; }
+  
+  .crate-btn { width: auto !important; white-space: nowrap !important; padding: 10px 14px !important; font-size: 12px !important; flex-shrink: 0 !important; }
+  .auto-sell-btn { width: auto !important; white-space: nowrap !important; padding: 8px 12px !important; font-size: 10px !important; flex-shrink: 0 !important; }
+
   .main-content { padding: 10px; gap: 14px; align-items: stretch; }
   h1 { font-size: 20px; text-align: center; display: block; margin: 10px 0; }
   h1::before, h1::after { display: none; }
@@ -309,7 +201,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 </head>
 <body>
 
-<!-- Блок входа для сайта -->
 <div id="tg-login-container">
   <p style="margin-bottom:10px; font-size:14px;">Войдите, чтобы сохранять прогресс везде</p>
   <script async src="https://telegram.org/js/telegram-widget.js?22" 
@@ -322,11 +213,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div class="layout">
   <div class="sidebar">
     <div>
-      <h2>Crates</h2>
+      <h2>CRATES</h2>
       <div class="crate-list" id="crateList"></div>
     </div>
     <div>
-      <h2>Авто-продажа</h2>
+      <h2>АВТО-ПРОДАЖА</h2>
       <div class="crate-list">
         <button class="auto-sell-btn" data-r="common">Common</button>
         <button class="auto-sell-btn" data-r="rare">Rare</button>
@@ -453,12 +344,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
 /* ===== CLOUD SAVE SYSTEM ===== */
 const SAVE_KEY = 'grenko_save_v1'; 
 const API_URL = 'https://grenko-api.treugalnik.workers.dev';
-let tgWebData = null; // Данные от сайта (Login Widget)
+let tgWebData = null; 
 
 async function save() {
   const saveData = { balance, gems, inventory, activeCrate, lang, autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, vol: bgMusic.volume, muted };
   localStorage.setItem(SAVE_KEY, JSON.stringify(saveData)); 
-  
   const initData = window.Telegram?.WebApp?.initData;
   if (!initData && !tgWebData) return; 
 
@@ -851,7 +741,7 @@ document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.c
 /* ===== TELEGRAM LOGIN FOR WEB ===== */
 window.onTelegramAuth = function(user) {
   tgWebData = user;
-  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); // ЗАПОМИНАЕМ ВХОД
+  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); 
   toast('Вход выполнен! Синхронизация...');
   load().then(() => {
     renderInventory();
@@ -879,48 +769,21 @@ function checkTelegramAuth() {
 
   document.getElementById('tg-login-container').style.display = 'block';
 }
-/* ===== УЛУЧШЕННЫЙ СКРОЛЛ КЕЙСОВ И АВТО-ПРОДАЖИ ===== */
-function setupScrollArrows() {
-  document.querySelectorAll('.crate-list').forEach(list => {
-    
-    // 1. ЖЕСТКИЙ ПЕРЕХВАТ КОЛЕСИКА МЫШИ
-    list.addEventListener('wheel', (evt) => {
-      // Если это вертикальная прокрутка (колесико вверх/вниз)
-      if (evt.deltaY !== 0) {
-        evt.preventDefault(); // Блокируем прокрутку страницы
-        evt.stopPropagation();
-        // Прокручиваем сам список вбок
-        list.scrollLeft += evt.deltaY;
-      }
-    }, { passive: false }); // passive: false обязательно для preventDefault
 
-    // 2. Кнопки-стрелочки для мобилок
-    if (list.parentElement.querySelector('.scroll-arrows')) return;
+/* ===== ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КОЛЕСИКОМ ===== */
+document.querySelectorAll('.crate-list').forEach(list => {
+  list.addEventListener('wheel', (evt) => {
+    if (evt.deltaY !== 0) {
+      evt.preventDefault();
+      list.scrollLeft += evt.deltaY;
+    }
+  }, { passive: false });
+});
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'scroll-arrows';
-    wrapper.style.cssText = 'display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:-5px; position:relative; z-index:2; pointer-events:none;';
-
-    const leftBtn = document.createElement('button');
-    leftBtn.innerHTML = '◀';
-    leftBtn.style.cssText = 'pointer-events:auto; padding:5px 10px; font-size:12px; background:rgba(18,18,18,0.8); border:1px solid var(--lin); color:var(--acc); border-radius:4px; cursor:pointer; height:26px; margin-left:2px;';
-    leftBtn.onclick = () => list.scrollBy({ left: -200, behavior: 'smooth' });
-
-    const rightBtn = document.createElement('button');
-    rightBtn.innerHTML = '▶';
-    rightBtn.style.cssText = 'pointer-events:auto; padding:5px 10px; font-size:12px; background:rgba(18,18,18,0.8); border:1px solid var(--lin); color:var(--acc); border-radius:4px; cursor:pointer; height:26px; margin-right:2px;';
-    rightBtn.onclick = () => list.scrollBy({ left: 200, behavior: 'smooth' });
-
-    // Вставляем кнопки ПОВЕРХ списка
-    list.parentNode.insertBefore(wrapper, list);
-    wrapper.appendChild(leftBtn);
-    wrapper.appendChild(rightBtn);
-  });
-}
 /* ===== BOOT ===== */
 window.Telegram?.WebApp?.ready();
 checkTelegramAuth(); 
-setupScrollArrows();
+
 load().then(() => {
   document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===activeCrate));
   document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.toggle('active',autoSellRarities.has(b.dataset.r)));
