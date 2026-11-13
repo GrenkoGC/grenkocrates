@@ -152,6 +152,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .index-item.locked span { color: var(--txt2); }
 .index-item .chance-badge { position: absolute; top: 4px; right: 4px; font-size: 9px; padding: 2px 4px; background: rgba(0,0,0,0.5); border-radius: 3px; border: 1px solid var(--lin); }
 
+/* --- ТУЛТИП --- */
+.stat-tooltip{position:fixed;background:var(--pan);border:1px solid var(--acc);border-radius:6px;padding:10px;font-family:monospace;font-size:11px;color:#fff;z-index:1000;pointer-events:none;box-shadow:0 5px 20px rgba(0,0,0,0.8);opacity:0;visibility:hidden;transition:opacity 0.2s,visibility 0.2s;max-width:200px;}
+.stat-tooltip.show{opacity:1;visibility:visible;}
+.stat-tooltip .st-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:2px 0;}
+.stat-tooltip .st-row:last-child{border-bottom:none;}
+.stat-tooltip .st-name{color:var(--txt2);}
+.stat-tooltip .st-val{color:var(--acc);font-weight:bold;text-align:right;}
+
 /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
 @media (max-width: 768px) {
   .layout { display: flex; flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
@@ -363,6 +371,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   </div>
 </div>
 
+<div class="stat-tooltip" id="invTooltip"></div>
 <div class="sold-toast" id="toast"></div>
 
 <script>
@@ -529,6 +538,31 @@ function renderInventory(){
   inventory.forEach((it,i)=>{
     const el=document.createElement('div');el.className=`inv-item ${it.r}`;
     el.innerHTML=`<div class="icon" style="filter:drop-shadow(0 0 6px ${RARITY[it.r].color}80)">${iconOf(it.name,false)}</div><div style="color:var(--txt);margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${it.name}</div><div class="price">${it.price} $</div>`;
+    
+    let statsHtml = '';
+    if(it.stats){
+      statsHtml = Object.entries(it.stats).map(([k,v])=>{
+        const tk = L10N[lang].typeTrans[k] || k;
+        return `<div class="st-row"><span class="st-name">${tk}:</span><span class="st-val">${v}</span></div>`;
+      }).join('');
+    } else {
+      statsHtml = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
+    }
+
+    const tooltip = document.getElementById('invTooltip');
+    
+    el.onmouseenter = () => {
+      if(window.innerWidth < 768) return;
+      tooltip.innerHTML = statsHtml;
+      tooltip.classList.add('show');
+      const rect = el.getBoundingClientRect();
+      tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width/2 - 100)) + 'px';
+      tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+    };
+    
+    el.onmouseleave = () => {
+      tooltip.classList.remove('show');
+    };
     
     el.onclick=()=>{
       const r = RARITY[it.r];
@@ -900,6 +934,11 @@ document.querySelectorAll('.crate-list').forEach(list => {
     }
   }, { passive: false });
 });
+
+/* ===== СКРЫТИЕ ТУЛТИПА ПРИ СКРОЛЛЕ ===== */
+window.addEventListener('scroll', () => {
+  document.getElementById('invTooltip').classList.remove('show');
+}, { passive: true });
 
 /* ===== BOOT ===== */
 window.Telegram?.WebApp?.ready();
