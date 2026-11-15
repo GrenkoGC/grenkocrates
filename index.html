@@ -22,7 +22,7 @@ svg{display:block}
 button,.crate-btn,.auto-sell-btn,.icon-btn,.pill,.inv-item{transition:transform .2s var(--ease),background .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease),color .3s var(--ease),opacity .2s}
 button:active:not(:disabled),.crate-btn:active,.auto-sell-btn:active,.icon-btn:active{transform:scale(.96)}
 .crate-btn:hover,.auto-sell-btn:hover,.icon-btn:hover{background:var(--pan2);border-color:var(--acc)}
-.slot .icon img,.drop-card .d-icon img,.inv-item .icon img,.chance-row .ci img,.multi-item img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px;background:rgba(255,255,255,.03)}
+.slot .icon img,.drop-card .d-icon img,.inv-item .icon img,.chance-row .ci img,.multi-item img,.shop-img img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px;background:rgba(255,255,255,.03)}
 .layout{display:grid;grid-template-columns:260px 1fr;height:100vh;position:relative;z-index:1;overflow:hidden}
 .sidebar{border-right:1px solid var(--lin);background:rgba(30,30,30,.6);padding:24px 16px;display:flex;flex-direction:column;gap:24px;overflow-y:auto}
 .sidebar h2{font-size:16px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt);text-align:center;padding-bottom:12px;border-bottom:1px solid var(--lin);margin-bottom:8px}
@@ -162,6 +162,16 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .stat-tooltip .st-name{color:var(--txt2);}
 .stat-tooltip .st-val{color:var(--acc);font-weight:bold;text-align:right;}
 
+/* --- МАГАЗИН --- */
+.shop-container { display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 15px; width: 100%; max-width: 400px; margin: 0 auto; }
+.shop-img { width: 120px; height: 120px; filter: drop-shadow(0 0 20px #eec5ffcc); margin-bottom: 10px; }
+.shop-name { font-size: 24px; font-weight: bold; color: #eec5ff; margin-bottom: 5px; }
+.shop-rarity { font-size: 12px; color: #eec5ff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
+.shop-desc { font-size: 13px; color: var(--txt2); margin-bottom: 20px; text-align: center; }
+.shop-price { font-size: 20px; font-weight: bold; color: var(--acc); margin-bottom: 20px; }
+.shop-buy-btn { width: 100%; border-color: #eec5ff; color: #eec5ff; background: linear-gradient(180deg, rgba(238,197,255,0.1), transparent); }
+.shop-buy-btn:hover:not(:disabled) { background: linear-gradient(180deg, rgba(238,197,255,0.25), transparent); }
+
 /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
 @media (max-width: 768px) {
   .layout { display: flex; flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
@@ -181,7 +191,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .pill { font-size: 13px; padding: 10px; justify-content: space-between; width: 100%; min-width: 0; }
   .icon-btn { padding: 10px; justify-content: center; font-size: 14px; width: 100%; height: 100%; }
-  #chancesBtn, #muteBtn, #resetBtn, #langBtn, #indexBtn { grid-column: span 1; }
+  #chancesBtn, #muteBtn, #resetBtn, #langBtn, #indexBtn, #shopBtn { grid-column: span 1; }
   .scene { height: 180px; margin: 5px 0; }
   .slot .icon { width: 60px; height: 60px; }
   .slot .name { font-size: 11px; }
@@ -264,6 +274,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
       <button class="icon-btn" id="indexBtn" style="border-color:var(--acc); color:var(--acc);">
         📖 <span id="lblIndex">Индекс</span>
       </button>
+
+      <button class="icon-btn" id="shopBtn" style="border-color:#eec5ff; color:#eec5ff;">
+        🛒 <span id="lblShop">Магазин</span>
+      </button>
       
       <div class="gacha-badge" id="gachaBtn" title="Рулетка гемов">🎰<div class="badge" id="gachaBadge" style="display:none;">0</div></div>
       <button class="icon-btn" id="langBtn">EN</button>
@@ -311,6 +325,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
 <div class="flash" id="flash"></div>
 
+<!-- Окно дропа -->
 <div class="overlay" id="dropOverlay">
   <div class="modal-card" id="dropCard">
     <button class="close-x" onclick="document.getElementById('dropOverlay').classList.remove('show')">✕</button>
@@ -346,6 +361,23 @@ button:disabled{opacity:.4;cursor:not-allowed}
     <button class="close-x" onclick="document.getElementById('indexOverlay').classList.remove('show')">✕</button>
     <h2 style="margin-bottom:15px;font-size:18px;">📖 Индекс юнитов</h2>
     <div id="indexGrid" class="index-grid"></div>
+  </div>
+</div>
+
+<!-- Окно Магазина -->
+<div class="overlay" id="shopOverlay">
+  <div class="modal-card" style="max-width:450px;padding:20px; border-color:#eec5ff; box-shadow:0 0 30px rgba(238,197,255,0.2);">
+    <button class="close-x" onclick="document.getElementById('shopOverlay').classList.remove('show')">✕</button>
+    <h2 style="margin-bottom:15px;font-size:18px; color:#eec5ff;">🛒 Магазин</h2>
+    <div class="shop-container">
+      <div class="shop-img" id="shopItemImg"></div>
+      <div class="shop-name" id="shopItemName"></div>
+      <div class="shop-rarity" id="shopItemRarity"></div>
+      <div class="shop-desc">Лимитированный юнит. Доступен только здесь!</div>
+      <div class="unit-stats" id="shopItemStats" style="margin-bottom:20px;"></div>
+      <div class="shop-price">Цена: 500 💎</div>
+      <button class="shop-buy-btn" id="shopBuyBtn" onclick="buyShopItem()">Купить</button>
+    </div>
   </div>
 </div>
 
@@ -441,6 +473,7 @@ function applySaveData(s) {
 const GIFT_IMG='https://yourimageshare.com/ib/cwwrwslAaB.png';
 const GEM_CRATE_IMG='https://yourimageshare.com/ib/fKPwU3NRf6.png';
 const RARITY={common:{label:'Common',color:'#6cb862',w:1000},rare:{label:'Rare',color:'#2557a6',w:300},epic:{label:'Epic',color:'#b554e8',w:80},legendary:{label:'Legendary',color:'#fef605',w:20},mythic:{label:'Mythic',color:'#b51500',w:6},leader:{label:'Leader',color:'#4bb152',w:2},secret:{label:'Secret',color:'#fff',w:1},exclusive:{label:'Exclusive',color:'#eec5ff',w:100}};
+
 const CRATES={
   crate1:{name:'Season Crate 1',img:GIFT_IMG,currency:'$',cost:100,pool:[
     {name:'GrenkBot-A1',r:'common',price:50,img:'https://yourimageshare.com/ib/zwYuDDfH8D.jpg',stats:{Type:'Single',Damage:'15 - 35',Range:'10 - 13',Cooldown:'1.75 - 0.5',Limit:'5'}},
@@ -458,12 +491,28 @@ const CRATES={
   ]}
 };
 
+const SHOP_ITEM = {
+  name: 'Eggren',
+  r: 'exclusive',
+  price: 500, // Цена в гемах
+  img: 'https://yourimageshare.com/ib/hzhMDIz2GN.png', // Добавил .png, если не сработает - убери
+  stats: {
+    Type: 'Critical Stun',
+    Damage: '330 - 880',
+    Range: '12.5 - 16',
+    Cooldown: '3 - 2.25',
+    'Critical Stun Chance': '25%',
+    'Critical Stun Damage Multiplier': 'x1.5 - x3',
+    'Critical Stun Time': '0.35 - 0.5'
+  }
+};
+
 /* ===== STATE ===== */
 let balance=1000,gems=50,inventory=[],spinning=false,muted=false,isAutoOpen=false,autoSellRarities=new Set(),lang='ru',activeCrate='crate1';
 let gachaSpins=0,gachaLastTick=Date.now();
 const GACHA_POOL=[{amount:10,w:50,color:'#888'},{amount:25,w:30,color:'#3b82f6'},{amount:50,w:15,color:'#a855f7'},{amount:100,w:5,color:'#eab308'}];
 const GACHA_COOLDOWN=600000,MAX_GACHA_SPINS=5;
-const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblIndex:'Индекс',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblIndex:'Index',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength'}}};
+const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblIndex:'Индекс',lblShop:'Магазин',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания','Critical Stun Chance':'Шанс стана','Critical Stun Damage Multiplier':'Множитель урона','Critical Stun Time':'Время стана'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblIndex:'Index',lblShop:'Shop',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength','Critical Stun Chance':'Stun Chance','Critical Stun Damage Multiplier':'Damage Multiplier','Critical Stun Time':'Stun Time'}}};
 
 /* ===== DOM ===== */
 const $=id=>document.getElementById(id);
@@ -486,12 +535,17 @@ const sfx={
 };
 
 /* ===== UTILS ===== */
-const iconOf=(name,hide=false)=>{let it=null;for(const crate of Object.values(CRATES)){const f=crate.pool.find(i=>i.name===name);if(f){it=f;break;}}if(!it)return`<img src="${GIFT_IMG}">`;if(hide&&it.secret)return`<img src="https://yourimageshare.com/ib/w1HE053pTL.jpg">`;return it.img?`<img src="${it.img}" alt="${name}">`:`<img src="${GIFT_IMG}">`;};
+const iconOf=(name,hide=false)=>{
+  if(name === 'Eggren') return `<img src="${SHOP_ITEM.img}" alt="Eggren">`;
+  let it=null;for(const crate of Object.values(CRATES)){const f=crate.pool.find(i=>i.name===name);if(f){it=f;break;}}
+  if(!it)return`<img src="${GIFT_IMG}">`;if(hide&&it.secret)return`<img src="https://yourimageshare.com/ib/w1HE053pTL.jpg">`;return it.img?`<img src="${it.img}" alt="${name}">`:`<img src="${GIFT_IMG}">`;
+};
 const randomItem=()=>{const pool=CRATES[activeCrate].pool;if(pool[0].customChance!==undefined){let r=Math.random()*100;for(const it of pool){r-=it.customChance;if(r<=0)return it;}return pool[pool.length-1];}const total=pool.reduce((s,it)=>s+RARITY[it.r].w,0);let r=Math.random()*total;for(const it of pool){r-=RARITY[it.r].w;if(r<=0)return it;}return pool[0];};
 
 /* ===== RARE-SELL CONFIRM ===== */
 const RARE_TIER=new Set(['mythic','leader','secret','exclusive']);
 function chanceOfInCrate(itemName){
+  if(itemName === 'Eggren') return 100;
   const pool=CRATES[activeCrate].pool,totalW=pool.reduce((s,it)=>s+RARITY[it.r].w,0);
   const byR={};pool.forEach(it=>{(byR[it.r]||=[]).push(it);});
   const it=pool.find(x=>x.name===itemName);
@@ -709,6 +763,40 @@ $('indexBtn').onclick = () => {
   renderIndex();
 };
 
+/* ===== МАГАЗИН ===== */
+function renderShop() {
+  const item = SHOP_ITEM;
+  const r = RARITY[item.r];
+  $('shopItemImg').innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+  $('shopItemName').textContent = item.name;
+  $('shopItemRarity').textContent = r.label;
+  $('shopItemRarity').style.color = r.color;
+  $('shopItemStats').innerHTML = Object.entries(item.stats).map(([k,v],idx)=>{
+    const tk = L10N[lang].typeTrans[k] || k;
+    return `<div class="stat-row" style="${idx===0?'color:#fff;font-weight:bold;margin-bottom:4px':''}"><span>${tk}:</span><span>${v}</span></div>`;
+  }).join('');
+}
+
+function buyShopItem() {
+  if (gems < SHOP_ITEM.price) {
+    toast('Недостаточно гемов!');
+    return;
+  }
+  gems -= SHOP_ITEM.price;
+  const newItem = { ...SHOP_ITEM, price: SHOP_ITEM.price * 10 }; // Продажная цена
+  inventory.push(newItem);
+  updateUI(); renderInventory(); save();
+  toast(`Куплен ${SHOP_ITEM.name}!`);
+  $('shopOverlay').classList.remove('show');
+  sfx.drop('exclusive');
+}
+
+$('shopBtn').onclick = () => {
+  sfx.click();
+  renderShop();
+  document.getElementById('shopOverlay').classList.add('show');
+};
+
 /* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
   spinning=true;updateUI();
@@ -881,6 +969,8 @@ function applyLang(){
   document.getElementById('lblChances').textContent=t.lblChances;
   const elIndex = document.getElementById('lblIndex');
   if (elIndex) elIndex.textContent = t.lblIndex || 'Индекс';
+  const elShop = document.getElementById('lblShop');
+  if (elShop) elShop.textContent = t.lblShop || 'Магазин';
   document.getElementById('lblInvTitle').textContent=t.lblInvTitle;
   document.getElementById('lblInvHint').textContent=t.lblInvHint;
   document.getElementById('invGrid').setAttribute('data-empty',t.emptyInv);
