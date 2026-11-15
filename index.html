@@ -494,8 +494,8 @@ const CRATES={
 const SHOP_ITEM = {
   name: 'Eggren',
   r: 'exclusive',
-  price: 500, // Цена в гемах
-  img: 'https://yourimageshare.com/ib/hzhMDIz2GN.png', // Добавил .png, если не сработает - убери
+  price: 500,
+  img: 'https://yourimageshare.com/ib/hzhMDIz2GN.png',
   stats: {
     Type: 'Critical Stun',
     Damage: '330 - 880',
@@ -998,23 +998,38 @@ window.onTelegramAuth = function(user) {
 };
 
 function checkTelegramAuth() {
-  if (window.Telegram?.WebApp?.initData) {
-    document.getElementById('tg-login-container').style.display = 'none'; 
-    return;
-  }
-  
-  const savedUser = localStorage.getItem('grenko_tg_user');
-  if (savedUser) {
-    try {
-      tgWebData = JSON.parse(savedUser); 
+  setTimeout(() => {
+    if (window.Telegram?.WebApp?.initData) {
       document.getElementById('tg-login-container').style.display = 'none'; 
-      return; 
-    } catch(e) {
-      localStorage.removeItem('grenko_tg_user'); 
+      return;
     }
-  }
+    const savedUser = localStorage.getItem('grenko_tg_user');
+    if (savedUser) {
+      try {
+        tgWebData = JSON.parse(savedUser); 
+        document.getElementById('tg-login-container').style.display = 'none'; 
+        return; 
+      } catch(e) {
+        localStorage.removeItem('grenko_tg_user'); 
+      }
+    }
+    document.getElementById('tg-login-container').style.display = 'block';
+  }, 300);
+}
 
-  document.getElementById('tg-login-container').style.display = 'block';
+// --- СИНХРОНИЗАЦИЯ В РЕАЛЬНОМ ВРЕМЕНИ ---
+function syncData() {
+  load(); 
+  renderInventory(); 
+  updateUI();
+  toast('Данные обновлены из админки');
+}
+
+if (window.BroadcastChannel) {
+  const bc = new BroadcastChannel('grenko_sync');
+  bc.onmessage = (e) => {
+    if (e.data === 'update') syncData();
+  };
 }
 
 /* ===== ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КОЛЕСИКОМ ===== */
