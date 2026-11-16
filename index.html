@@ -941,7 +941,7 @@ function linkAccount() {
   .catch(() => toast('Ошибка: неверный ID или проблемы с сервером'));
 }
 
-function function logoutProfile() {
+function logoutProfile() {
   if(!confirm('Выйти из профиля? Ваш локальный прогресс будет удалён, но данные в облаке сохранятся.')) return;
   
   // 1. Отвязываем аккаунт
