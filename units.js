@@ -158,4 +158,17 @@ const ALL_UNITS = [
       Limit: '2'
     }
   }
+  ,
+{
+  name: 'THE_PC2408', r: 'ultimate', price: 25000,
+  img: 'https://yourimageshare.com/ib/whszmltza8.jpg', secret: true,
+  stats: {
+    Type: 'Cheating', Damage: '4750 - 15500', Range: '14 - 22',
+    Cooldown: '3 - 1.25', Limit: '1',
+    'Cheating': 'Switches attack type every 90 seconds (Including Slowing, Critical, Stun and Nerf)',
+    'Slowing': '55%', 'Critical Damage Multiplier': 'x5',
+    'Critical Stun Time': '1.5', 'Critical Damage Chance': '10%',
+    'Critical Stun Chance': '5%', 'All Stats Nerf': '50%'
+  }
+}
 ];
