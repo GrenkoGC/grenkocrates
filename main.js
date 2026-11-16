@@ -717,6 +717,7 @@ function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
   $('autoBtn').onclick = () => {
+      document.getElementById('sellAllBtn').onclick = sellAll;
     isAutoOpen = !isAutoOpen;
     $('autoBtn').classList.toggle('active', isAutoOpen);
     save();
