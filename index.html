@@ -172,6 +172,17 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .shop-buy-btn { width: 100%; border-color: #eec5ff; color: #eec5ff; background: linear-gradient(180deg, rgba(238,197,255,0.1), transparent); }
 .shop-buy-btn:hover:not(:disabled) { background: linear-gradient(180deg, rgba(238,197,255,0.25), transparent); }
 
+/* --- ПРОФИЛЬ --- */
+.profile-info { display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px; border: 1px solid var(--lin); margin-bottom: 15px; }
+.profile-row { display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
+.profile-row:last-child { border-bottom: none; padding-bottom: 0; }
+.profile-row span:first-child { color: var(--txt2); }
+.profile-row span:last-child { color: var(--acc); font-weight: bold; }
+.profile-top-units { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+.profile-unit { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; font-size: 12px; }
+.profile-unit img { width: 24px; height: 24px; object-fit: contain; }
+.profile-unit .u-price { color: var(--acc); margin-left: auto; font-family: monospace; }
+
 /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
 @media (max-width: 768px) {
   .layout { display: flex; flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
@@ -191,7 +202,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .pill { font-size: 13px; padding: 10px; justify-content: space-between; width: 100%; min-width: 0; }
   .icon-btn { padding: 10px; justify-content: center; font-size: 14px; width: 100%; height: 100%; }
-  #chancesBtn, #muteBtn, #resetBtn, #langBtn, #indexBtn, #shopBtn { grid-column: span 1; }
+  #chancesBtn, #muteBtn, #resetBtn, #langBtn, #indexBtn, #shopBtn, #profileBtn { grid-column: span 1; }
   .scene { height: 180px; margin: 5px 0; }
   .slot .icon { width: 60px; height: 60px; }
   .slot .name { font-size: 11px; }
@@ -277,6 +288,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
       <button class="icon-btn" id="shopBtn" style="border-color:#eec5ff; color:#eec5ff;">
         🛒 <span id="lblShop">Магазин</span>
+      </button>
+
+      <button class="icon-btn" id="profileBtn" style="border-color:#ffaa00; color:#ffaa00;">
+        👤 <span id="lblProfile">Профиль</span>
       </button>
       
       <div class="gacha-badge" id="gachaBtn" title="Рулетка гемов">🎰<div class="badge" id="gachaBadge" style="display:none;">0</div></div>
@@ -381,6 +396,40 @@ button:disabled{opacity:.4;cursor:not-allowed}
   </div>
 </div>
 
+<!-- Окно Профиля -->
+<div class="overlay" id="profileOverlay">
+  <div class="modal-card" style="max-width:400px;padding:20px; border-color:#ffaa00;">
+    <button class="close-x" onclick="document.getElementById('profileOverlay').classList.remove('show')">✕</button>
+    <h2 style="margin-bottom:15px;font-size:18px; color:#ffaa00;">👤 Профиль</h2>
+    
+    <div class="profile-info">
+      <div class="profile-row">
+        <span>Аккаунт:</span>
+        <span id="profUsername">Гость</span>
+      </div>
+      <div class="profile-row">
+        <span>Открыто кейсов:</span>
+        <span id="profCases">0</span>
+      </div>
+      <div class="profile-row">
+        <span>Баланс:</span>
+        <span id="profBalance">0 $</span>
+      </div>
+      <div class="profile-row">
+        <span>Гемы:</span>
+        <span id="profGems">0 💎</span>
+      </div>
+      
+      <div style="margin-top:10px;">
+        <div style="color:var(--txt2); font-size:12px; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;">Лучшие юниты</div>
+        <div class="profile-top-units" id="profTopUnits"></div>
+      </div>
+    </div>
+
+    <button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent);" onclick="logoutProfile()">Выйти из профиля</button>
+  </div>
+</div>
+
 <div class="overlay" id="gachaOverlay">
   <div class="modal-card">
     <button class="close-x" onclick="document.getElementById('gachaOverlay').classList.remove('show')">✕</button>
@@ -415,7 +464,7 @@ const API_URL = 'https://grenko-api.treugalnik.workers.dev';
 let tgWebData = null; 
 
 async function save() {
-  const saveData = { balance, gems, inventory, activeCrate, lang, autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, vol: bgMusic.volume, muted };
+  const saveData = { balance, gems, inventory, activeCrate, lang, autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, vol: bgMusic.volume, muted, casesOpened };
   localStorage.setItem(SAVE_KEY, JSON.stringify(saveData)); 
   const initData = window.Telegram?.WebApp?.initData;
   if (!initData && !tgWebData) return; 
@@ -467,6 +516,7 @@ function applySaveData(s) {
   if (typeof s.gachaLastTick === 'number') gachaLastTick = s.gachaLastTick;
   if (typeof s.muted === 'boolean') muted = s.muted;
   if (typeof s.vol === 'number') { bgMusic.volume = s.vol; volumeSlider.value = s.vol; }
+  if (typeof s.casesOpened === 'number') casesOpened = s.casesOpened;
 }
 
 /* ===== CONFIG ===== */
@@ -509,10 +559,10 @@ const SHOP_ITEM = {
 
 /* ===== STATE ===== */
 let balance=1000,gems=50,inventory=[],spinning=false,muted=false,isAutoOpen=false,autoSellRarities=new Set(),lang='ru',activeCrate='crate1';
-let gachaSpins=0,gachaLastTick=Date.now();
+let gachaSpins=0,gachaLastTick=Date.now(),casesOpened=0;
 const GACHA_POOL=[{amount:10,w:50,color:'#888'},{amount:25,w:30,color:'#3b82f6'},{amount:50,w:15,color:'#a855f7'},{amount:100,w:5,color:'#eab308'}];
 const GACHA_COOLDOWN=600000,MAX_GACHA_SPINS=5;
-const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblIndex:'Индекс',lblShop:'Магазин',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания','Critical Stun Chance':'Шанс стана','Critical Stun Damage Multiplier':'Множитель урона','Critical Stun Time':'Время стана'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblIndex:'Index',lblShop:'Shop',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength','Critical Stun Chance':'Stun Chance','Critical Stun Damage Multiplier':'Damage Multiplier','Critical Stun Time':'Stun Time'}}};
+const L10N={ru:{title:'Grenko Crates',lblBal:'Баланс',lblGems:'Гемы',lblInv:'Инвентарь',lblChances:'Шансы',lblIndex:'Индекс',lblShop:'Магазин',lblProfile:'Профиль',lblOpen:'Открыть',lblOpen10:'x10',lblInvTitle:'Инвентарь',lblInvHint:'Клик — продать',emptyInv:'Инвентарь пуст',lblChancesTitle:'Шансы выпадения',clickOpen:'Нажми «Открыть»',priceAfter:'Цена продажи',takeInv:'Забрать в инвентарь',sold:'Продан',soldAll:'Продано',for:'за',history:'Последние',noHist:'История открытий появится здесь',autoOpen:'⚡ Авто-открытие',sellAll:'Продать всё',typeTrans:{'Type':'Тип','Damage':'Урон','Range':'Дальность','Cooldown':'Перезарядка','Limit':'Лимит','Stun Time':'Время стана','Damage Boost':'Бонус урона','Spawn Cooldown':'Перезарядка спавна','Ally HP':'Здоровье миньона','Ally DPS':'Урон миньона','Knockback Strength':'Сила отбрасывания','Critical Stun Chance':'Шанс стана','Critical Stun Damage Multiplier':'Множитель урона','Critical Stun Time':'Время стана'}},en:{title:'Grenko Crates',lblBal:'Balance',lblGems:'Gems',lblInv:'Inventory',lblChances:'Chances',lblIndex:'Index',lblShop:'Shop',lblProfile:'Profile',lblOpen:'Open',lblOpen10:'x10',lblInvTitle:'Inventory',lblInvHint:'Click to sell',emptyInv:'Inventory is empty',lblChancesTitle:'Drop Chances',clickOpen:'Click "Open"',priceAfter:'Sell price',takeInv:'Take to inventory',sold:'Sold',soldAll:'Sold',for:'for',history:'Recent',noHist:'Open history will appear here',autoOpen:'⚡ Auto-Open',sellAll:'Sell All',typeTrans:{'Type':'Type','Damage':'Damage','Range':'Range','Cooldown':'Cooldown','Limit':'Limit','Stun Time':'Stun Time','Damage Boost':'Damage Boost','Spawn Cooldown':'Spawn Cooldown','Ally HP':'Minion HP','Ally DPS':'Minion DPS','Knockback Strength':'Knockback Strength','Critical Stun Chance':'Stun Chance','Critical Stun Damage Multiplier':'Damage Multiplier','Critical Stun Time':'Stun Time'}}};
 
 /* ===== DOM ===== */
 const $=id=>document.getElementById(id);
@@ -783,7 +833,7 @@ function buyShopItem() {
     return;
   }
   gems -= SHOP_ITEM.price;
-  const newItem = { ...SHOP_ITEM, price: SHOP_ITEM.price * 10 }; // Продажная цена
+  const newItem = { ...SHOP_ITEM, price: SHOP_ITEM.price * 10 };
   inventory.push(newItem);
   updateUI(); renderInventory(); save();
   toast(`Куплен ${SHOP_ITEM.name}!`);
@@ -797,6 +847,81 @@ $('shopBtn').onclick = () => {
   document.getElementById('shopOverlay').classList.add('show');
 };
 
+/* ===== ПРОФИЛЬ ===== */
+function renderProfile() {
+  let username = 'Гость';
+  let userId = 'Без ID';
+
+  // Если играем в Telegram
+  if (window.Telegram?.WebApp?.initData) {
+    const params = new URLSearchParams(window.Telegram.WebApp.initData);
+    const user = JSON.parse(params.get('user'));
+    if (user) {
+      username = user.username ? '@' + user.username : user.first_name;
+      userId = user.id;
+    }
+  } 
+  // Если авторизованы через сайт
+  else if (tgWebData) {
+    username = tgWebData.username ? '@' + tgWebData.username : tgWebData.first_name;
+    userId = tgWebData.id;
+  }
+
+  $('profUsername').textContent = username;
+  $('profCases').textContent = casesOpened;
+  $('profBalance').textContent = Math.floor(balance) + ' $';
+  $('profGems').textContent = Math.floor(gems) + ' 💎';
+
+  // Топ-3 юнита
+  const sortedInv = [...inventory].sort((a,b) => b.price - a.price);
+  const top3 = sortedInv.slice(0, 3);
+  
+  const container = $('profTopUnits');
+  container.innerHTML = '';
+  
+  if (top3.length === 0) {
+    container.innerHTML = '<div style="font-size:12px; color:var(--txt2); text-align:center;">Инвентарь пуст</div>';
+  } else {
+    top3.forEach(it => {
+      const r = RARITY[it.r];
+      const el = document.createElement('div');
+      el.className = 'profile-unit';
+      el.innerHTML = `
+        <div style="width:24px; height:24px; filter:drop-shadow(0 0 5px ${r.color}aa)">${iconOf(it.name)}</div>
+        <span style="color:${r.color}">${it.name}</span>
+        <span class="u-price">${it.price} $</span>
+      `;
+      container.appendChild(el);
+    });
+  }
+}
+
+$('profileBtn').onclick = () => {
+  sfx.click();
+  renderProfile();
+  document.getElementById('profileOverlay').classList.add('show');
+};
+
+function logoutProfile() {
+  if(!confirm('Выйти из профиля и отвязать аккаунт? Прогресс сохранится в облаке, но вы больше не сможете его загружать.')) return;
+  
+  // Удаляем сохраненного пользователя из localStorage
+  localStorage.removeItem('grenko_tg_user');
+  tgWebData = null;
+  
+  // Если мы в Telegram, там нельзя "разлогиниться" стандартными методами, 
+  // но мы можем просто перезагрузить страницу, чтобы игра забыла текущую сессию (сбросит локальный кэш)
+  // Хотя данные подтянутся из облака при перезагрузке.
+  
+  // Для полного сброса на сайте:
+  localStorage.removeItem(SAVE_KEY);
+  
+  toast('Вы вышли из профиля. Перезагрузка...');
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+}
+
 /* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
   spinning=true;updateUI();
@@ -808,6 +933,7 @@ function processSpin(won,isAuto=false){
     if(balance<c.cost){spinning=false;isAutoOpen=false;$('autoBtn').classList.remove('active');updateUI();save();return toast('Недостаточно $');}
     balance-=c.cost;
   }
+  casesOpened++;
   updateUI();save();
 
   const duration=isAuto?800:2600,startT=performance.now(),ease=t=>t*t*t;
@@ -841,7 +967,9 @@ function openCase(isMulti=false){
   sfx.click();
   if(isMulti){
     const wonItems=[];let totalProfit=0;
-    if(c.currency==='💎')gems-=totalCost;else balance-=totalCost;updateUI();save();
+    if(c.currency==='💎')gems-=totalCost;else balance-=totalCost;
+    casesOpened+=10;
+    updateUI();save();
     for(let i=0;i<10;i++){const it=randomItem();if(autoSellRarities.has(it.r))totalProfit+=it.price;else wonItems.push(it);}
     balance+=totalProfit;inventory.push(...wonItems);renderInventory();updateUI();save();showMultiDrop(wonItems);
   }else processSpin(randomItem(),false);
@@ -936,7 +1064,7 @@ $('muteBtn').onclick=()=>{muted=!muted;$('soundOn').style.display=muted?'none':'
 $('resetBtn').onclick=()=>{
   if(!confirm('Сбросить весь прогресс? Это нельзя отменить.'))return;
   localStorage.removeItem(SAVE_KEY);
-  balance=1000;gems=50;inventory=[];activeCrate='crate1';lang='ru';autoSellRarities=new Set();gachaSpins=0;gachaLastTick=Date.now();muted=false;
+  balance=1000;gems=50;inventory=[];activeCrate='crate1';lang='ru';autoSellRarities=new Set();gachaSpins=0;gachaLastTick=Date.now();muted=false;casesOpened=0;
   document.querySelectorAll('.auto-sell-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.crate-btn').forEach(b=>b.classList.toggle('active',b.dataset.id==='crate1'));
   $('soundOn').style.display='block';$('soundOff').style.display='none';
@@ -971,6 +1099,9 @@ function applyLang(){
   if (elIndex) elIndex.textContent = t.lblIndex || 'Индекс';
   const elShop = document.getElementById('lblShop');
   if (elShop) elShop.textContent = t.lblShop || 'Магазин';
+  const elProfile = document.getElementById('lblProfile');
+  if (elProfile) elProfile.textContent = t.lblProfile || 'Профиль';
+  
   document.getElementById('lblInvTitle').textContent=t.lblInvTitle;
   document.getElementById('lblInvHint').textContent=t.lblInvHint;
   document.getElementById('invGrid').setAttribute('data-empty',t.emptyInv);
