@@ -5,28 +5,42 @@ function ac(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if
 function getMaster(){if(master)return master;const ctx=ac(),comp=ctx.createDynamicsCompressor(),conv=ctx.createConvolver();comp.threshold.value=-18;comp.knee.value=20;comp.ratio.value=4;const buf=ctx.createBuffer(2,ctx.sampleRate*1.6,ctx.sampleRate);for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.2);}conv.buffer=buf;const w=ctx.createGain();w.gain.value=.22;const dg=ctx.createGain();dg.gain.value=.85;const inN=ctx.createGain();inN.connect(comp);inN.connect(conv);conv.connect(w).connect(ctx.destination);comp.connect(dg).connect(ctx.destination);master={in:inN,ctx};return master;}
 function tone({freq=440,dur=.3,type='sine',vol=.12,freq2=null,delay=0,vib=0}){if(muted)return;const{in:out,ctx}=getMaster(),t=ctx.currentTime+delay,o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(Math.min(freq*3+800,6000),t);o.type=type;o.frequency.setValueAtTime(freq,t);if(freq2)o.frequency.exponentialRampToValueAtTime(Math.max(freq2,1),t+dur);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);if(vib>0){const l=ctx.createOscillator(),lg=ctx.createGain();l.frequency.value=5.5;lg.gain.value=vib;l.connect(lg).connect(o.frequency);l.start(t);l.stop(t+dur);}o.connect(f).connect(g).connect(out);o.start(t);o.stop(t+dur+.05);}
 function noise({dur=.35,vol=.12,delay=0,filterFreq=1400,q=.6}){if(muted)return;const{in:out,ctx}=getMaster(),t=ctx.currentTime+delay,b=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=filterFreq;f.Q.value=q;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f).connect(g).connect(out);s.start(t);s.stop(t+dur+.05);}
-const sfx={
-  tick:p=>{if(muted)return;const now=performance.now();if(now-lastTickTime<40)return;lastTickTime=now;tone({freq:200+p*180,dur:.07,type:'triangle',vol:.05+p*.035});noise({dur:.05,vol:.02+p*.02,filterFreq:600,q:2});},
-  flash:()=>{noise({dur:.5,vol:.16,filterFreq:900,q:.4});tone({freq:220,freq2:65,dur:.7,vol:.08});tone({freq:440,freq2:110,dur:.5,type:'triangle',vol:.05});},
-  click:()=>tone({freq:520,dur:.09,vol:.06}),
-  sell:()=>{tone({freq:660,freq2:990,dur:.22,vol:.08,vib:2});tone({freq:990,dur:.18,type:'triangle',vol:.04,delay:.08});},
-drop: r => {
-  const c = {
-    common:    [392, 523],
-    rare:      [392, 494, 587, 784],
-    epic:      [440, 554, 659, 880, 1109],
-    legendary: [523, 659, 784, 988, 1175, 1568],
-    mythic:    [587, 740, 880, 1175, 1480, 1760],
-    leader:    [659, 880, 1046, 1318, 1760, 2093],
-    secret:    [784, 988, 1175, 1568, 1975, 2350],
-    exclusive: [880, 1108, 1318, 1760, 2217, 2637],
-    ultimate:  [1046, 1318, 1568, 2093, 2637, 3136, 3520]
-  }[r] || [392, 523];
 
-  noise({ dur: .22, vol: .1, filterFreq: 800, q: .5 });
-
-  c.forEach((f, i) => {
-    tone({ freq: f, dur: .55, vol: .11, delay: i * .07, vib: 3 });
-    tone({ freq: f * 2, dur: .35, type: 'triangle', vol: .03, delay: i * .07 });
-  });
-}
+const sfx = {
+  tick: p => {
+    if (muted) return;
+    const now = performance.now();
+    if (now - lastTickTime < 40) return;
+    lastTickTime = now;
+    tone({ freq: 200 + p * 180, dur: .07, type: 'triangle', vol: .05 + p * .035 });
+    noise({ dur: .05, vol: .02 + p * .02, filterFreq: 600, q: 2 });
+  },
+  flash: () => {
+    noise({ dur: .5, vol: .16, filterFreq: 900, q: .4 });
+    tone({ freq: 220, freq2: 65, dur: .7, vol: .08 });
+    tone({ freq: 440, freq2: 110, dur: .5, type: 'triangle', vol: .05 });
+  },
+  click: () => tone({ freq: 520, dur: .09, vol: .06 }),
+  sell: () => {
+    tone({ freq: 660, freq2: 990, dur: .22, vol: .08, vib: 2 });
+    tone({ freq: 990, dur: .18, type: 'triangle', vol: .04, delay: .08 });
+  },
+  drop: r => {
+    const c = {
+      common:    [392, 523],
+      rare:      [392, 494, 587, 784],
+      epic:      [440, 554, 659, 880, 1109],
+      legendary: [523, 659, 784, 988, 1175, 1568],
+      mythic:    [587, 740, 880, 1175, 1480, 1760],
+      leader:    [659, 880, 1046, 1318, 1760, 2093],
+      secret:    [784, 988, 1175, 1568, 1975, 2350],
+      exclusive: [880, 1108, 1318, 1760, 2217, 2637],
+      ultimate:  [1046, 1318, 1568, 2093, 2637, 3136, 3520]
+    }[r] || [392, 523];
+    noise({ dur: .22, vol: .1, filterFreq: 800, q: .5 });
+    c.forEach((f, i) => {
+      tone({ freq: f, dur: .55, vol: .11, delay: i * .07, vib: 3 });
+      tone({ freq: f * 2, dur: .35, type: 'triangle', vol: .03, delay: i * .07 });
+    });
+  }
+};
