@@ -8,7 +8,7 @@
   :root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--acc:#fff;--red:#ff4444;--grn:#48bb78;--blue:#4299e1}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--txt);font-family:ui-monospace,monospace;padding:20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
-  .box{background:var(--pan);border:1px solid var(--lin);padding:20px;border-radius:6px;width:100%;max-width:650px;display:flex;flex-direction:column;gap:15px;margin-bottom:20px}
+  .box{background:var(--pan);border:1px solid var(--lin);padding:20px;border-radius:6px;width:100%;max-width:700px;display:flex;flex-direction:column;gap:15px;margin-bottom:20px}
   h2{text-align:center;margin-bottom:5px;color:var(--acc);font-size:18px;text-transform:uppercase;letter-spacing:1px}
   h3{font-size:13px;color:var(--blue);margin-bottom:5px;border-bottom:1px solid var(--lin);padding-bottom:5px;text-transform:uppercase}
   input,select,button{padding:10px;background:var(--pan2);border:1px solid var(--lin);color:#fff;border-radius:4px;font-family:inherit;font-size:13px;outline:none;transition:0.2s}
@@ -34,7 +34,10 @@
   .inv-item .del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;opacity:0;transition:.2s}
   .inv-item:hover .del{opacity:1}
 
-  .spawn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:10px}
+  /* Стили для выдачи предметов (сгруппировано по редкости) */
+  .spawn-section { margin-bottom: 15px; }
+  .spawn-section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 5px 0; border-bottom: 1px solid var(--lin); margin-bottom: 8px; text-align: left; }
+  .spawn-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
   .spawn-item{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.03);border:1px dashed var(--lin);padding:6px;border-radius:4px;cursor:pointer;transition:.2s;text-align:center}
   .spawn-item:hover{border-color:var(--grn);background:rgba(72,187,120,0.1);transform:translateY(-2px)}
   .spawn-item img{width:36px;height:36px;object-fit:contain;margin-bottom:4px}
@@ -98,15 +101,9 @@
     </div>
     <div class="inv-grid" id="adminInvGrid"></div>
 
-    <!-- Выдача предметов -->
+    <!-- Выдача предметов (Все в одном месте) -->
     <h3>🎁 Выдать предмет</h3>
-    <div class="row" style="margin-bottom:8px">
-      <select id="spawnCrate" onchange="renderSpawnGrid()">
-        <option value="crate1">Season Crate 1</option>
-        <option value="crate2">Gem Crate 1</option>
-      </select>
-    </div>
-    <div class="spawn-grid" id="spawnGrid"></div>
+    <div id="spawnContainer" style="max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
   </div>
 
   <hr style="border-color:var(--lin);margin:10px 0">
@@ -122,22 +119,31 @@ const API_URL = 'https://grenko-api.treugalnik.workers.dev';
 // Копия данных для отрисовки
 const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
 const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
-const CRATES = {
-  crate1: { pool: [
-    {name:'GrenkBot-A1', r:'common', price:50, img:'https://yourimageshare.com/ib/zwYuDDfH8D.jpg', stats:{Type:'Single',Damage:'15 - 35',Range:'10 - 13',Cooldown:'1.75 - 0.5',Limit:'5'}},
-    {name:'GrenkTurret-A1', r:'rare', price:150, img:'https://yourimageshare.com/ib/4Qf4kNjKEl.jpg', stats:{Type:'Splash',Damage:'45 - 125',Range:'13 - 15',Cooldown:'2 - 1',Limit:'3'}},
-    {name:'Gronke', r:'epic', price:400, img:'https://yourimageshare.com/ib/u4qJyiSjUY.jpg', stats:{Type:'Stun',Damage:'125 - 425',Range:'16 - 20',Cooldown:'5 - 3','Stun Time':'0.3',Limit:'2'}},
-    {name:'GrenkerDroid', r:'legendary', price:900, img:'https://yourimageshare.com/ib/fxvI30kSzR.jpg', stats:{Type:'Support','Damage Boost':'15% - 22%',Range:'13 - 14.75',Limit:'3'}},
-    {name:'The ElderGrenk', r:'mythic', price:1800, img:'https://yourimageshare.com/ib/yScfKp7Eir.jpg', stats:{Type:'Double',Damage:'95 - 240',Range:'12 - 15',Cooldown:'2.5 - 0.4',Limit:'3'}},
-    {name:'Grenko', r:'leader', price:3500, img:'https://yourimageshare.com/ib/iCcdyCqr3N.jpg', secret:true, stats:{Type:'Spawner + Pierce',Damage:'150 - 430',Range:'11 - 14',Cooldown:'3 - 2','Spawn Cooldown':'30 - 25','Ally HP':'450 - 1000','Ally DPS':'0 - 275',Limit:'1'}},
-    {name:'Paradoxed Grenko', r:'secret', price:7500, img:'https://yourimageshare.com/ib/qqH26h3kBO.jpg', secret:true, stats:{Type:'Knockback',Damage:'500 - 1450',Range:'13.5 - 15',Cooldown:'2 - 0.75','Knockback Strength':'1 Studs - 2.25 Studs',Limit:'2'}}
-  ]},
-  crate2: { pool: [
-    {name:'Gem GrenkTurret-A3', r:'exclusive', price:500, img:'https://yourimageshare.com/ib/uEaf0uwYY6.jpg', stats:{Type:'Slow',Damage:'300 - 550',Range:'14 - 16',Cooldown:'3 - 1.5',Limit:'3'}},
-    {name:'Gem The ElderGrenk', r:'exclusive', price:1200, img:'https://yourimageshare.com/ib/98RnJ4wA8h.jpg', stats:{Type:'Stun + Double',Damage:'600 - 1300',Range:'12 - 13.5',Cooldown:'4 - 2.25','Stun Time':'0.35',Limit:'3'}},
-    {name:'Gem Lord Grenko', r:'exclusive', price:2500, img:'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg', secret:true, stats:{Type:'Slow + Stun + Spawner',Damage:'650 - 2250',Range:'14.5 - 20',Cooldown:'3 - 1.25','Ally HP':'600 - 1250','Ally DPS':'200 - 550','Spawn Cooldown':'25 - 20','Stun Time':'0.4',Limit:'1'}}
-  ]}
+const RARITY = {
+  common:    {label: 'Common',    color: '#6cb862'},
+  rare:      {label: 'Rare',      color: '#2557a6'},
+  epic:      {label: 'Epic',      color: '#b554e8'},
+  legendary: {label: 'Legendary', color: '#fef605'},
+  mythic:    {label: 'Mythic',    color: '#b51500'},
+  leader:    {label: 'Leader',    color: '#4bb152'},
+  secret:    {label: 'Secret',    color: '#fff'},
+  exclusive: {label: 'Exclusive', color: '#eec5ff'}
 };
+const RARITY_ORDER = ['exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
+
+const ALL_UNITS = [
+  {name:'GrenkBot-A1', r:'common', price:50, img:'https://yourimageshare.com/ib/zwYuDDfH8D.jpg', stats:{Type:'Single',Damage:'15 - 35',Range:'10 - 13',Cooldown:'1.75 - 0.5',Limit:'5'}},
+  {name:'GrenkTurret-A1', r:'rare', price:150, img:'https://yourimageshare.com/ib/4Qf4kNjKEl.jpg', stats:{Type:'Splash',Damage:'45 - 125',Range:'13 - 15',Cooldown:'2 - 1',Limit:'3'}},
+  {name:'Gronke', r:'epic', price:400, img:'https://yourimageshare.com/ib/u4qJyiSjUY.jpg', stats:{Type:'Stun',Damage:'125 - 425',Range:'16 - 20',Cooldown:'5 - 3','Stun Time':'0.3',Limit:'2'}},
+  {name:'GrenkerDroid', r:'legendary', price:900, img:'https://yourimageshare.com/ib/fxvI30kSzR.jpg', stats:{Type:'Support','Damage Boost':'15% - 22%',Range:'13 - 14.75',Limit:'3'}},
+  {name:'The ElderGrenk', r:'mythic', price:1800, img:'https://yourimageshare.com/ib/yScfKp7Eir.jpg', stats:{Type:'Double',Damage:'95 - 240',Range:'12 - 15',Cooldown:'2.5 - 0.4',Limit:'3'}},
+  {name:'Grenko', r:'leader', price:3500, img:'https://yourimageshare.com/ib/iCcdyCqr3N.jpg', secret:true, stats:{Type:'Spawner + Pierce',Damage:'150 - 430',Range:'11 - 14',Cooldown:'3 - 2','Spawn Cooldown':'30 - 25','Ally HP':'450 - 1000','Ally DPS':'0 - 275',Limit:'1'}},
+  {name:'Paradoxed Grenko', r:'secret', price:7500, img:'https://yourimageshare.com/ib/qqH26h3kBO.jpg', secret:true, stats:{Type:'Knockback',Damage:'500 - 1450',Range:'13.5 - 15',Cooldown:'2 - 0.75','Knockback Strength':'1 Studs - 2.25 Studs',Limit:'2'}},
+  {name:'Gem GrenkTurret-A3', r:'exclusive', price:500, img:'https://yourimageshare.com/ib/uEaf0uwYY6.jpg', stats:{Type:'Slow',Damage:'300 - 550',Range:'14 - 16',Cooldown:'3 - 1.5',Limit:'3'}},
+  {name:'Gem The ElderGrenk', r:'exclusive', price:1200, img:'https://yourimageshare.com/ib/98RnJ4wA8h.jpg', stats:{Type:'Stun + Double',Damage:'600 - 1300',Range:'12 - 13.5',Cooldown:'4 - 2.25','Stun Time':'0.35',Limit:'3'}},
+  {name:'Gem Lord Grenko', r:'exclusive', price:2500, img:'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg', secret:true, stats:{Type:'Slow + Stun + Spawner',Damage:'650 - 2250',Range:'14.5 - 20',Cooldown:'3 - 1.25','Ally HP':'600 - 1250','Ally DPS':'200 - 550','Spawn Cooldown':'25 - 20','Stun Time':'0.4',Limit:'1'}},
+  {name:'Eggren', r:'exclusive', price:500, img:'https://yourimageshare.com/ib/hzhMDIz2GN.png', stats:{Type:'Critical Stun',Damage:'330 - 880',Range:'12.5 - 16',Cooldown:'3 - 2.25','Critical Stun Chance':'25%','Critical Stun Damage Multiplier':'x1.5 - x3','Critical Stun Time':'0.35 - 0.5'}}
+];
 
 let currentSave = null;
 let currentUserId = null;
@@ -269,10 +275,9 @@ function renderInv() {
   
   inv.forEach((item, index) => {
     let imgUrl = FALLBACK_IMG;
-    for (let c in CRATES) {
-      let found = CRATES[c].pool.find(i => i.name === item.name);
-      if (found && found.img) { imgUrl = found.img; break; }
-    }
+    const found = ALL_UNITS.find(i => i.name === item.name);
+    if (found && found.img) imgUrl = found.img;
+
     const el = document.createElement('div');
     el.className = 'inv-item';
     el.innerHTML = `<div class="del">✕</div><img src="${imgUrl}"><span>${item.name}</span>`;
@@ -287,23 +292,38 @@ function renderInv() {
   });
 }
 
+// Новая единая функция выдачи с группировкой по редкости
 function renderSpawnGrid() {
-  const crateId = document.getElementById('spawnCrate').value;
-  const pool = CRATES[crateId].pool;
-  const grid = document.getElementById('spawnGrid');
-  grid.innerHTML = '';
-  
-  pool.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'spawn-item';
-    el.innerHTML = `<img src="${item.img || GIFT_IMG}"><span>${item.name}</span>`;
-    el.onclick = () => {
-      if(currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
-      currentSave.inventory.push({ name: item.name, r: item.r, price: item.price || 100, stats: item.stats || {} }); 
-      saveChanges();
-      renderAdmin();
-    };
-    grid.appendChild(el);
+  const container = document.getElementById('spawnContainer');
+  container.innerHTML = '';
+
+  RARITY_ORDER.forEach(rKey => {
+    const unitsInRarity = ALL_UNITS.filter(u => u.r === rKey);
+    if (unitsInRarity.length === 0) return;
+
+    const r = RARITY[rKey];
+    const section = document.createElement('div');
+    section.className = 'spawn-section';
+    section.innerHTML = `<div class="spawn-section-title" style="color:${r.color}">${r.label}</div>`;
+    
+    const row = document.createElement('div');
+    row.className = 'spawn-row';
+
+    unitsInRarity.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'spawn-item';
+      el.innerHTML = `<img src="${item.img || GIFT_IMG}"><span>${item.name}</span>`;
+      el.onclick = () => {
+        if(currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
+        currentSave.inventory.push({ name: item.name, r: item.r, price: item.price || 100, stats: item.stats || {} }); 
+        saveChanges();
+        renderAdmin();
+      };
+      row.appendChild(el);
+    });
+
+    section.appendChild(row);
+    container.appendChild(section);
   });
 }
 
