@@ -18,13 +18,12 @@ const iconOf=(name,hide=false)=>{
   return it.img ? `<img src="${it.img}" alt="${name}">` : `<img src="${GIFT_IMG}">`;
 };
 
-// ФУНКЦИЯ ВЫБОРА ПРЕДМЕТА С УЧЕТОМ РЕЖИМА БОГА
 const randomItem = () => {
-  // 1. Проверка на принудительный дроп
+  // 1. Проверка на форс-дроп
   if (gameSettings && gameSettings.forceDrop) {
     const forced = getItemData(gameSettings.forceDrop);
     if (forced) {
-      gameSettings.forceDrop = null; // Сбрасываем после выдачи
+      gameSettings.forceDrop = null; 
       return forced;
     }
   }
@@ -32,12 +31,11 @@ const randomItem = () => {
   const pool = CRATES[activeCrate].pool;
   let totalChance = 0;
   
-  // 2. Применение множителя удачи
+  // 2. Множитель удачи
   const luck = (gameSettings && gameSettings.luck) ? gameSettings.luck : 1;
   const modifiedPool = pool.map(entry => {
     const item = getItemData(entry.name);
     let chance = entry.chance;
-    // Умножаем шанс только для редких предметов
     if (['exclusive', 'secret', 'leader', 'mythic'].includes(item.r)) {
       chance *= luck;
     }
@@ -45,7 +43,7 @@ const randomItem = () => {
     return { name: entry.name, chance };
   });
 
-  // 3. Случайный выбор из измененного пула
+  // 3. Выбор
   let random = Math.random() * totalChance;
   for (const entry of modifiedPool) {
     random -= entry.chance;
