@@ -139,7 +139,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .confirm-card .btn-row button{flex:1;padding:11px 14px;font-size:13px}
 .confirm-card .btn-danger{border-color:var(--red);color:var(--red);background:linear-gradient(180deg,rgba(255,68,68,.12),transparent)}
 .confirm-card .btn-danger:hover{background:linear-gradient(180deg,rgba(255,68,68,.25),transparent)}
-#tg-login-container{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;background:var(--pan);padding:15px;border:1px solid var(--lin);border-radius:6px;text-align:center;box-shadow:var(--sh)}
 
 /* --- СТИЛИ ДЛЯ ИНДЕКСА --- */
 .index-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow-y: auto; max-height: 60vh; padding-right: 5px; }
@@ -182,6 +181,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .profile-unit { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; font-size: 12px; }
 .profile-unit img { width: 24px; height: 24px; object-fit: contain; }
 .profile-unit .u-price { color: var(--acc); margin-left: auto; font-family: monospace; }
+.profile-warning { font-size: 12px; color: var(--red); text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 10px; border-radius: 4px; border: 1px solid var(--red); }
+.profile-warning.hidden { display: none; }
 
 /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
 @media (max-width: 768px) {
@@ -222,7 +223,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .music-widget { bottom: 10px; right: 10px; padding: 6px 10px; gap: 6px; flex-direction: column; align-items: flex-end; border-radius: 8px; }
   .music-widget > div:first-child { display: none; }
   .music-widget input[type=range] { width: 40px; }
-  #tg-login-container { top: 10px; left: 10px; transform: none; width: calc(100vw - 20px); padding: 10px; }
   .index-grid { max-height: 70vh; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
@@ -239,15 +239,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 </style>
 </head>
 <body>
-
-<div id="tg-login-container">
-  <p style="margin-bottom:10px; font-size:14px;">Войдите, чтобы сохранять прогресс везде</p>
-  <script async src="https://telegram.org/js/telegram-widget.js?22" 
-          data-telegram-login="grenkocrates_bot" 
-          data-size="medium" 
-          data-onauth="onTelegramAuth(user)" 
-          data-request-access="write"></script>
-</div>
 
 <div class="layout">
   <div class="sidebar">
@@ -402,6 +393,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
     <button class="close-x" onclick="document.getElementById('profileOverlay').classList.remove('show')">✕</button>
     <h2 style="margin-bottom:15px;font-size:18px; color:#ffaa00;">👤 Профиль</h2>
     
+    <div class="profile-warning" id="profWarning" style="display:none;">
+      ⚠️ Вы играете как гость. Прогресс не сохраняется в облаке и будет потерян при очистке кэша.
+    </div>
+
     <div class="profile-info">
       <div class="profile-row">
         <span>Аккаунт:</span>
@@ -426,7 +421,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
       </div>
     </div>
 
-    <button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent);" onclick="logoutProfile()">Выйти из профиля</button>
+    <div id="profActions" style="width:100%; display:flex; flex-direction:column; gap:10px;">
+      <!-- Сюда будем вставлять кнопку входа/выхода через JS -->
+    </div>
   </div>
 </div>
 
@@ -850,27 +847,32 @@ $('shopBtn').onclick = () => {
 /* ===== ПРОФИЛЬ ===== */
 function renderProfile() {
   let username = 'Гость';
-  let userId = 'Без ID';
-
+  
   // Если играем в Telegram
   if (window.Telegram?.WebApp?.initData) {
     const params = new URLSearchParams(window.Telegram.WebApp.initData);
     const user = JSON.parse(params.get('user'));
     if (user) {
       username = user.username ? '@' + user.username : user.first_name;
-      userId = user.id;
     }
   } 
   // Если авторизованы через сайт
   else if (tgWebData) {
     username = tgWebData.username ? '@' + tgWebData.username : tgWebData.first_name;
-    userId = tgWebData.id;
   }
 
+  const isGuest = (username === 'Гость');
   $('profUsername').textContent = username;
   $('profCases').textContent = casesOpened;
   $('profBalance').textContent = Math.floor(balance) + ' $';
   $('profGems').textContent = Math.floor(gems) + ' 💎';
+
+  // Показываем предупреждение, если это гость
+  if (isGuest) {
+    $('profWarning').style.display = 'block';
+  } else {
+    $('profWarning').style.display = 'none';
+  }
 
   // Топ-3 юнита
   const sortedInv = [...inventory].sort((a,b) => b.price - a.price);
@@ -894,6 +896,34 @@ function renderProfile() {
       container.appendChild(el);
     });
   }
+
+  // Кнопки управления (Вход / Выход)
+  const actionsContainer = $('profActions');
+  actionsContainer.innerHTML = '';
+  
+  if (isGuest && !window.Telegram?.WebApp?.initData) {
+    // Если мы на сайте и мы гость, показываем кнопку входа
+    actionsContainer.innerHTML = `
+      <div style="text-align:center; margin-bottom:10px; font-size:12px;">Войдите, чтобы сохранять прогресс в облаке:</div>
+      <div id="tg-login-widget" style="display:flex; justify-content:center;"></div>
+    `;
+    
+    // Рендерим виджет Telegram в этот контейнер
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = "https://telegram.org/js/telegram-widget.js?22";
+    script.setAttribute('data-telegram-login', 'grenkocrates_bot');
+    script.setAttribute('data-size', 'medium');
+    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+    script.setAttribute('data-request-access', 'write');
+    document.getElementById('tg-login-widget').appendChild(script);
+    
+  } else if (!isGuest) {
+    // Если не гость, показываем кнопку выхода
+    actionsContainer.innerHTML = `
+      <button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent);" onclick="logoutProfile()">Выйти из профиля</button>
+    `;
+  }
 }
 
 $('profileBtn').onclick = () => {
@@ -903,24 +933,32 @@ $('profileBtn').onclick = () => {
 };
 
 function logoutProfile() {
-  if(!confirm('Выйти из профиля и отвязать аккаунт? Прогресс сохранится в облаке, но вы больше не сможете его загружать.')) return;
+  if(!confirm('Выйти из профиля и отвязать аккаунт? Ваш прогресс останется в облаке, но вы не сможете к нему получить доступ без повторного входа.')) return;
   
-  // Удаляем сохраненного пользователя из localStorage
   localStorage.removeItem('grenko_tg_user');
   tgWebData = null;
   
-  // Если мы в Telegram, там нельзя "разлогиниться" стандартными методами, 
-  // но мы можем просто перезагрузить страницу, чтобы игра забыла текущую сессию (сбросит локальный кэш)
-  // Хотя данные подтянутся из облака при перезагрузке.
+  toast('Вы вышли из профиля');
+  $('profileOverlay').classList.remove('show');
   
-  // Для полного сброса на сайте:
-  localStorage.removeItem(SAVE_KEY);
-  
-  toast('Вы вышли из профиля. Перезагрузка...');
+  // Перезагружаем игру, чтобы она сбросила состояние на гостя
   setTimeout(() => {
     window.location.reload();
   }, 1000);
 }
+
+// Функция для обработки входа через виджет (вызывается самим Telegram)
+window.onTelegramAuth = function(user) {
+  tgWebData = user;
+  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); 
+  toast('Вход выполнен! Синхронизация...');
+  load().then(() => {
+    renderInventory();
+    updateUI();
+    $('profileOverlay').classList.remove('show'); // Закрываем профиль
+    renderProfile(); // Перерисовываем профиль (уже как не гость)
+  });
+};
 
 /* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
@@ -1116,36 +1154,19 @@ function applyLang(){
 }
 document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.click();applyLang();save();};
 
-/* ===== TELEGRAM LOGIN FOR WEB ===== */
-window.onTelegramAuth = function(user) {
-  tgWebData = user;
-  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); 
-  toast('Вход выполнен! Синхронизация...');
-  load().then(() => {
-    renderInventory();
-    updateUI();
-    document.getElementById('tg-login-container').style.display = 'none';
-  });
-};
-
 function checkTelegramAuth() {
-  setTimeout(() => {
-    if (window.Telegram?.WebApp?.initData) {
-      document.getElementById('tg-login-container').style.display = 'none'; 
-      return;
+  // Больше не показываем верхнюю плашку, всё управление в профиле
+  if (window.Telegram?.WebApp?.initData) {
+    return;
+  }
+  const savedUser = localStorage.getItem('grenko_tg_user');
+  if (savedUser) {
+    try {
+      tgWebData = JSON.parse(savedUser); 
+    } catch(e) {
+      localStorage.removeItem('grenko_tg_user'); 
     }
-    const savedUser = localStorage.getItem('grenko_tg_user');
-    if (savedUser) {
-      try {
-        tgWebData = JSON.parse(savedUser); 
-        document.getElementById('tg-login-container').style.display = 'none'; 
-        return; 
-      } catch(e) {
-        localStorage.removeItem('grenko_tg_user'); 
-      }
-    }
-    document.getElementById('tg-login-container').style.display = 'block';
-  }, 300);
+  }
 }
 
 // --- СИНХРОНИЗАЦИЯ В РЕАЛЬНОМ ВРЕМЕНИ ---
