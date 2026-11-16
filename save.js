@@ -1,6 +1,19 @@
 // save.js
+let ignoreNextSave = false;
+
 async function save() {
-  const saveData = { balance, gems, inventory, activeCrate, lang, autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, vol: bgMusic.volume, muted, casesOpened };
+  if (ignoreNextSave) {
+    ignoreNextSave = false;
+    return;
+  }
+
+  const saveData = { 
+    balance, gems, inventory, activeCrate, lang, 
+    autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, 
+    vol: bgMusic.volume, muted, casesOpened,
+    luck: gameSettings.luck, forceDrop: gameSettings.forceDrop
+  };
+  
   localStorage.setItem(SAVE_KEY, JSON.stringify(saveData)); 
   
   if (!tgWebData) return; 
@@ -14,11 +27,16 @@ async function save() {
   } catch (e) { console.error('Ошибка сохранения:', e); }
 }
 
-async function load() {
+async function loadWithAuth() {
+  const savedUser = localStorage.getItem('grenko_tg_user');
+  if (savedUser) {
+    try { tgWebData = JSON.parse(savedUser); } catch(e) { localStorage.removeItem('grenko_tg_user'); }
+  }
+
   try {
     const local = JSON.parse(localStorage.getItem(SAVE_KEY));
     if (local) applySaveData(local);
-  } catch (e) {}
+  } catch(e) {}
 
   if (tgWebData) {
     try {
@@ -31,11 +49,11 @@ async function load() {
         const cloudData = await res.json();
         if (cloudData && Object.keys(cloudData).length > 0) {
           applySaveData(cloudData);
-          save(); 
+          ignoreNextSave = true; 
           toast('Прогресс загружен из облака');
         }
       }
-    } catch (e) { console.error('Ошибка загрузки:', e); }
+    } catch(e) { console.error('Ошибка загрузки:', e); }
   }
 }
 
@@ -52,4 +70,6 @@ function applySaveData(s) {
   if (typeof s.muted === 'boolean') muted = s.muted;
   if (typeof s.vol === 'number') { bgMusic.volume = s.vol; volumeSlider.value = s.vol; }
   if (typeof s.casesOpened === 'number') casesOpened = s.casesOpened;
+  if (typeof s.luck === 'number') gameSettings.luck = s.luck;
+  if (s.forceDrop !== undefined) gameSettings.forceDrop = s.forceDrop;
 }
