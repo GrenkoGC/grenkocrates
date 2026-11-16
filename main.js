@@ -692,7 +692,23 @@ function playGacha() {
     }
   }, 50);
 }
+function sellAll() {
+  if (inventory.length === 0) return toast('Инвентарь уже пуст');
+  
+  if (!confirm(`Вы уверены, что хотите продать ВСЕ предметы из инвентаря (${inventory.length} шт.)?`)) return;
 
+  let totalEarned = 0;
+  inventory.forEach(it => totalEarned += it.price);
+  
+  balance += totalEarned;
+  inventory = [];
+  
+  updateUI();
+  renderInventory();
+  sfx.sell();
+  toast(`Продано всё за ${totalEarned} $`);
+  save();
+}
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 
 function initApp() {
