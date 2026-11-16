@@ -14,6 +14,30 @@ function updateUI(){
   $('sellAllBtn').textContent=l.sellAll;
 }
 
+function applyLang(){
+  const t=L10N[lang];
+  $('title').textContent=t.title;
+  $('lblBal').textContent=t.lblBal;
+  $('lblGems').textContent=t.lblGems;
+  $('lblInv').textContent=t.lblInv;
+  $('lblChances').textContent=t.lblChances;
+  const elIndex = $('lblIndex'); if (elIndex) elIndex.textContent = t.lblIndex || 'Индекс';
+  const elShop = $('lblShop'); if (elShop) elShop.textContent = t.lblShop || 'Магазин';
+  const elProfile = $('lblProfile'); if (elProfile) elProfile.textContent = t.lblProfile || 'Профиль';
+  
+  $('lblInvTitle').textContent=t.lblInvTitle;
+  $('lblInvHint').textContent=t.lblInvHint;
+  $('invGrid').setAttribute('data-empty',t.emptyInv);
+  $('lblChancesTitle').textContent=t.lblChancesTitle;
+  $('dClose').textContent=t.takeInv;
+  $('langBtn').textContent=lang==='ru'?'EN':'RU';
+  $('autoBtn').textContent=t.autoOpen;
+  if(!inventory.length)$('history').textContent=t.noHist;
+  if(!spinning&&!dropOverlay.classList.contains('show')&&!multiOverlay.classList.contains('show'))$('slotName').textContent=t.clickOpen;
+  if($('chancesOverlay').classList.contains('show'))renderChances();
+  updateUI();renderInventory();
+}
+
 function renderInventory(){
   invGrid.innerHTML='';
   inventory.forEach((it,i)=>{
@@ -41,9 +65,7 @@ function renderInventory(){
       tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
     };
     
-    el.onmouseleave = () => {
-      tooltip.classList.remove('show');
-    };
+    el.onmouseleave = () => { tooltip.classList.remove('show'); };
     
     el.onclick=()=>{
       const r = RARITY[it.r];
