@@ -10,5 +10,5 @@ const sfx={
   flash:()=>{noise({dur:.5,vol:.16,filterFreq:900,q:.4});tone({freq:220,freq2:65,dur:.7,vol:.08});tone({freq:440,freq2:110,dur:.5,type:'triangle',vol:.05});},
   click:()=>tone({freq:520,dur:.09,vol:.06}),
   sell:()=>{tone({freq:660,freq2:990,dur:.22,vol:.08,vib:2});tone({freq:990,dur:.18,type:'triangle',vol:.04,delay:.08});},
-  drop:r=>{const c={common:[392,523],rare:[392,494,587,784],epic:[440,554,659,880,1109],legendary:[523,659,784,988,1175,1568],mythic:[587,740,880,1175,1480,1760],leader:[659,880,1046,1318,1760,2093],secret:[784,988,1175,1568,1975,2350],exclusive:[880,1108,1318,1760,2217,2637]}[r]||[392,523];noise({dur:.22,vol:.1,filterFreq:800,q:.5});c.forEach((f,i)=>{tone({freq:f,dur:.55,vol:.11,delay:i*.07,vib:3});tone({freq:f*2,dur:.35,type:'triangle',vol:.03,delay:i*.07});});}
+drop:r=>{const c={common:[392,523],rare:[392,494,587,784],epic:[440,554,659,880,1109],legendary:[523,659,784,988,1175,1568],mythic:[587,740,880,1175,1480,1760],leader:[659,880,1046,1318,1760,2093],secret:[784,988,1175,1568,1975,2350],exclusive:[880,1108,1318,1760,2217,2637],ultimate:[1046,1318,1568,2093,2637,3136,3520]}[r]||[392,523];noise({dur:.22,vol:.1,filterFreq:800,q:.5});c.forEach((f,i)=>{tone({freq:f,dur:.55,vol:.11,delay:i*.07,vib:3});tone({freq:f*2,dur:.35,type:'triangle',vol:.03,delay:i*.07});});}
 };
