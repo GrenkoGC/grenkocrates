@@ -25,7 +25,6 @@ function applyLang(){
   const elIndex = $('lblIndex'); if (elIndex) elIndex.textContent = t.lblIndex || 'Индекс';
   const elShop = $('lblShop'); if (elShop) elShop.textContent = t.lblShop || 'Магазин';
   const elProfile = $('lblProfile'); if (elProfile) elProfile.textContent = t.lblProfile || 'Профиль';
-  
   $('lblInvTitle').textContent=t.lblInvTitle;
   $('lblInvHint').textContent=t.lblInvHint;
   $('invGrid').setAttribute('data-empty',t.emptyInv);
@@ -426,38 +425,6 @@ function playGacha(){
 }
 
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
-async function loadWithAuth() {
-  const savedUser = localStorage.getItem('grenko_tg_user');
-  if (savedUser) {
-    try { tgWebData = JSON.parse(savedUser); } catch(e) { localStorage.removeItem('grenko_tg_user'); }
-  }
-
-  try {
-    const local = JSON.parse(localStorage.getItem(SAVE_KEY));
-    if (local) applySaveData(local);
-  } catch(e) {}
-
-  if (tgWebData) {
-    try {
-      const res = await fetch(`${API_URL}/load`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: tgWebData.id })
-      });
-      if (res.ok) {
-        const cloudData = await res.json();
-        if (cloudData && Object.keys(cloudData).length > 0) {
-          applySaveData(cloudData);
-          if (cloudData.luck) gameSettings.luck = cloudData.luck;
-          if (cloudData.forceDrop !== undefined) gameSettings.forceDrop = cloudData.forceDrop;
-          save(); 
-          toast('Прогресс загружен из облака');
-        }
-      }
-    } catch(e) { console.error('Ошибка загрузки:', e); }
-  }
-}
-
 function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
