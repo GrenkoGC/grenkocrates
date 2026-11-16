@@ -9,7 +9,6 @@ function toast(m){
   t._t = setTimeout(()=>t.classList.remove('show'), 2000);
 }
 
-// Получаем полные данные юнита из units.js по имени
 const getItemData = (name) => ALL_UNITS.find(u => u.name === name);
 
 const iconOf=(name,hide=false)=>{
@@ -19,27 +18,26 @@ const iconOf=(name,hide=false)=>{
   return it.img ? `<img src="${it.img}" alt="${name}">` : `<img src="${GIFT_IMG}">`;
 };
 
-// Логика выбора предмета с учетом Режима Бога
+// ФУНКЦИЯ ВЫБОРА ПРЕДМЕТА С УЧЕТОМ РЕЖИМА БОГА
 const randomItem = () => {
-  // 1. Проверяем принудительный дроп
-  if (gameSettings.forceDrop) {
+  // 1. Проверка на принудительный дроп
+  if (gameSettings && gameSettings.forceDrop) {
     const forced = getItemData(gameSettings.forceDrop);
     if (forced) {
-      gameSettings.forceDrop = null; // Сбрасываем после использования
+      gameSettings.forceDrop = null; // Сбрасываем после выдачи
       return forced;
     }
   }
 
   const pool = CRATES[activeCrate].pool;
   let totalChance = 0;
-
-  // 2. Применяем множитель удачи к редким предметам
-  const luck = gameSettings.luck || 1;
+  
+  // 2. Применение множителя удачи
+  const luck = (gameSettings && gameSettings.luck) ? gameSettings.luck : 1;
   const modifiedPool = pool.map(entry => {
     const item = getItemData(entry.name);
     let chance = entry.chance;
-    
-    // Если редкость редкая, умножаем шанс
+    // Умножаем шанс только для редких предметов
     if (['exclusive', 'secret', 'leader', 'mythic'].includes(item.r)) {
       chance *= luck;
     }
@@ -47,7 +45,7 @@ const randomItem = () => {
     return { name: entry.name, chance };
   });
 
-  // 3. Выбираем случайный предмет
+  // 3. Случайный выбор из измененного пула
   let random = Math.random() * totalChance;
   for (const entry of modifiedPool) {
     random -= entry.chance;
