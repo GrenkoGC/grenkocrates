@@ -858,3 +858,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initApp();
 });
+// --- ИСПРАВЛЕНИЕ КНОПКИ "ПРОДАТЬ ВСЁ" ---
+document.getElementById('sellAllBtn').onclick = function() {
+  if (!inventory || inventory.length === 0) {
+    alert("Инвентарь пуст! Продавать нечего.");
+    return;
+  }
+
+  // Спрашиваем подтверждение, чтобы случайно не продать всё
+  if (!confirm(`Вы уверены, что хотите продать ВСЕ предметы (${inventory.length} шт.)?`)) {
+    return;
+  }
+
+  let sum = 0;
+  inventory.forEach(i => sum += (Number(i.price) || 0));
+  
+  balance += sum;
+  inventory = [];
+  
+  // Обновляем экран
+  if (typeof renderInventory === 'function') renderInventory();
+  if (typeof updateUI === 'function') updateUI();
+  if (typeof save === 'function') save();
+  
+  // Показываем результат
+  alert('УСПЕХ! Продано всё на ' + sum + ' $. Баланс: ' + balance);
+};
