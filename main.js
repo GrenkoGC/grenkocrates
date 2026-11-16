@@ -693,21 +693,23 @@ function playGacha() {
   }, 50);
 }
 function sellAll() {
-  if (inventory.length === 0) return toast('Инвентарь уже пуст');
+  console.log("Кнопка нажата. Инвентарь:", inventory);
   
-  if (!confirm(`Вы уверены, что хотите продать ВСЕ предметы из инвентаря (${inventory.length} шт.)?`)) return;
+  if (!inventory || inventory.length === 0) {
+    return alert("Инвентарь пуст! Продавать нечего.");
+  }
 
-  let totalEarned = 0;
-  inventory.forEach(it => totalEarned += it.price);
+  let sum = 0;
+  inventory.forEach(i => sum += (Number(i.price) || 0));
   
-  balance += totalEarned;
+  balance += sum;
   inventory = [];
   
-  updateUI();
-  renderInventory();
-  sfx.sell();
-  toast(`Продано всё за ${totalEarned} $`);
-  save();
+  if (typeof renderInventory === 'function') renderInventory();
+  if (typeof updateUI === 'function') updateUI();
+  if (typeof save === 'function') save();
+  
+  alert('УСПЕХ! Продано всё на ' + sum + ' $. Баланс: ' + balance);
 }
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 
