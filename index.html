@@ -942,32 +942,23 @@ function linkAccount() {
 }
 
 function logoutProfile() {
-  if(!confirm('Выйти из профиля? Ваш локальный прогресс будет удалён, но данные в облаке сохранятся.')) return;
+  if(!confirm('Выйти из профиля? Локальный прогресс будет удалён. Облачный прогресс останется.')) return;
   
-  // 1. Отвязываем аккаунт
+  // 1. Очищаем все возможные ключи в localStorage
   localStorage.removeItem('grenko_tg_user');
+  localStorage.removeItem(SAVE_KEY); // Удаляем сейв
+  
+  // 2. Сбрасываем глобальные переменные (на всякий случай)
   tgWebData = null;
-  
-  // 2. Удаляем локальный кэш игры
-  localStorage.removeItem(SAVE_KEY);
-  
-  // 3. Сбрасываем переменные в памяти на дефолтные
   balance = 1000;
   gems = 50;
   inventory = [];
   casesOpened = 0;
   gachaSpins = 0;
-  gachaLastTick = Date.now();
   
-  toast('Вы вышли. Локальный прогресс сброшен');
-  $('profileOverlay').classList.remove('show');
-  
-  // 4. Перезагружаем страницу, чтобы она загрузила чистые данные
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
+  // 3. Принудительно перезагружаем страницу с обходом кэша (добавляем ?reset=1)
+  window.location.href = window.location.pathname + '?reset=' + Date.now();
 }
-
 /* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
   spinning=true;updateUI();
