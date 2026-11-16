@@ -1,4 +1,5 @@
 // main.js
+let gameSettings = { luck: 1, forceDrop: null };
 const scene = $('scene'), slotIcon = $('slotIcon'), slotName = $('slotName'), flash = $('flash'), dropOverlay = $('dropOverlay'), multiOverlay = $('multiOverlay'), invGrid = $('invGrid');
 const bgMusic = $('bgMusic'), volumeSlider = $('volumeSlider');
 
