@@ -19,16 +19,39 @@ const iconOf=(name,hide=false)=>{
   return it.img ? `<img src="${it.img}" alt="${name}">` : `<img src="${GIFT_IMG}">`;
 };
 
-// Выбор предмета на основе шансов из crates.js
+// Логика выбора предмета с учетом Режима Бога
 const randomItem = () => {
-  const pool = CRATES[activeCrate].pool;
-  let random = Math.random() * 100;
-  
-  for (const entry of pool) {
-    random -= entry.chance;
-    if (random <= 0) {
-      return getItemData(entry.name);
+  // 1. Проверяем принудительный дроп
+  if (gameSettings.forceDrop) {
+    const forced = getItemData(gameSettings.forceDrop);
+    if (forced) {
+      gameSettings.forceDrop = null; // Сбрасываем после использования
+      return forced;
     }
   }
-  return getItemData(pool[0].name);
+
+  const pool = CRATES[activeCrate].pool;
+  let totalChance = 0;
+
+  // 2. Применяем множитель удачи к редким предметам
+  const luck = gameSettings.luck || 1;
+  const modifiedPool = pool.map(entry => {
+    const item = getItemData(entry.name);
+    let chance = entry.chance;
+    
+    // Если редкость редкая, умножаем шанс
+    if (['exclusive', 'secret', 'leader', 'mythic'].includes(item.r)) {
+      chance *= luck;
+    }
+    totalChance += chance;
+    return { name: entry.name, chance };
+  });
+
+  // 3. Выбираем случайный предмет
+  let random = Math.random() * totalChance;
+  for (const entry of modifiedPool) {
+    random -= entry.chance;
+    if (random <= 0) return getItemData(entry.name);
+  }
+  return getItemData(modifiedPool[0].name);
 };
