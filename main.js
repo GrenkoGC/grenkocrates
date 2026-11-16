@@ -275,7 +275,6 @@ function processSpin(won,isAuto=false){
   scene.classList.add('tension');
 }
 
-/* ===== ФИКС ОКНА ДРОПА ===== */
 function showDrop(it){
   const r=RARITY[it.r];
   $('dIcon').innerHTML=iconOf(it.name,false);
@@ -288,7 +287,6 @@ function showDrop(it){
   const card = $('dropCard');
   card.style.borderColor=r.color;
   card.style.boxShadow=`0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
-  // Принудительно задаем размеры, чтобы окно не сжималось
   card.style.maxHeight = '85vh';
   card.style.overflow = 'hidden';
   card.style.display = 'flex';
@@ -301,8 +299,6 @@ function showDrop(it){
       const tk=L10N[lang].typeTrans[k]||k;
       return`<div class="stat-row" style="${idx===0?'color:#fff;font-weight:bold;margin-bottom:4px':''}"><span>${tk}:</span><span>${v}</span></div>`;
     }).join('');
-    
-    // Включаем внутренний скролл для блока характеристик
     s.style.maxHeight = '40vh';
     s.style.overflowY = 'auto';
     s.style.flexShrink = '0';
@@ -447,6 +443,7 @@ async function loadWithAuth() {
 }
 
 function initApp() {
+  // Привязка кнопок СРАЗУ
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
   $('autoBtn').onclick = () => { isAutoOpen = !isAutoOpen; $('autoBtn').classList.toggle('active', isAutoOpen); save(); if(isAutoOpen && !spinning) processSpin(randomItem(), true); };
@@ -467,10 +464,13 @@ function initApp() {
     renderInventory(); updateUI(); updateGachaUI(); applyLang(); toast('Прогресс сброшен');
   };
 
+  // Кнопки закрытия окон
+  $('dClose').onclick = () => { sfx.click(); dropOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
+  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
+
   // Гача
   $('gachaBtn').onclick = () => { sfx.click(); $('gachaOverlay').classList.add('show'); updateGachaUI(); $('gachaResult').textContent = ''; };
   $('gachaSpinBtn').onclick = playGacha;
-  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
 
   // Музыка
   bgMusic.volume = 0.2; volumeSlider.value = 0.2;
