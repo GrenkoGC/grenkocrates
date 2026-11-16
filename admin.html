@@ -25,7 +25,7 @@
   .row{display:flex;gap:10px;align-items:center}
   .row input, .row select{flex:1}
   .row button{white-space:nowrap;flex:0 0 auto}
-  
+
   .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:250px;overflow-y:auto;background:rgba(0,0,0,0.3);border:1px solid var(--lin);padding:8px;border-radius:4px}
   .inv-item{position:relative;display:flex;flex-direction:column;align-items:center;padding:6px;background:var(--pan2);border:1px solid var(--lin);border-radius:4px;font-size:10px;text-align:center;cursor:pointer}
   .inv-item:hover{border-color:var(--red)}
@@ -40,6 +40,64 @@
   .spawn-item:hover{border-color:var(--grn);background:rgba(72,187,120,0.1);transform:translateY(-2px)}
   .spawn-item img{width:36px;height:36px;object-fit:contain;margin-bottom:4px}
   .spawn-item span{font-size:9px;line-height:1.1;color:var(--txt2)}
+
+  /* ===== ULTIMATE RAINBOW ===== */
+  @keyframes ult-shift {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes ult-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 12px rgba(255, 0, 128, .45),
+        0 0 24px rgba(0, 200, 255, .25);
+    }
+    50% {
+      box-shadow:
+        0 0 22px rgba(255, 200, 0, .55),
+        0 0 36px rgba(120, 0, 255, .35);
+    }
+  }
+  .rar-ultimate {
+    background: linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4, #ff004c);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: ult-shift 4s linear infinite;
+    font-weight: 700;
+  }
+  .rar-ultimate-static {
+    background: linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .rar-ultimate-icon {
+    filter: drop-shadow(0 0 6px rgba(255,0,128,.7)) drop-shadow(0 0 12px rgba(0,200,255,.5));
+    border-radius: 8px;
+  }
+  .rar-ultimate-card {
+    border: 2px solid transparent !important;
+    background:
+      linear-gradient(var(--pan), var(--pan)) padding-box,
+      linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4, #ff004c) border-box;
+    background-size: auto, 200% 100%;
+    animation: ult-shift 4s linear infinite, ult-glow 3s ease-in-out infinite;
+  }
+  .inv-item.ultimate::before {
+    background: linear-gradient(180deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4);
+    background-size: 100% 200%;
+    animation: ult-shift 4s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rar-ultimate,
+    .rar-ultimate-card,
+    .inv-item.ultimate::before { animation: none; }
+  }
 </style>
 </head>
 <body>
@@ -65,7 +123,7 @@
 <div class="box hidden" id="adminBox" style="max-width: 700px;">
   <h2>🛠 Управление игрой</h2>
   <div class="msg" id="adminMsg" style="color:var(--grn)"></div>
-  
+
   <!-- Выбор игрока -->
   <div>
     <h3>👤 Выбрать игрока (по Telegram ID)</h3>
@@ -133,7 +191,9 @@ const API_URL = 'https://grenko-api.treugalnik.workers.dev';
 
 const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
 const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
+
 const RARITY = {
+  ultimate:  {label: 'Ultimate',  color: '#ff00d4'},
   common:    {label: 'Common',    color: '#6cb862'},
   rare:      {label: 'Rare',      color: '#2557a6'},
   epic:      {label: 'Epic',      color: '#b554e8'},
@@ -143,7 +203,8 @@ const RARITY = {
   secret:    {label: 'Secret',    color: '#fff'},
   exclusive: {label: 'Exclusive', color: '#eec5ff'}
 };
-const RARITY_ORDER = ['exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
+
+const RARITY_ORDER = ['ultimate', 'exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
 
 let currentSave = null;
 let currentUserId = null;
@@ -181,7 +242,7 @@ async function setupPass() {
 }
 
 function showSetup() {
-  if(!confirm('Удалить пароль?')) return;
+  if (!confirm('Удалить пароль?')) return;
   localStorage.removeItem(AUTH_KEY);
   location.reload();
 }
@@ -211,23 +272,21 @@ async function loadUser() {
   const id = document.getElementById('inpUserId').value;
   if (!id) return alert('Введите Telegram ID');
   currentUserId = id;
-  
+
   document.getElementById('adminMsg').textContent = 'Загрузка...';
-  
+
   try {
     const res = await fetch(`${API_URL}/admin/load`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminId: currentUserId }) 
+      body: JSON.stringify({ adminId: currentUserId })
     });
-    
+
     if (res.ok) {
       const data = await res.json();
       currentSave = data || { balance: 1000, gems: 50, inventory: [] };
-      
-      // Подтягиваем настройки удачи, если они есть
       document.getElementById('inpLuck').value = currentSave.luck || 1;
-      
+
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
       document.getElementById('adminMsg').textContent = 'Пользователь загружен';
@@ -236,7 +295,7 @@ async function loadUser() {
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
     }
-  } catch(e) {
+  } catch (e) {
     document.getElementById('adminMsg').textContent = 'Ошибка сервера';
   }
 }
@@ -244,16 +303,16 @@ async function loadUser() {
 async function saveChanges() {
   if (!currentUserId) return;
   document.getElementById('adminMsg').textContent = 'Сохранение...';
-  
+
   try {
-    await fetch(`${API_URL}/admin/save`, {  // <--- Отправляем на общий /admin/save
+    await fetch(`${API_URL}/admin/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminId: currentUserId, saveData: currentSave })
     });
     document.getElementById('adminMsg').textContent = 'Успешно сохранено на сервере!';
     setTimeout(() => document.getElementById('adminMsg').textContent = '', 2000);
-  } catch(e) {
+  } catch (e) {
     document.getElementById('adminMsg').textContent = 'Ошибка при сохранении';
   }
 }
@@ -261,8 +320,8 @@ async function saveChanges() {
 function setLuck() {
   if (!currentUserId) return alert('Сначала выберите игрока');
   const luck = parseFloat(document.getElementById('inpLuck').value) || 1;
-  
-  currentSave.luck = luck; // Записываем удачу в объект сейва
+
+  currentSave.luck = luck;
   saveChanges().then(() => {
     alert(`Множитель удачи сохранен на сервере: x${luck}`);
   });
@@ -271,12 +330,13 @@ function setLuck() {
 function setForceDrop() {
   if (!currentUserId) return alert('Сначала выберите игрока');
   const itemName = document.getElementById('inpForceDrop').value;
-  
-  currentSave.forceDrop = itemName || null; // Записываем форс-дроп в сейв
+
+  currentSave.forceDrop = itemName || null;
   saveChanges().then(() => {
     alert(itemName ? `Следующий дроп сохранен: ${itemName}` : 'Форс-дроп отключен');
   });
 }
+
 // --- ОТРИСОВКА ---
 function renderAdmin() {
   document.getElementById('inpBal').value = currentSave.balance;
@@ -290,22 +350,27 @@ function renderInv() {
   document.getElementById('invCountText').textContent = `${inv.length}/1000`;
   const grid = document.getElementById('adminInvGrid');
   grid.innerHTML = '';
-  
+
   if (inv.length === 0) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--txt2);font-size:12px;padding:20px">Инвентарь пуст</div>';
     return;
   }
-  
+
   inv.forEach((item, index) => {
     let imgUrl = FALLBACK_IMG;
     const found = ALL_UNITS.find(i => i.name === item.name);
     if (found && found.img) imgUrl = found.img;
 
+    const ult = item.r === 'ultimate';
     const el = document.createElement('div');
     el.className = 'inv-item';
-    el.innerHTML = `<div class="del">✕</div><img src="${imgUrl}"><span>${item.name}</span>`;
+    el.innerHTML = `
+      <div class="del">✕</div>
+      <img src="${imgUrl}" class="${ult ? 'rar-ultimate-icon' : ''}">
+      <span class="${ult ? 'rar-ultimate-static' : ''}">${item.name}</span>
+    `;
     el.onclick = () => {
-      if(confirm(`Удалить ${item.name}?`)) {
+      if (confirm(`Удалить ${item.name}?`)) {
         currentSave.inventory.splice(index, 1);
         saveChanges();
         renderAdmin();
@@ -327,17 +392,21 @@ function renderSpawnGrid() {
     const section = document.createElement('div');
     section.className = 'spawn-section';
     section.innerHTML = `<div class="spawn-section-title" style="color:${r.color}">${r.label}</div>`;
-    
+
     const row = document.createElement('div');
     row.className = 'spawn-row';
 
     unitsInRarity.forEach(item => {
+      const ult = item.r === 'ultimate';
       const el = document.createElement('div');
       el.className = 'spawn-item';
-      el.innerHTML = `<img src="${item.img || GIFT_IMG}"><span>${item.name}</span>`;
+      el.innerHTML = `
+        <img src="${item.img || GIFT_IMG}" class="${ult ? 'rar-ultimate-icon' : ''}">
+        <span class="${ult ? 'rar-ultimate-static' : ''}">${item.name}</span>
+      `;
       el.onclick = () => {
-        if(currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
-        currentSave.inventory.push({ name: item.name, r: item.r, price: item.price || 100, stats: item.stats || {} }); 
+        if (currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
+        currentSave.inventory.push({ name: item.name, r: item.r, price: item.price || 100, stats: item.stats || {} });
         saveChanges();
         renderAdmin();
       };
@@ -355,7 +424,7 @@ function saveVal(key, inputId) {
 }
 
 function clearInv() {
-  if(!confirm('Очистить инвентарь?')) return;
+  if (!confirm('Очистить инвентарь?')) return;
   currentSave.inventory = [];
   saveChanges();
   renderAdmin();
@@ -367,7 +436,7 @@ if (forceSelect) {
   ALL_UNITS.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.name;
-    opt.textContent = `${u.name} (${u.r})`;
+    opt.textContent = `${u.r === 'ultimate' ? '✨ ' : ''}${u.name} (${u.r})`;
     forceSelect.appendChild(opt);
   });
 }
