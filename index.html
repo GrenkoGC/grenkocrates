@@ -66,16 +66,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @keyframes fl{0%{opacity:0}20%{opacity:1}55%{opacity:1}100%{opacity:0}}
 .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:85;opacity:0;visibility:hidden;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);transition:all .3s var(--ease);padding:20px}
 .overlay.show{opacity:1;visibility:visible}
-
-/* --- ФИКС ОКНА ДРОПА --- */
 .modal-card{
   background:var(--pan);border:1px solid var(--lin);border-radius:4px;padding:24px 20px;text-align:center;width:100%;max-width:400px;max-height:90vh;
   transform:translateY(20px) scale(.95);transition:transform .4s cubic-bezier(.16,1,.3,1),opacity .3s;box-shadow:var(--sh);
-  display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden; /* Убираем скролл с самого окна */
+  display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;
 }
 .overlay.show .modal-card{transform:translateY(0) scale(1);opacity:1}
-
-/* Внутренний скролл для характеристик */
 .unit-stats{
   display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:left;background:rgba(255,255,255,.02);padding:10px 12px;
   border-radius:4px;border:1px solid var(--lin);width:100%;max-height:40vh;overflow-y:auto;flex-shrink:0;padding-right:8px;
@@ -84,8 +80,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .unit-stats::-webkit-scrollbar-track{background:rgba(0,0,0,0.2);border-radius:3px}
 .unit-stats::-webkit-scrollbar-thumb{background:var(--lin);border-radius:3px}
 .unit-stats::-webkit-scrollbar-thumb:hover{background:var(--txt2)}
-
-/* Остальные стили окон */
 .close-x{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--txt2);font-size:20px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:.2s}
 .close-x:hover{background:rgba(255,255,255,.1);color:#fff}
 .d-icon{width:80px;height:80px;margin-bottom:12px;flex-shrink:0;filter:drop-shadow(0 0 20px currentColor);overflow:hidden;display:flex;justify-content:center;align-items:center}
@@ -193,6 +187,65 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .tg-login-form input:focus { border-color: var(--acc); }
 .tg-login-btn { width: 100%; padding: 10px; font-size: 14px; background: var(--pan2); color: var(--acc); border: 1px solid var(--lin); border-radius: 4px; cursor: pointer; transition: 0.2s; }
 .tg-login-btn:hover { background: var(--lin); border-color: var(--acc); }
+
+/* ===== ULTIMATE RAINBOW ===== */
+@keyframes ult-shift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes ult-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(255, 0, 128, .45),
+      0 0 24px rgba(0, 200, 255, .25);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(255, 200, 0, .55),
+      0 0 36px rgba(120, 0, 255, .35);
+  }
+}
+.rar-ultimate {
+  background: linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4, #ff004c);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: ult-shift 4s linear infinite;
+  font-weight: 700;
+}
+.rar-ultimate-static {
+  background: linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.rar-ultimate-icon {
+  filter: drop-shadow(0 0 6px rgba(255,0,128,.7)) drop-shadow(0 0 12px rgba(0,200,255,.5));
+  border-radius: 8px;
+}
+.rar-ultimate-card {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(var(--pan), var(--pan)) padding-box,
+    linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4, #ff004c) border-box;
+  background-size: auto, 200% 100%;
+  animation: ult-shift 4s linear infinite, ult-glow 3s ease-in-out infinite;
+}
+.inv-item.ultimate::before {
+  background: linear-gradient(180deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4);
+  background-size: 100% 200%;
+  animation: ult-shift 4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rar-ultimate,
+  .rar-ultimate-card,
+  .inv-item.ultimate::before { animation: none; }
+}
+
 @media (max-width: 768px) {
   .layout { display: flex; flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
   body { overflow-y: auto; padding-top: 0; }
@@ -275,12 +328,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
       <div class="pill"><span id="lblBal">Баланс</span>&nbsp;<span id="balance" class="val">1000</span> $</div>
       <div class="pill"><span id="lblGems">Гемы</span>&nbsp;<span id="gems" class="val">50</span> 💎</div>
       <div class="pill"><span id="lblInv">Инвентарь</span>&nbsp;<span id="invCount">0</span>/1000</div>
-      
+
       <button class="icon-btn" id="chancesBtn">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V5M4 19h16M7 12h3v7H7zM12 8h3v11h-3zM17 5h3v14h-3z"/></svg>
         <span id="lblChances" style="color:var(--acc)">Шансы</span>
       </button>
-      
+
       <button class="icon-btn" id="indexBtn" style="border-color:var(--acc); color:var(--acc);">
         📖 <span id="lblIndex">Индекс</span>
       </button>
@@ -292,7 +345,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
       <button class="icon-btn" id="profileBtn" style="border-color:#ffaa00; color:#ffaa00;">
         👤 <span id="lblProfile">Профиль</span>
       </button>
-      
+
       <div class="gacha-badge" id="gachaBtn" title="Рулетка гемов">🎰<div class="badge" id="gachaBadge" style="display:none;">0</div></div>
       <button class="icon-btn" id="langBtn">EN</button>
       <button class="icon-btn" id="muteBtn"><svg id="soundOn" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12"/></svg><svg id="soundOff" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9l5 6M21 9l-5 6"/></svg></button>
@@ -398,7 +451,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   <div class="modal-card" style="max-width:400px;padding:20px; border-color:#ffaa00;">
     <button class="close-x" onclick="document.getElementById('profileOverlay').classList.remove('show')">✕</button>
     <h2 style="margin-bottom:15px;font-size:18px; color:#ffaa00;">👤 Профиль</h2>
-    
+
     <div class="profile-warning" id="profWarning" style="display:none;">
       ⚠️ Вы играете как гость. Прогресс не сохраняется в облаке и будет потерян при очистке кэша.
     </div>
@@ -444,7 +497,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div class="stat-tooltip" id="invTooltip"></div>
 <div class="sold-toast" id="toast"></div>
 
-<!-- ПОДКЛЮЧЕНИЕ СКРИПТОВ (СТРОГО В КОНЦЕ) -->
 <script src="units.js"></script>
 <script src="crates.js"></script>
 <script src="config.js"></script>
