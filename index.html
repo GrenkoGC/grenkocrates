@@ -942,12 +942,24 @@ function linkAccount() {
 }
 
 function logoutProfile() {
-  if(!confirm('Выйти из профиля и отвязать аккаунт? Ваш прогресс останется в облаке, но вы не сможете к нему получить доступ без повторного входа.')) return;
+  if(!confirm('Выйти из профиля? ВЕСЬ локальный прогресс будет удалён (баланс, гемы, инвентарь). Данные в облаке останутся.')) return;
   
+  // Удаляем аккаунт
   localStorage.removeItem('grenko_tg_user');
   tgWebData = null;
   
-  toast('Вы вышли из профиля');
+  // Удаляем локальный прогресс
+  localStorage.removeItem(SAVE_KEY);
+  
+  // Сбрасываем переменные
+  balance = 1000;
+  gems = 50;
+  inventory = [];
+  casesOpened = 0;
+  gachaSpins = 0;
+  gachaLastTick = Date.now();
+  
+  toast('Вы вышли из профиля и сбросили локальный прогресс');
   $('profileOverlay').classList.remove('show');
   
   setTimeout(() => {
