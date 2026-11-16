@@ -391,6 +391,36 @@ function playGacha(){
 }
 
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
+async function loadWithAuth() {
+  const savedUser = localStorage.getItem('grenko_tg_user');
+  if (savedUser) {
+    try { tgWebData = JSON.parse(savedUser); } catch(e) { localStorage.removeItem('grenko_tg_user'); }
+  }
+
+  try {
+    const local = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (local) applySaveData(local);
+  } catch(e) {}
+
+  if (tgWebData) {
+    try {
+      const res = await fetch(`${API_URL}/load`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: tgWebData.id })
+      });
+      if (res.ok) {
+        const cloudData = await res.json();
+        if (cloudData && Object.keys(cloudData).length > 0) {
+          applySaveData(cloudData);
+          save(); 
+          toast('Прогресс загружен из облака');
+        }
+      }
+    } catch(e) { console.error('Ошибка загрузки:', e); }
+  }
+}
+
 function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
@@ -415,6 +445,7 @@ function initApp() {
   // Гача
   $('gachaBtn').onclick = () => { sfx.click(); $('gachaOverlay').classList.add('show'); updateGachaUI(); $('gachaResult').textContent = ''; };
   $('gachaSpinBtn').onclick = playGacha;
+  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
 
   // Музыка
   bgMusic.volume = 0.2; volumeSlider.value = 0.2;
@@ -444,7 +475,11 @@ function initApp() {
   });
 
   // Загрузка
-  load().then(() => {
+  loadWithAuth().then(() => {
+    if (typeof balance === 'undefined' || balance === null) balance = 1000;
+    if (typeof gems === 'undefined' || gems === null) gems = 50;
+    if (!Array.isArray(inventory)) inventory = [];
+
     document.querySelectorAll('.crate-btn').forEach(b => b.classList.toggle('active', b.dataset.id === activeCrate));
     document.querySelectorAll('.auto-sell-btn').forEach(b => b.classList.toggle('active', autoSellRarities.has(b.dataset.r)));
     $('soundOn').style.display = muted ? 'none' : 'block';
@@ -455,6 +490,9 @@ function initApp() {
     updateGachaUI();
   });
 }
+
+// Автосохранение каждые 3 секунды для защиты от вылетов
+setInterval(() => { save(); }, 3000);
 
 // Запуск при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
