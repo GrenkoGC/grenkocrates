@@ -20,8 +20,6 @@
   .btn-main:hover{background:#3182ce;border-color:#3182ce}
   .btn-danger{background:rgba(255,68,68,0.1);border-color:var(--red);color:var(--red)}
   .btn-danger:hover{background:rgba(255,68,68,0.2)}
-  .btn-success{background:rgba(72,187,120,0.1);border-color:var(--grn);color:var(--grn)}
-  .btn-success:hover{background:rgba(72,187,120,0.2)}
   .hidden{display:none !important}
   .msg{font-size:12px;text-align:center;min-height:16px;font-weight:bold}
   .row{display:flex;gap:10px;align-items:center}
@@ -77,7 +75,7 @@
     </div>
   </div>
 
-  <!-- Валюты -->
+  <!-- Валюты и Режим Бога -->
   <div id="userControls" style="display:none; flex-direction:column; gap:15px;">
     <h3>💰 Ресурсы</h3>
     <div class="row" style="margin-bottom:8px">
@@ -89,6 +87,23 @@
       <label style="width:80px;font-size:12px">Гемы (💎)</label>
       <input type="number" id="inpGems">
       <button onclick="saveVal('gems', 'inpGems')">ОК</button>
+    </div>
+
+    <h3>👑 Режим Бога</h3>
+    <div class="row" style="margin-bottom:8px">
+      <label style="width:100px;font-size:12px">Множитель удачи</label>
+      <input type="number" id="inpLuck" placeholder="Например, 10" step="0.1" value="1">
+      <button onclick="setLuck()">ОК</button>
+    </div>
+    <div class="row" style="margin-bottom:8px">
+      <label style="width:100px;font-size:12px">Следующий дроп</label>
+      <select id="inpForceDrop">
+        <option value="">-- Случайно --</option>
+      </select>
+      <button onclick="setForceDrop()">ОК</button>
+    </div>
+    <div style="font-size:11px; color:var(--txt2); text-align:center; margin-bottom:10px;">
+      Множитель удачи увеличивает шанс выпадения редких предметов (Exclusive, Secret и т.д.).
     </div>
 
     <!-- Инвентарь -->
@@ -209,6 +224,10 @@ async function loadUser() {
     if (res.ok) {
       const data = await res.json();
       currentSave = data || { balance: 1000, gems: 50, inventory: [] };
+      
+      // Подтягиваем настройки удачи, если они есть
+      document.getElementById('inpLuck').value = currentSave.luck || 1;
+      
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
       document.getElementById('adminMsg').textContent = 'Пользователь загружен';
@@ -236,6 +255,41 @@ async function saveChanges() {
     setTimeout(() => document.getElementById('adminMsg').textContent = '', 2000);
   } catch(e) {
     document.getElementById('adminMsg').textContent = 'Ошибка при сохранении';
+  }
+}
+
+// --- ФУНКЦИИ РЕЖИМА БОГА ---
+async function setLuck() {
+  if (!currentUserId) return alert('Сначала выберите игрока');
+  const luck = parseFloat(document.getElementById('inpLuck').value) || 1;
+  
+  try {
+    await fetch(`${API_URL}/admin/luck`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminId: currentUserId, luck })
+    });
+    alert(`Множитель удачи для игрока установлен: x${luck}`);
+    document.getElementById('adminMsg').textContent = 'Удача изменена';
+  } catch(e) {
+    alert('Ошибка сервера');
+  }
+}
+
+async function setForceDrop() {
+  if (!currentUserId) return alert('Сначала выберите игрока');
+  const itemName = document.getElementById('inpForceDrop').value;
+  
+  try {
+    await fetch(`${API_URL}/admin/forceDrop`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminId: currentUserId, itemName })
+    });
+    alert(itemName ? `Следующий дроп будет: ${itemName}` : 'Форс-дроп отключен');
+    document.getElementById('adminMsg').textContent = 'Форс-дроп обновлен';
+  } catch(e) {
+    alert('Ошибка сервера');
   }
 }
 
@@ -321,6 +375,17 @@ function clearInv() {
   currentSave.inventory = [];
   saveChanges();
   renderAdmin();
+}
+
+// Заполняем список юнитов для форс-дропа
+const forceSelect = document.getElementById('inpForceDrop');
+if (forceSelect) {
+  ALL_UNITS.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.name;
+    opt.textContent = `${u.name} (${u.r})`;
+    forceSelect.appendChild(opt);
+  });
 }
 
 checkAuthExist();
