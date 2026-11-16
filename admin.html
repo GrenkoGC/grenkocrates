@@ -55,7 +55,7 @@
   <div id="loginStep">
     <input type="password" id="loginPass" placeholder="Введите пароль" style="width:100%;margin-bottom:10px">
     <button class="btn-main" style="width:100%" onclick="login()">Войти</button>
-    <button style="width:100%;margin-top:10px;font-size:11px;background:none;border:none;color:var(--txt2)" onclick="showSetup()">Сбросить пароль (удалить всё)</button>
+    <button style="width:100%;margin-top:10px;font-size:11px;background:none;border:none;color:var(--txt2)" onclick="showSetup()">Сбросить пароль</button>
   </div>
   <div class="msg" id="loginMsg"></div>
 </div>
@@ -209,9 +209,6 @@ async function loadUser() {
   document.getElementById('adminMsg').textContent = 'Загрузка...';
   
   try {
-    // Отправляем запрос на сервер (но т.к. у нас нет initData, шлем фейковый ключ для админки)
-    // ВАЖНО: для реальной безопасности нужно добавить секретный ключ админа на сервер.
-    // Пока что мы просто читаем базу напрямую через API.
     const res = await fetch(`${API_URL}/admin/load`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -225,7 +222,6 @@ async function loadUser() {
       document.getElementById('userControls').style.display = 'flex';
       document.getElementById('adminMsg').textContent = 'Пользователь загружен';
     } else {
-      // Если эндпоинта нет, создаем пустой сейв
       currentSave = { balance: 1000, gems: 50, inventory: [] };
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
