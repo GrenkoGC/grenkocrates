@@ -275,6 +275,7 @@ function processSpin(won,isAuto=false){
   scene.classList.add('tension');
 }
 
+/* ===== ФИКС ОКНА ДРОПА ===== */
 function showDrop(it){
   const r=RARITY[it.r];
   $('dIcon').innerHTML=iconOf(it.name,false);
@@ -283,11 +284,35 @@ function showDrop(it){
   $('dRarity').textContent=r.label;$('dRarity').style.color=r.color;
   $('dPrice').textContent=`${L10N[lang].priceAfter}: ${it.price} $`;
   $('dPrice').style.color=r.color;
-  $('dropCard').style.borderColor=r.color;
-  $('dropCard').style.boxShadow=`0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
+  
+  const card = $('dropCard');
+  card.style.borderColor=r.color;
+  card.style.boxShadow=`0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
+  // Принудительно задаем размеры, чтобы окно не сжималось
+  card.style.maxHeight = '85vh';
+  card.style.overflow = 'hidden';
+  card.style.display = 'flex';
+  card.style.flexDirection = 'column';
+
   const s=$('dStats');
-  if(it.stats){s.style.display='flex';s.innerHTML=Object.entries(it.stats).filter(([k,v])=>v).map(([k,v],idx)=>{const tk=L10N[lang].typeTrans[k]||k;return`<div class="stat-row" style="${idx===0?'color:#fff;font-weight:bold;margin-bottom:4px':''}"><span>${tk}:</span><span>${v}</span></div>`;}).join('');}else s.style.display='none';
-  dropOverlay.classList.add('show');sfx.drop(it.r);
+  if(it.stats){
+    s.style.display='flex';
+    s.innerHTML=Object.entries(it.stats).filter(([k,v])=>v).map(([k,v],idx)=>{
+      const tk=L10N[lang].typeTrans[k]||k;
+      return`<div class="stat-row" style="${idx===0?'color:#fff;font-weight:bold;margin-bottom:4px':''}"><span>${tk}:</span><span>${v}</span></div>`;
+    }).join('');
+    
+    // Включаем внутренний скролл для блока характеристик
+    s.style.maxHeight = '40vh';
+    s.style.overflowY = 'auto';
+    s.style.flexShrink = '0';
+    s.style.paddingRight = '8px';
+  } else {
+    s.style.display='none';
+  }
+  
+  dropOverlay.classList.add('show');
+  sfx.drop(it.r);
 }
 
 function openCase(isMulti=false){
