@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<script src="units.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grenko Admin Panel</title>
 <style>
@@ -34,7 +35,6 @@
   .inv-item .del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;opacity:0;transition:.2s}
   .inv-item:hover .del{opacity:1}
 
-  /* Стили для выдачи предметов (сгруппировано по редкости) */
   .spawn-section { margin-bottom: 15px; }
   .spawn-section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 5px 0; border-bottom: 1px solid var(--lin); margin-bottom: 8px; text-align: left; }
   .spawn-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
@@ -101,7 +101,7 @@
     </div>
     <div class="inv-grid" id="adminInvGrid"></div>
 
-    <!-- Выдача предметов (Все в одном месте) -->
+    <!-- Выдача предметов -->
     <h3>🎁 Выдать предмет</h3>
     <div id="spawnContainer" style="max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
   </div>
@@ -116,7 +116,6 @@
 const AUTH_KEY = 'grenko_admin_auth';
 const API_URL = 'https://grenko-api.treugalnik.workers.dev';
 
-// Копия данных для отрисовки
 const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
 const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
 const RARITY = {
@@ -130,20 +129,6 @@ const RARITY = {
   exclusive: {label: 'Exclusive', color: '#eec5ff'}
 };
 const RARITY_ORDER = ['exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
-
-const ALL_UNITS = [
-  {name:'GrenkBot-A1', r:'common', price:50, img:'https://yourimageshare.com/ib/zwYuDDfH8D.jpg', stats:{Type:'Single',Damage:'15 - 35',Range:'10 - 13',Cooldown:'1.75 - 0.5',Limit:'5'}},
-  {name:'GrenkTurret-A1', r:'rare', price:150, img:'https://yourimageshare.com/ib/4Qf4kNjKEl.jpg', stats:{Type:'Splash',Damage:'45 - 125',Range:'13 - 15',Cooldown:'2 - 1',Limit:'3'}},
-  {name:'Gronke', r:'epic', price:400, img:'https://yourimageshare.com/ib/u4qJyiSjUY.jpg', stats:{Type:'Stun',Damage:'125 - 425',Range:'16 - 20',Cooldown:'5 - 3','Stun Time':'0.3',Limit:'2'}},
-  {name:'GrenkerDroid', r:'legendary', price:900, img:'https://yourimageshare.com/ib/fxvI30kSzR.jpg', stats:{Type:'Support','Damage Boost':'15% - 22%',Range:'13 - 14.75',Limit:'3'}},
-  {name:'The ElderGrenk', r:'mythic', price:1800, img:'https://yourimageshare.com/ib/yScfKp7Eir.jpg', stats:{Type:'Double',Damage:'95 - 240',Range:'12 - 15',Cooldown:'2.5 - 0.4',Limit:'3'}},
-  {name:'Grenko', r:'leader', price:3500, img:'https://yourimageshare.com/ib/iCcdyCqr3N.jpg', secret:true, stats:{Type:'Spawner + Pierce',Damage:'150 - 430',Range:'11 - 14',Cooldown:'3 - 2','Spawn Cooldown':'30 - 25','Ally HP':'450 - 1000','Ally DPS':'0 - 275',Limit:'1'}},
-  {name:'Paradoxed Grenko', r:'secret', price:7500, img:'https://yourimageshare.com/ib/qqH26h3kBO.jpg', secret:true, stats:{Type:'Knockback',Damage:'500 - 1450',Range:'13.5 - 15',Cooldown:'2 - 0.75','Knockback Strength':'1 Studs - 2.25 Studs',Limit:'2'}},
-  {name:'Gem GrenkTurret-A3', r:'exclusive', price:500, img:'https://yourimageshare.com/ib/uEaf0uwYY6.jpg', stats:{Type:'Slow',Damage:'300 - 550',Range:'14 - 16',Cooldown:'3 - 1.5',Limit:'3'}},
-  {name:'Gem The ElderGrenk', r:'exclusive', price:1200, img:'https://yourimageshare.com/ib/98RnJ4wA8h.jpg', stats:{Type:'Stun + Double',Damage:'600 - 1300',Range:'12 - 13.5',Cooldown:'4 - 2.25','Stun Time':'0.35',Limit:'3'}},
-  {name:'Gem Lord Grenko', r:'exclusive', price:2500, img:'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg', secret:true, stats:{Type:'Slow + Stun + Spawner',Damage:'650 - 2250',Range:'14.5 - 20',Cooldown:'3 - 1.25','Ally HP':'600 - 1250','Ally DPS':'200 - 550','Spawn Cooldown':'25 - 20','Stun Time':'0.4',Limit:'1'}},
-  {name:'Eggren', r:'exclusive', price:500, img:'https://yourimageshare.com/ib/hzhMDIz2GN.png', stats:{Type:'Critical Stun',Damage:'330 - 880',Range:'12.5 - 16',Cooldown:'3 - 2.25','Critical Stun Chance':'25%','Critical Stun Damage Multiplier':'x1.5 - x3','Critical Stun Time':'0.35 - 0.5'}}
-];
 
 let currentSave = null;
 let currentUserId = null;
@@ -292,7 +277,6 @@ function renderInv() {
   });
 }
 
-// Новая единая функция выдачи с группировкой по редкости
 function renderSpawnGrid() {
   const container = document.getElementById('spawnContainer');
   container.innerHTML = '';
