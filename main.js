@@ -448,6 +448,8 @@ async function loadWithAuth() {
       if (res.ok) {
         const cloudData = await res.json();
         if (cloudData && Object.keys(cloudData).length > 0) {
+          if (cloudData.luck) gameSettings.luck = cloudData.luck;
+if (cloudData.forceDrop !== undefined) gameSettings.forceDrop = cloudData.forceDrop;
           applySaveData(cloudData);
           save(); 
           toast('Прогресс загружен из облака');
