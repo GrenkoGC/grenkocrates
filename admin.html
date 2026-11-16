@@ -246,7 +246,7 @@ async function saveChanges() {
   document.getElementById('adminMsg').textContent = 'Сохранение...';
   
   try {
-    await fetch(`${API_URL}/admin/save`, {
+    await fetch(`${API_URL}/admin/save`, {  // <--- Отправляем на общий /admin/save
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminId: currentUserId, saveData: currentSave })
@@ -262,9 +262,9 @@ function setLuck() {
   if (!currentUserId) return alert('Сначала выберите игрока');
   const luck = parseFloat(document.getElementById('inpLuck').value) || 1;
   
-  currentSave.luck = luck; // Записываем прямо в сейв
+  currentSave.luck = luck; // Записываем удачу в объект сейва
   saveChanges().then(() => {
-    alert(`Множитель удачи сохранен: x${luck}`);
+    alert(`Множитель удачи сохранен на сервере: x${luck}`);
   });
 }
 
@@ -272,12 +272,11 @@ function setForceDrop() {
   if (!currentUserId) return alert('Сначала выберите игрока');
   const itemName = document.getElementById('inpForceDrop').value;
   
-  currentSave.forceDrop = itemName || null;
+  currentSave.forceDrop = itemName || null; // Записываем форс-дроп в сейв
   saveChanges().then(() => {
-    alert(itemName ? `Следующий дроп: ${itemName}` : 'Форс-дроп отключен');
+    alert(itemName ? `Следующий дроп сохранен: ${itemName}` : 'Форс-дроп отключен');
   });
 }
-
 // --- ОТРИСОВКА ---
 function renderAdmin() {
   document.getElementById('inpBal').value = currentSave.balance;
