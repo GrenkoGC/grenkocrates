@@ -306,6 +306,20 @@ function showDrop(it){
   } else {
     s.style.display='none';
   }
+
+  // ПРИНУДИТЕЛЬНО ПЕРЕНАЗНАЧАЕМ КНОПКУ "ЗАБРАТЬ В ИНВЕНТАРЬ"
+  const btn = $('dClose');
+  btn.textContent = L10N[lang].takeInv;
+  btn.style.borderColor = 'var(--lin)';
+  btn.style.color = 'var(--txt)';
+  btn.onclick = () => { 
+    sfx.click(); 
+    dropOverlay.classList.remove('show'); 
+    setTimeout(()=>{
+      slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;
+      slotName.textContent=L10N[lang].clickOpen;
+    },320); 
+  };
   
   dropOverlay.classList.add('show');
   sfx.drop(it.r);
@@ -443,7 +457,6 @@ async function loadWithAuth() {
 }
 
 function initApp() {
-  // Привязка кнопок СРАЗУ
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
   $('autoBtn').onclick = () => { isAutoOpen = !isAutoOpen; $('autoBtn').classList.toggle('active', isAutoOpen); save(); if(isAutoOpen && !spinning) processSpin(randomItem(), true); };
@@ -464,13 +477,10 @@ function initApp() {
     renderInventory(); updateUI(); updateGachaUI(); applyLang(); toast('Прогресс сброшен');
   };
 
-  // Кнопки закрытия окон
-  $('dClose').onclick = () => { sfx.click(); dropOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
-  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
-
   // Гача
   $('gachaBtn').onclick = () => { sfx.click(); $('gachaOverlay').classList.add('show'); updateGachaUI(); $('gachaResult').textContent = ''; };
   $('gachaSpinBtn').onclick = playGacha;
+  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); setTimeout(()=>{slotIcon.innerHTML=`<img src="${CRATES[activeCrate].img}">`;slotName.textContent=L10N[lang].clickOpen;},320); };
 
   // Музыка
   bgMusic.volume = 0.2; volumeSlider.value = 0.2;
