@@ -941,17 +941,17 @@ function linkAccount() {
   .catch(() => toast('Ошибка: неверный ID или проблемы с сервером'));
 }
 
-function logoutProfile() {
-  if(!confirm('Выйти из профиля? ВЕСЬ локальный прогресс будет удалён (баланс, гемы, инвентарь). Данные в облаке останутся.')) return;
+function function logoutProfile() {
+  if(!confirm('Выйти из профиля? Ваш локальный прогресс будет удалён, но данные в облаке сохранятся.')) return;
   
-  // Удаляем аккаунт
+  // 1. Отвязываем аккаунт
   localStorage.removeItem('grenko_tg_user');
   tgWebData = null;
   
-  // Удаляем локальный прогресс
+  // 2. Удаляем локальный кэш игры
   localStorage.removeItem(SAVE_KEY);
   
-  // Сбрасываем переменные
+  // 3. Сбрасываем переменные в памяти на дефолтные
   balance = 1000;
   gems = 50;
   inventory = [];
@@ -959,9 +959,10 @@ function logoutProfile() {
   gachaSpins = 0;
   gachaLastTick = Date.now();
   
-  toast('Вы вышли из профиля и сбросили локальный прогресс');
+  toast('Вы вышли. Локальный прогресс сброшен');
   $('profileOverlay').classList.remove('show');
   
+  // 4. Перезагружаем страницу, чтобы она загрузила чистые данные
   setTimeout(() => {
     window.location.reload();
   }, 1000);
