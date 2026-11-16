@@ -258,21 +258,20 @@ async function saveChanges() {
   }
 }
 
-// --- ФУНКЦИИ РЕЖИМА БОГА ---
 async function setLuck() {
   if (!currentUserId) return alert('Сначала выберите игрока');
   const luck = parseFloat(document.getElementById('inpLuck').value) || 1;
   
   try {
-    await fetch(`${API_URL}/admin/luck`, {
+    const res = await fetch(`${API_URL}/admin/luck`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminId: currentUserId, luck })
     });
-    alert(`Множитель удачи для игрока установлен: x${luck}`);
-    document.getElementById('adminMsg').textContent = 'Удача изменена';
+    if (res.ok) alert(`Множитель удачи: x${luck}`);
+    else alert('Сервер вернул ошибку');
   } catch(e) {
-    alert('Ошибка сервера');
+    alert('Ошибка сети');
   }
 }
 
@@ -281,15 +280,15 @@ async function setForceDrop() {
   const itemName = document.getElementById('inpForceDrop').value;
   
   try {
-    await fetch(`${API_URL}/admin/forceDrop`, {
+    const res = await fetch(`${API_URL}/admin/forceDrop`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminId: currentUserId, itemName })
     });
-    alert(itemName ? `Следующий дроп будет: ${itemName}` : 'Форс-дроп отключен');
-    document.getElementById('adminMsg').textContent = 'Форс-дроп обновлен';
+    if (res.ok) alert(itemName ? `Дроп: ${itemName}` : 'Форс-дроп отключен');
+    else alert('Сервер вернул ошибку');
   } catch(e) {
-    alert('Ошибка сервера');
+    alert('Ошибка сети');
   }
 }
 
