@@ -6,6 +6,7 @@
 <link rel="apple-touch-icon" href="https://yourimageshare.com/ib/cwwrwslAaB.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Grenko Crates</title>
+<!-- Скрипт Telegram все еще нужен для работы кнопки Входа, но не для Mini App -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--red:#ff4444;--acc:#fff;--sh:0 12px 32px rgba(0,0,0,.8);--ease:cubic-bezier(.25,.8,.25,1)}
@@ -463,14 +464,14 @@ let tgWebData = null;
 async function save() {
   const saveData = { balance, gems, inventory, activeCrate, lang, autoSell: [...autoSellRarities], gachaSpins, gachaLastTick, vol: bgMusic.volume, muted, casesOpened };
   localStorage.setItem(SAVE_KEY, JSON.stringify(saveData)); 
-  const initData = window.Telegram?.WebApp?.initData;
-  if (!initData && !tgWebData) return; 
+  
+  if (!tgWebData) return; 
 
   try {
     await fetch(`${API_URL}/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData: initData || null, tgData: tgWebData, saveData })
+      body: JSON.stringify({ tgData: tgWebData, saveData })
     });
   } catch (e) { console.error('Ошибка сохранения:', e); }
 }
@@ -481,13 +482,12 @@ async function load() {
     if (local) applySaveData(local);
   } catch (e) {}
 
-  const initData = window.Telegram?.WebApp?.initData;
-  if (initData || tgWebData) {
+  if (tgWebData) {
     try {
       const res = await fetch(`${API_URL}/load`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: initData || null, tgData: tgWebData })
+        body: JSON.stringify({ tgData: tgWebData })
       });
       if (res.ok) {
         const cloudData = await res.json();
@@ -848,16 +848,7 @@ $('shopBtn').onclick = () => {
 function renderProfile() {
   let username = 'Гость';
   
-  // Если играем в Telegram
-  if (window.Telegram?.WebApp?.initData) {
-    const params = new URLSearchParams(window.Telegram.WebApp.initData);
-    const user = JSON.parse(params.get('user'));
-    if (user) {
-      username = user.username ? '@' + user.username : user.first_name;
-    }
-  } 
-  // Если авторизованы через сайт
-  else if (tgWebData) {
+  if (tgWebData) {
     username = tgWebData.username ? '@' + tgWebData.username : tgWebData.first_name;
   }
 
@@ -867,14 +858,12 @@ function renderProfile() {
   $('profBalance').textContent = Math.floor(balance) + ' $';
   $('profGems').textContent = Math.floor(gems) + ' 💎';
 
-  // Показываем предупреждение, если это гость
   if (isGuest) {
     $('profWarning').style.display = 'block';
   } else {
     $('profWarning').style.display = 'none';
   }
 
-  // Топ-3 юнита
   const sortedInv = [...inventory].sort((a,b) => b.price - a.price);
   const top3 = sortedInv.slice(0, 3);
   
@@ -897,18 +886,15 @@ function renderProfile() {
     });
   }
 
-  // Кнопки управления (Вход / Выход)
   const actionsContainer = $('profActions');
   actionsContainer.innerHTML = '';
   
-  if (isGuest && !window.Telegram?.WebApp?.initData) {
-    // Если мы на сайте и мы гость, показываем кнопку входа
+  if (isGuest) {
     actionsContainer.innerHTML = `
       <div style="text-align:center; margin-bottom:10px; font-size:12px;">Войдите, чтобы сохранять прогресс в облаке:</div>
       <div id="tg-login-widget" style="display:flex; justify-content:center;"></div>
     `;
     
-    // Рендерим виджет Telegram в этот контейнер
     const script = document.createElement('script');
     script.async = true;
     script.src = "https://telegram.org/js/telegram-widget.js?22";
@@ -918,8 +904,7 @@ function renderProfile() {
     script.setAttribute('data-request-access', 'write');
     document.getElementById('tg-login-widget').appendChild(script);
     
-  } else if (!isGuest) {
-    // Если не гость, показываем кнопку выхода
+  } else {
     actionsContainer.innerHTML = `
       <button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent);" onclick="logoutProfile()">Выйти из профиля</button>
     `;
@@ -941,7 +926,6 @@ function logoutProfile() {
   toast('Вы вышли из профиля');
   $('profileOverlay').classList.remove('show');
   
-  // Перезагружаем игру, чтобы она сбросила состояние на гостя
   setTimeout(() => {
     window.location.reload();
   }, 1000);
@@ -955,8 +939,8 @@ window.onTelegramAuth = function(user) {
   load().then(() => {
     renderInventory();
     updateUI();
-    $('profileOverlay').classList.remove('show'); // Закрываем профиль
-    renderProfile(); // Перерисовываем профиль (уже как не гость)
+    $('profileOverlay').classList.remove('show');
+    renderProfile();
   });
 };
 
@@ -1155,10 +1139,6 @@ function applyLang(){
 document.getElementById('langBtn').onclick=()=>{lang=lang==='ru'?'en':'ru';sfx.click();applyLang();save();};
 
 function checkTelegramAuth() {
-  // Больше не показываем верхнюю плашку, всё управление в профиле
-  if (window.Telegram?.WebApp?.initData) {
-    return;
-  }
   const savedUser = localStorage.getItem('grenko_tg_user');
   if (savedUser) {
     try {
@@ -1200,7 +1180,6 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ===== BOOT ===== */
-window.Telegram?.WebApp?.ready();
 checkTelegramAuth(); 
 
 load().then(() => {
