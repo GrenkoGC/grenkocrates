@@ -4,6 +4,7 @@ const $ = id => document.getElementById(id);
 
 function toast(m) {
   const t = $('toast');
+  if (!t) return;
   t.textContent = m;
   t.classList.add('show');
   clearTimeout(t._t);
@@ -21,8 +22,7 @@ const iconOf = (name, hide = false) => {
 
 // --- Выбор предмета ---
 const randomItem = () => {
-  // 1. Форс-дроп
-  if (gameSettings?.forceDrop) {
+  if (typeof gameSettings !== 'undefined' && gameSettings.forceDrop) {
     const f = getItemData(gameSettings.forceDrop);
     if (f) {
       gameSettings.forceDrop = null;
@@ -31,9 +31,7 @@ const randomItem = () => {
   }
 
   const pool = CRATES[activeCrate].pool;
-
-  // 2. Множитель удачи (ultimate не усиливаем)
-  const luck = Math.max(0.1, Math.min(100, gameSettings?.luck ?? 1));
+  const luck = (typeof gameSettings !== 'undefined' && gameSettings.luck) ? Math.max(0.1, Math.min(100, gameSettings.luck)) : 1;
   const RARE = new Set(['exclusive', 'secret', 'leader', 'mythic']);
 
   let total = 0;
@@ -44,7 +42,6 @@ const randomItem = () => {
     return { name: e.name, chance: c };
   });
 
-  // 3. Выбор
   let r = Math.random() * total;
   for (const e of mod) {
     r -= e.chance;
