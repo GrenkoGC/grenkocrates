@@ -19,12 +19,6 @@ const iconOf = (name, hide = false) => {
   return it.img ? `<img src="${it.img}" alt="${name}">` : `<img src="${GIFT_IMG}">`;
 };
 
-// --- Хелперы радужного Ultimate ---
-const RARITY_CLASS = { ultimate: 'rar-ultimate' };
-const rarityTextClass = r => RARITY_CLASS[r] || '';
-const rarityIconClass = r => r === 'ultimate' ? 'rar-ultimate-icon' : '';
-const rarityCardClass = r => r === 'ultimate' ? 'rar-ultimate-card' : '';
-
 // --- Выбор предмета ---
 const randomItem = () => {
   // 1. Форс-дроп
