@@ -6,8 +6,6 @@
 <link rel="apple-touch-icon" href="https://yourimageshare.com/ib/cwwrwslAaB.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Grenko Crates</title>
-<!-- Скрипт Telegram все еще нужен для работы кнопки Входа, но не для Mini App -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--red:#ff4444;--acc:#fff;--sh:0 12px 32px rgba(0,0,0,.8);--ease:cubic-bezier(.25,.8,.25,1)}
 *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
@@ -184,6 +182,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .profile-unit .u-price { color: var(--acc); margin-left: auto; font-family: monospace; }
 .profile-warning { font-size: 12px; color: var(--red); text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 10px; border-radius: 4px; border: 1px solid var(--red); }
 .profile-warning.hidden { display: none; }
+.tg-login-form { display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px; border: 1px solid var(--lin); }
+.tg-login-form input { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--lin); border-radius: 4px; color: var(--acc); font-size: 14px; outline: none; text-align: center; }
+.tg-login-form input:focus { border-color: var(--acc); }
+.tg-login-btn { width: 100%; padding: 10px; font-size: 14px; background: var(--pan2); color: var(--acc); border: 1px solid var(--lin); border-radius: 4px; cursor: pointer; transition: 0.2s; }
+.tg-login-btn:hover { background: var(--lin); border-color: var(--acc); }
 
 /* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
 @media (max-width: 768px) {
@@ -423,7 +426,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
     </div>
 
     <div id="profActions" style="width:100%; display:flex; flex-direction:column; gap:10px;">
-      <!-- Сюда будем вставлять кнопку входа/выхода через JS -->
+      <!-- Сюда будем вставлять форму входа/выхода через JS -->
     </div>
   </div>
 </div>
@@ -471,7 +474,7 @@ async function save() {
     await fetch(`${API_URL}/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tgData: tgWebData, saveData })
+      body: JSON.stringify({ userId: tgWebData.id, saveData })
     });
   } catch (e) { console.error('Ошибка сохранения:', e); }
 }
@@ -487,7 +490,7 @@ async function load() {
       const res = await fetch(`${API_URL}/load`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tgData: tgWebData })
+        body: JSON.stringify({ userId: tgWebData.id })
       });
       if (res.ok) {
         const cloudData = await res.json();
@@ -892,18 +895,14 @@ function renderProfile() {
   if (isGuest) {
     actionsContainer.innerHTML = `
       <div style="text-align:center; margin-bottom:10px; font-size:12px;">Войдите, чтобы сохранять прогресс в облаке:</div>
-      <div id="tg-login-widget" style="display:flex; justify-content:center;"></div>
+      <div class="tg-login-form">
+        <input type="text" id="inpUserId" placeholder="Ваш Telegram ID (цифры)">
+        <button class="tg-login-btn" onclick="linkAccount()">Привязать аккаунт</button>
+      </div>
+      <div style="font-size:11px; color:var(--txt2); text-align:center; margin-top:5px;">
+        Узнать свой ID можно у бота <b>@userinfobot</b>
+      </div>
     `;
-    
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = "https://telegram.org/js/telegram-widget.js?22";
-    script.setAttribute('data-telegram-login', 'grenkocrates_bot');
-    script.setAttribute('data-size', 'medium');
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-    script.setAttribute('data-request-access', 'write');
-    document.getElementById('tg-login-widget').appendChild(script);
-    
   } else {
     actionsContainer.innerHTML = `
       <button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent);" onclick="logoutProfile()">Выйти из профиля</button>
@@ -916,6 +915,31 @@ $('profileBtn').onclick = () => {
   renderProfile();
   document.getElementById('profileOverlay').classList.add('show');
 };
+
+function linkAccount() {
+  const id = $('inpUserId').value.trim();
+  if (!id || isNaN(id)) return toast('Введите корректный цифровой ID');
+  
+  toast('Проверка ID...');
+  fetch(`${API_URL}/auth`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: id })
+  })
+  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(user => {
+    tgWebData = user;
+    localStorage.setItem('grenko_tg_user', JSON.stringify(user));
+    toast('Аккаунт успешно привязан!');
+    load().then(() => {
+      renderInventory();
+      updateUI();
+      $('profileOverlay').classList.remove('show');
+      renderProfile();
+    });
+  })
+  .catch(() => toast('Ошибка: неверный ID или проблемы с сервером'));
+}
 
 function logoutProfile() {
   if(!confirm('Выйти из профиля и отвязать аккаунт? Ваш прогресс останется в облаке, но вы не сможете к нему получить доступ без повторного входа.')) return;
@@ -930,19 +954,6 @@ function logoutProfile() {
     window.location.reload();
   }, 1000);
 }
-
-// Функция для обработки входа через виджет (вызывается самим Telegram)
-window.onTelegramAuth = function(user) {
-  tgWebData = user;
-  localStorage.setItem('grenko_tg_user', JSON.stringify(user)); 
-  toast('Вход выполнен! Синхронизация...');
-  load().then(() => {
-    renderInventory();
-    updateUI();
-    $('profileOverlay').classList.remove('show');
-    renderProfile();
-  });
-};
 
 /* ===== SPIN ===== */
 function processSpin(won,isAuto=false){
