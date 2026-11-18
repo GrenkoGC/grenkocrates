@@ -2,9 +2,13 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<script src="units.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grenko Admin Panel</title>
+
+<!-- Единые данные и конфиг (без дублей) -->
+<script src="units.js"></script>
+<script src="config.js"></script>
+
 <style>
   :root{--bg:#121212;--pan:#1e1e1e;--pan2:#2a2a2a;--lin:#333;--txt:#e0e0e0;--txt2:#888;--acc:#fff;--red:#ff4444;--grn:#48bb78;--blue:#4299e1}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -15,15 +19,16 @@
   input,select,button{padding:10px;background:var(--pan2);border:1px solid var(--lin);color:#fff;border-radius:4px;font-family:inherit;font-size:13px;outline:none;transition:0.2s}
   input:focus,select:focus{border-color:var(--acc)}
   button{cursor:pointer;font-weight:bold;text-transform:uppercase;letter-spacing:.05em}
-  button:hover{background:var(--lin);border-color:var(--acc)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  button:hover:not(:disabled){background:var(--lin);border-color:var(--acc)}
   .btn-main{background:var(--blue);border-color:var(--blue);color:#fff}
-  .btn-main:hover{background:#3182ce;border-color:#3182ce}
+  .btn-main:hover:not(:disabled){background:#3182ce;border-color:#3182ce}
   .btn-danger{background:rgba(255,68,68,0.1);border-color:var(--red);color:var(--red)}
-  .btn-danger:hover{background:rgba(255,68,68,0.2)}
+  .btn-danger:hover:not(:disabled){background:rgba(255,68,68,0.2)}
   .hidden{display:none !important}
   .msg{font-size:12px;text-align:center;min-height:16px;font-weight:bold}
   .row{display:flex;gap:10px;align-items:center}
-  .row input, .row select{flex:1}
+  .row input, .row select{flex:1;min-width:0}
   .row button{white-space:nowrap;flex:0 0 auto}
 
   .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:250px;overflow-y:auto;background:rgba(0,0,0,0.3);border:1px solid var(--lin);padding:8px;border-radius:4px}
@@ -33,70 +38,44 @@
   .inv-item .del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;opacity:0;transition:.2s}
   .inv-item:hover .del{opacity:1}
 
-  .spawn-section { margin-bottom: 15px; }
-  .spawn-section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 5px 0; border-bottom: 1px solid var(--lin); margin-bottom: 8px; text-align: left; }
-  .spawn-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+  .spawn-section{margin-bottom:15px}
+  .spawn-section-title{font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;padding:5px 0;border-bottom:1px solid var(--lin);margin-bottom:8px;text-align:left}
+  .spawn-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
   .spawn-item{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.03);border:1px dashed var(--lin);padding:6px;border-radius:4px;cursor:pointer;transition:.2s;text-align:center}
   .spawn-item:hover{border-color:var(--grn);background:rgba(72,187,120,0.1);transform:translateY(-2px)}
   .spawn-item img{width:36px;height:36px;object-fit:contain;margin-bottom:4px}
   .spawn-item span{font-size:9px;line-height:1.1;color:var(--txt2)}
 
-  /* ===== ULTIMATE RAINBOW ===== */
-  @keyframes ult-shift {
-    0%   { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-  }
+  /* ===== ULTIMATE RAINBOW (инлайн, как просил) ===== */
+  @keyframes ult-shift { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
   @keyframes ult-glow {
-    0%, 100% {
-      box-shadow:
-        0 0 12px rgba(255, 0, 128, .45),
-        0 0 24px rgba(0, 200, 255, .25);
-    }
-    50% {
-      box-shadow:
-        0 0 22px rgba(255, 200, 0, .55),
-        0 0 36px rgba(120, 0, 255, .35);
-    }
+    0%,100%{box-shadow:0 0 12px rgba(255,0,128,.45),0 0 24px rgba(0,200,255,.25)}
+    50%{box-shadow:0 0 22px rgba(255,200,0,.55),0 0 36px rgba(120,0,255,.35)}
   }
-  .rar-ultimate {
-    background: linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4, #ff004c);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    animation: ult-shift 4s linear infinite;
-    font-weight: 700;
+  .rar-ultimate{
+    background:linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4,#ff004c);
+    background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
+    color:transparent;-webkit-text-fill-color:transparent;
+    animation:ult-shift 4s linear infinite;font-weight:700;
   }
-  .rar-ultimate-static {
-    background: linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
+  .rar-ultimate-static{
+    background:linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:700;
   }
-  .rar-ultimate-icon {
-    filter: drop-shadow(0 0 6px rgba(255,0,128,.7)) drop-shadow(0 0 12px rgba(0,200,255,.5));
-    border-radius: 8px;
+  .rar-ultimate-icon{filter:drop-shadow(0 0 6px rgba(255,0,128,.7)) drop-shadow(0 0 12px rgba(0,200,255,.5));border-radius:8px}
+  .rar-ultimate-card{
+    border:2px solid transparent !important;
+    background:linear-gradient(var(--pan),var(--pan)) padding-box,
+      linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4,#ff004c) border-box;
+    background-size:auto,200% 100%;
+    animation:ult-shift 4s linear infinite,ult-glow 3s ease-in-out infinite;
   }
-  .rar-ultimate-card {
-    border: 2px solid transparent !important;
-    background:
-      linear-gradient(var(--pan), var(--pan)) padding-box,
-      linear-gradient(90deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4, #ff004c) border-box;
-    background-size: auto, 200% 100%;
-    animation: ult-shift 4s linear infinite, ult-glow 3s ease-in-out infinite;
+  .inv-item.ultimate::before{
+    background:linear-gradient(180deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4);
+    background-size:100% 200%;animation:ult-shift 4s linear infinite;
   }
-  .inv-item.ultimate::before {
-    background: linear-gradient(180deg, #ff004c, #ff8a00, #ffe600, #38ff7a, #00d4ff, #6a5cff, #ff00d4);
-    background-size: 100% 200%;
-    animation: ult-shift 4s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .rar-ultimate,
-    .rar-ultimate-card,
-    .inv-item.ultimate::before { animation: none; }
+  @media (prefers-reduced-motion: reduce){
+    .rar-ultimate,.rar-ultimate-card,.inv-item.ultimate::before{animation:none}
   }
 </style>
 </head>
@@ -107,246 +86,280 @@
   <h2>🔐 Админ-панель</h2>
   <div id="setupStep" class="hidden">
     <p style="font-size:12px;margin-bottom:10px;color:var(--txt2)">Первый вход. Придумайте пароль:</p>
-    <input type="password" id="newPass" placeholder="Новый пароль" style="width:100%;margin-bottom:10px">
-    <input type="password" id="newPassConfirm" placeholder="Повторите пароль" style="width:100%;margin-bottom:10px">
-    <button class="btn-main" style="width:100%" onclick="setupPass()">Сохранить пароль</button>
+    <input type="password" id="newPass" placeholder="Новый пароль" autocomplete="new-password" style="width:100%;margin-bottom:10px">
+    <input type="password" id="newPassConfirm" placeholder="Повторите пароль" autocomplete="new-password" style="width:100%;margin-bottom:10px">
+    <button type="button" class="btn-main" style="width:100%" onclick="setupPass()">Сохранить пароль</button>
   </div>
   <div id="loginStep">
-    <input type="password" id="loginPass" placeholder="Введите пароль" style="width:100%;margin-bottom:10px">
-    <button class="btn-main" style="width:100%" onclick="login()">Войти</button>
-    <button style="width:100%;margin-top:10px;font-size:11px;background:none;border:none;color:var(--txt2)" onclick="showSetup()">Сбросить пароль</button>
+    <input type="password" id="loginPass" placeholder="Введите пароль" autocomplete="current-password" style="width:100%;margin-bottom:10px">
+    <button type="button" class="btn-main" style="width:100%" onclick="login()">Войти</button>
+    <button type="button" style="width:100%;margin-top:10px;font-size:11px;background:none;border:none;color:var(--txt2)" onclick="showSetup()">Сбросить пароль</button>
   </div>
   <div class="msg" id="loginMsg"></div>
 </div>
 
 <!-- ЭКРАН АДМИНКИ -->
-<div class="box hidden" id="adminBox" style="max-width: 700px;">
+<div class="box hidden" id="adminBox">
   <h2>🛠 Управление игрой</h2>
   <div class="msg" id="adminMsg" style="color:var(--grn)"></div>
 
-  <!-- Выбор игрока -->
   <div>
     <h3>👤 Выбрать игрока (по Telegram ID)</h3>
     <div class="row">
       <input type="number" id="inpUserId" placeholder="Например: 123456789">
-      <button class="btn-main" onclick="loadUser()">Загрузить</button>
+      <button type="button" class="btn-main" id="btnLoadUser" onclick="loadUser()">Загрузить</button>
     </div>
   </div>
 
-  <!-- Валюты и Режим Бога -->
   <div id="userControls" style="display:none; flex-direction:column; gap:15px;">
     <h3>💰 Ресурсы</h3>
     <div class="row" style="margin-bottom:8px">
       <label style="width:80px;font-size:12px">Баланс ($)</label>
       <input type="number" id="inpBal">
-      <button onclick="saveVal('balance', 'inpBal')">ОК</button>
+      <button type="button" onclick="saveVal('balance','inpBal')">ОК</button>
     </div>
     <div class="row" style="margin-bottom:8px">
       <label style="width:80px;font-size:12px">Гемы (💎)</label>
       <input type="number" id="inpGems">
-      <button onclick="saveVal('gems', 'inpGems')">ОК</button>
+      <button type="button" onclick="saveVal('gems','inpGems')">ОК</button>
     </div>
 
     <h3>👑 Режим Бога</h3>
     <div class="row" style="margin-bottom:8px">
       <label style="width:100px;font-size:12px">Множитель удачи</label>
-      <input type="number" id="inpLuck" placeholder="Например, 10" step="0.1" value="1">
-      <button onclick="setLuck()">ОК</button>
+      <input type="number" id="inpLuck" placeholder="Например, 10" step="0.1" min="0.1" max="100" value="1">
+      <button type="button" onclick="setLuck()">ОК</button>
     </div>
     <div class="row" style="margin-bottom:8px">
       <label style="width:100px;font-size:12px">Следующий дроп</label>
       <select id="inpForceDrop">
         <option value="">-- Случайно --</option>
       </select>
-      <button onclick="setForceDrop()">ОК</button>
+      <button type="button" onclick="setForceDrop()">ОК</button>
     </div>
-    <div style="font-size:11px; color:var(--txt2); text-align:center; margin-bottom:10px;">
+    <div style="font-size:11px;color:var(--txt2);text-align:center;margin-bottom:10px;">
       Множитель удачи увеличивает шанс выпадения редких предметов (Exclusive, Secret и т.д.).
     </div>
 
-    <!-- Инвентарь -->
     <h3 style="display:flex;justify-content:space-between">
       <span>📦 Инвентарь</span>
       <span id="invCountText" style="color:var(--txt2);font-size:11px">0/1000</span>
     </h3>
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn-danger" style="flex:1" onclick="clearInv()">Очистить инвентарь</button>
+      <button type="button" class="btn-danger" style="flex:1" onclick="clearInv()">Очистить инвентарь</button>
     </div>
     <div class="inv-grid" id="adminInvGrid"></div>
 
-    <!-- Выдача предметов -->
     <h3>🎁 Выдать предмет</h3>
-    <div id="spawnContainer" style="max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
+    <div id="spawnContainer" style="max-height:400px;overflow-y:auto;padding-right:5px;"></div>
   </div>
 
   <hr style="border-color:var(--lin);margin:10px 0">
   <div style="display:flex;gap:8px">
-    <button style="flex:1;background:none" onclick="location.reload()">Выйти</button>
+    <button type="button" style="flex:1;background:none" onclick="logout()">Выйти</button>
   </div>
 </div>
 
 <script>
+/* ============================================================
+   ВАЖНО: save.js / state.js / API_URL / tgWebData / loadWithAuth
+   и весь облачный контракт { adminId, saveData } — НЕ ТРОГАЕМ.
+   Здесь только UI админки и безопасная выдача предметов.
+   ============================================================ */
+
 const AUTH_KEY = 'grenko_admin_auth';
-const API_URL = 'https://grenko-api.treugalnik.workers.dev';
-
-const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
-const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
-
-const RARITY = {
-  ultimate:  {label: 'Ultimate',  color: '#ff00d4'},
-  common:    {label: 'Common',    color: '#6cb862'},
-  rare:      {label: 'Rare',      color: '#2557a6'},
-  epic:      {label: 'Epic',      color: '#b554e8'},
-  legendary: {label: 'Legendary', color: '#fef605'},
-  mythic:    {label: 'Mythic',    color: '#b51500'},
-  leader:    {label: 'Leader',    color: '#4bb152'},
-  secret:    {label: 'Secret',    color: '#fff'},
-  exclusive: {label: 'Exclusive', color: '#eec5ff'}
-};
-
-const RARITY_ORDER = ['ultimate', 'exclusive', 'secret', 'leader', 'mythic', 'legendary', 'epic', 'rare', 'common'];
+const ADMIN_API = 'https://grenko-api.treugalnik.workers.dev'; // тот же, что в state.js
 
 let currentSave = null;
 let currentUserId = null;
 
-// --- КРИПТОГРАФИЯ ---
+/* ---------- Утилиты ---------- */
+function showAdminMsg(text, color = 'var(--grn)') {
+  const el = document.getElementById('adminMsg');
+  el.textContent = text;
+  el.style.color = color;
+}
+function showLoginMsg(text, color = '#ffaa00') {
+  const el = document.getElementById('loginMsg');
+  el.textContent = text;
+  el.style.color = color;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.textContent = '', 3000);
+}
+function isSecure() {
+  return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
+}
+
+/* ---------- Криптография (без изменений) ---------- */
 async function hashPass(pass, salt) {
+  if (!isSecure()) throw new Error('crypto.subtle недоступен. Откройте по HTTPS или через localhost.');
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' }, key, 256);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+    key, 256
+  );
   return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// --- АВТОРИЗАЦИЯ ---
+/* ---------- Авторизация ---------- */
 function checkAuthExist() {
   const auth = localStorage.getItem(AUTH_KEY);
-  if (!auth) {
-    document.getElementById('setupStep').classList.remove('hidden');
-    document.getElementById('loginStep').classList.add('hidden');
-  } else {
-    document.getElementById('setupStep').classList.add('hidden');
-    document.getElementById('loginStep').classList.remove('hidden');
-  }
+  const setup = document.getElementById('setupStep');
+  const login = document.getElementById('loginStep');
+  if (!auth) { setup.classList.remove('hidden'); login.classList.add('hidden'); }
+  else { setup.classList.add('hidden'); login.classList.remove('hidden'); }
 }
 
 async function setupPass() {
   const p1 = document.getElementById('newPass').value;
   const p2 = document.getElementById('newPassConfirm').value;
-  if (p1.length < 4) return showLoginMsg('Пароль слишком короткий');
+  if (p1.length < 4) return showLoginMsg('Пароль слишком короткий (мин. 4)');
   if (p1 !== p2) return showLoginMsg('Пароли не совпадают');
-  const salt = Math.random().toString(36).substring(2, 15);
-  const hash = await hashPass(p1, salt);
-  localStorage.setItem(AUTH_KEY, JSON.stringify({ salt, hash }));
-  showLoginMsg('Пароль установлен!', '#48bb78');
-  checkAuthExist();
+  try {
+    const salt = Math.random().toString(36).substring(2, 15);
+    const hash = await hashPass(p1, salt);
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ salt, hash }));
+    showLoginMsg('Пароль установлен!', '#48bb78');
+    document.getElementById('newPass').value = '';
+    document.getElementById('newPassConfirm').value = '';
+    checkAuthExist();
+  } catch (e) { showLoginMsg(e.message); }
 }
 
 function showSetup() {
-  if (!confirm('Удалить пароль?')) return;
+  if (!confirm('Удалить пароль и настроить заново?')) return;
   localStorage.removeItem(AUTH_KEY);
   location.reload();
 }
 
 async function login() {
-  const p = document.getElementById('loginPass').value;
-  const auth = JSON.parse(localStorage.getItem(AUTH_KEY));
+  const input = document.getElementById('loginPass');
+  const p = input.value;
+  const auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
   if (!auth) return;
-  const hash = await hashPass(p, auth.salt);
-  if (hash === auth.hash) {
-    document.getElementById('loginBox').classList.add('hidden');
-    document.getElementById('adminBox').classList.remove('hidden');
-  } else {
-    showLoginMsg('Неверный пароль');
-  }
+  const btn = event?.target;
+  if (btn) btn.disabled = true;
+  try {
+    const hash = await hashPass(p, auth.salt);
+    if (hash === auth.hash) {
+      input.value = '';
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('adminBox').classList.remove('hidden');
+    } else {
+      showLoginMsg('Неверный пароль');
+      await new Promise(r => setTimeout(r, 800));
+    }
+  } catch (e) { showLoginMsg(e.message); }
+  finally { if (btn) btn.disabled = false; }
 }
 
-function showLoginMsg(text, color = '#ffaa00') {
-  const el = document.getElementById('loginMsg');
-  el.textContent = text;
-  el.style.color = color;
-  setTimeout(() => el.textContent = '', 3000);
+function logout() {
+  currentSave = null;
+  currentUserId = null;
+  location.reload();
 }
 
-// --- РАБОТА С СЕРВЕРОМ ---
+/* ---------- Сервер: КОНТРАКТ НЕ МЕНЯЕМ ---------- */
 async function loadUser() {
-  const id = document.getElementById('inpUserId').value;
-  if (!id) return alert('Введите Telegram ID');
-  currentUserId = id;
+  const idInput = document.getElementById('inpUserId');
+  const id = idInput.value.trim();
+  if (!id || isNaN(id)) return alert('Введите корректный Telegram ID');
 
-  document.getElementById('adminMsg').textContent = 'Загрузка...';
+  const btn = document.getElementById('btnLoadUser');
+  btn.disabled = true;
+  showAdminMsg('Загрузка...', 'var(--blue)');
 
   try {
-    const res = await fetch(`${API_URL}/admin/load`, {
+    const res = await fetch(`${ADMIN_API}/admin/load`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminId: currentUserId })
+      body: JSON.stringify({ adminId: id })   // ← как было
     });
+
+    currentUserId = id;
 
     if (res.ok) {
       const data = await res.json();
-      currentSave = data || { balance: 1000, gems: 50, inventory: [] };
-      document.getElementById('inpLuck').value = currentSave.luck || 1;
 
+      // ВАЖНО: если сервер вернул пустоту — НЕ подменяем на пустой сейв,
+      // чтобы следующее сохранение не затерло реальные данные.
+      if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+        currentSave = data;
+        if (!Array.isArray(currentSave.inventory)) currentSave.inventory = [];
+        showAdminMsg('Пользователь загружен');
+      } else {
+        currentSave = { balance: 1000, gems: 50, inventory: [] };
+        showAdminMsg('Сервер вернул пустой сейв — показан новый', '#ffaa00');
+      }
+
+      document.getElementById('inpLuck').value = currentSave.luck ?? 1;
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
-      document.getElementById('adminMsg').textContent = 'Пользователь загружен';
-    } else {
+    } else if (res.status === 404) {
       currentSave = { balance: 1000, gems: 50, inventory: [] };
+      document.getElementById('inpLuck').value = 1;
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
+      showAdminMsg('Пользователь не найден — создан новый сейв', '#ffaa00');
+    } else {
+      throw new Error(`Сервер ответил ${res.status}`);
     }
   } catch (e) {
-    document.getElementById('adminMsg').textContent = 'Ошибка сервера';
+    showAdminMsg('Ошибка загрузки: ' + e.message, 'var(--red)');
+    currentUserId = null;
+  } finally {
+    btn.disabled = false;
   }
 }
 
 async function saveChanges() {
-  if (!currentUserId) return;
-  document.getElementById('adminMsg').textContent = 'Сохранение...';
-
+  if (!currentUserId || !currentSave) return false;
+  showAdminMsg('Сохранение...', 'var(--blue)');
   try {
-    await fetch(`${API_URL}/admin/save`, {
+    const res = await fetch(`${ADMIN_API}/admin/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminId: currentUserId, saveData: currentSave })
+      body: JSON.stringify({ adminId: currentUserId, saveData: currentSave }) // ← как было
     });
-    document.getElementById('adminMsg').textContent = 'Успешно сохранено на сервере!';
-    setTimeout(() => document.getElementById('adminMsg').textContent = '', 2000);
+    if (!res.ok) throw new Error(`Сервер ответил ${res.status}`);
+    showAdminMsg('Успешно сохранено на сервере!');
+    setTimeout(() => showAdminMsg(''), 2000);
+    return true;
   } catch (e) {
-    document.getElementById('adminMsg').textContent = 'Ошибка при сохранении';
+    showAdminMsg('Ошибка сохранения: ' + e.message, 'var(--red)');
+    return false;
   }
 }
 
 function setLuck() {
-  if (!currentUserId) return alert('Сначала выберите игрока');
-  const luck = parseFloat(document.getElementById('inpLuck').value) || 1;
-
+  if (!currentSave) return alert('Сначала выберите игрока');
+  const raw = parseFloat(document.getElementById('inpLuck').value);
+  const luck = Number.isFinite(raw) ? Math.max(0.1, Math.min(100, raw)) : 1;
+  document.getElementById('inpLuck').value = luck;
   currentSave.luck = luck;
-  saveChanges().then(() => {
-    alert(`Множитель удачи сохранен на сервере: x${luck}`);
-  });
+  saveChanges().then(ok => { if (ok) alert(`Множитель удачи сохранён: x${luck}`); });
 }
 
 function setForceDrop() {
-  if (!currentUserId) return alert('Сначала выберите игрока');
+  if (!currentSave) return alert('Сначала выберите игрока');
   const itemName = document.getElementById('inpForceDrop').value;
-
   currentSave.forceDrop = itemName || null;
-  saveChanges().then(() => {
-    alert(itemName ? `Следующий дроп сохранен: ${itemName}` : 'Форс-дроп отключен');
+  saveChanges().then(ok => {
+    if (ok) alert(itemName ? `Следующий дроп: ${itemName}` : 'Форс-дроп отключён');
   });
 }
 
-// --- ОТРИСОВКА ---
+/* ---------- Отрисовка ---------- */
 function renderAdmin() {
-  document.getElementById('inpBal').value = currentSave.balance;
-  document.getElementById('inpGems').value = currentSave.gems;
+  document.getElementById('inpBal').value = currentSave.balance ?? 0;
+  document.getElementById('inpGems').value = currentSave.gems ?? 0;
   renderInv();
   renderSpawnGrid();
 }
 
 function renderInv() {
-  const inv = currentSave.inventory || [];
+  const inv = Array.isArray(currentSave?.inventory) ? currentSave.inventory : [];
   document.getElementById('invCountText').textContent = `${inv.length}/1000`;
   const grid = document.getElementById('adminInvGrid');
   grid.innerHTML = '';
@@ -356,36 +369,42 @@ function renderInv() {
     return;
   }
 
-  inv.forEach((item, index) => {
-    let imgUrl = FALLBACK_IMG;
-    const found = ALL_UNITS.find(i => i.name === item.name);
-    if (found && found.img) imgUrl = found.img;
+  const frag = document.createDocumentFragment();
+  inv.forEach(item => {
+    // Ищем юнит с нормализацией (trim + lower) — это и чинит «пропавший» Ultimate
+    const found = typeof findUnit === 'function' ? findUnit(item.name) : ALL_UNITS.find(u => u.name === item.name);
+    const imgUrl = (found && found.img) || FALLBACK_IMG;
+    const rKey = typeof normalizeRarity === 'function' ? normalizeRarity(item.r) : (item.r || 'common');
+    const ult = rKey === 'ultimate';
 
-    const ult = item.r === 'ultimate';
     const el = document.createElement('div');
     el.className = 'inv-item';
     el.innerHTML = `
       <div class="del">✕</div>
-      <img src="${imgUrl}" class="${ult ? 'rar-ultimate-icon' : ''}">
-      <span class="${ult ? 'rar-ultimate-static' : ''}">${item.name}</span>
+      <img src="${esc(imgUrl)}" class="${ult ? 'rar-ultimate-icon' : ''}" alt="">
+      <span class="${ult ? 'rar-ultimate-static' : ''}">${esc(item.name)}</span>
     `;
     el.onclick = () => {
-      if (confirm(`Удалить ${item.name}?`)) {
-        currentSave.inventory.splice(index, 1);
+      if (!confirm(`Удалить ${item.name}?`)) return;
+      const idx = currentSave.inventory.indexOf(item);
+      if (idx !== -1) {
+        currentSave.inventory.splice(idx, 1);
         saveChanges();
         renderAdmin();
       }
     };
-    grid.appendChild(el);
+    frag.appendChild(el);
   });
+  grid.appendChild(frag);
 }
 
 function renderSpawnGrid() {
   const container = document.getElementById('spawnContainer');
   container.innerHTML = '';
+  const frag = document.createDocumentFragment();
 
   RARITY_ORDER.forEach(rKey => {
-    const unitsInRarity = ALL_UNITS.filter(u => u.r === rKey);
+    const unitsInRarity = ALL_UNITS.filter(u => normalizeRarity(u.r) === rKey);
     if (unitsInRarity.length === 0) return;
 
     const r = RARITY[rKey];
@@ -397,16 +416,27 @@ function renderSpawnGrid() {
     row.className = 'spawn-row';
 
     unitsInRarity.forEach(item => {
-      const ult = item.r === 'ultimate';
+      const ult = normalizeRarity(item.r) === 'ultimate';
       const el = document.createElement('div');
       el.className = 'spawn-item';
       el.innerHTML = `
-        <img src="${item.img || GIFT_IMG}" class="${ult ? 'rar-ultimate-icon' : ''}">
-        <span class="${ult ? 'rar-ultimate-static' : ''}">${item.name}</span>
+        <img src="${esc(item.img || GIFT_IMG)}" class="${ult ? 'rar-ultimate-icon' : ''}" alt="">
+        <span class="${ult ? 'rar-ultimate-static' : ''}">${esc(item.name)}</span>
       `;
       el.onclick = () => {
+        if (!currentSave) return;
         if (currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
-        currentSave.inventory.push({ name: item.name, r: item.r, price: item.price || 100, stats: item.stats || {} });
+
+        // ГЛАВНЫЙ ФИКС: глубокая копия + нормализация редкости.
+        // Это гарантирует, что Ultimate сохранится с r:'ultimate' и своими stats,
+        // а не ссылкой на объект из ALL_UNITS.
+        currentSave.inventory.push({
+          name: item.name,
+          r: normalizeRarity(item.r),
+          price: item.price || 100,
+          stats: deepClone(item.stats || {})
+        });
+
         saveChanges();
         renderAdmin();
       };
@@ -414,34 +444,46 @@ function renderSpawnGrid() {
     });
 
     section.appendChild(row);
-    container.appendChild(section);
+    frag.appendChild(section);
   });
+
+  container.appendChild(frag);
 }
 
 function saveVal(key, inputId) {
-  currentSave[key] = Number(document.getElementById(inputId).value);
+  if (!currentSave) return;
+  const num = Number(document.getElementById(inputId).value);
+  if (!Number.isFinite(num)) return alert('Введите корректное число');
+  currentSave[key] = num;
   saveChanges();
 }
 
 function clearInv() {
+  if (!currentSave) return;
   if (!confirm('Очистить инвентарь?')) return;
   currentSave.inventory = [];
   saveChanges();
   renderAdmin();
 }
 
-// Заполняем список юнитов для форс-дропа
-const forceSelect = document.getElementById('inpForceDrop');
-if (forceSelect) {
+/* ---------- Старт ---------- */
+function fillForceDropSelect() {
+  const forceSelect = document.getElementById('inpForceDrop');
+  if (!forceSelect || typeof ALL_UNITS === 'undefined') return;
+  const frag = document.createDocumentFragment();
   ALL_UNITS.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.name;
-    opt.textContent = `${u.r === 'ultimate' ? '✨ ' : ''}${u.name} (${u.r})`;
-    forceSelect.appendChild(opt);
+    opt.textContent = `${normalizeRarity(u.r) === 'ultimate' ? '✨ ' : ''}${u.name} (${normalizeRarity(u.r)})`;
+    frag.appendChild(opt);
   });
+  forceSelect.appendChild(frag);
 }
 
-checkAuthExist();
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuthExist();
+  fillForceDropSelect();
+});
 </script>
 </body>
 </html>
