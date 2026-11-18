@@ -169,7 +169,16 @@
 
 const AUTH_KEY = 'grenko_admin_auth';
 const ADMIN_API = 'https://grenko-api.treugalnik.workers.dev'; // тот же, что в state.js
+const AUTH_KEY = 'grenko_admin_auth';
+const ADMIN_API = 'https://grenko-api.treugalnik.workers.dev';
 
+// Добавляем экранирование HTML, так как utils.js не подключен к админке
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
+
+let currentSave = null;
+let currentUserId = null;
 let currentSave = null;
 let currentUserId = null;
 
