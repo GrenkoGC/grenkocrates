@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grenko Admin Panel</title>
+<link rel="icon" href="data:,">
 
-<!-- Единые данные и конфиг (без дублей) -->
 <script src="units.js"></script>
 <script src="config.js"></script>
 <script src="utils.js"></script>
@@ -31,14 +31,12 @@
   .row{display:flex;gap:10px;align-items:center}
   .row input, .row select{flex:1;min-width:0}
   .row button{white-space:nowrap;flex:0 0 auto}
-
   .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:250px;overflow-y:auto;background:rgba(0,0,0,0.3);border:1px solid var(--lin);padding:8px;border-radius:4px}
   .inv-item{position:relative;display:flex;flex-direction:column;align-items:center;padding:6px;background:var(--pan2);border:1px solid var(--lin);border-radius:4px;font-size:10px;text-align:center;cursor:pointer}
   .inv-item:hover{border-color:var(--red)}
   .inv-item img{width:32px;height:32px;object-fit:contain;margin-bottom:4px}
   .inv-item .del{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;opacity:0;transition:.2s}
   .inv-item:hover .del{opacity:1}
-
   .spawn-section{margin-bottom:15px}
   .spawn-section-title{font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;padding:5px 0;border-bottom:1px solid var(--lin);margin-bottom:8px;text-align:left}
   .spawn-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
@@ -47,42 +45,18 @@
   .spawn-item img{width:36px;height:36px;object-fit:contain;margin-bottom:4px}
   .spawn-item span{font-size:9px;line-height:1.1;color:var(--txt2)}
 
-  /* ===== ULTIMATE RAINBOW (инлайн, как просил) ===== */
   @keyframes ult-shift { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
-  @keyframes ult-glow {
-    0%,100%{box-shadow:0 0 12px rgba(255,0,128,.45),0 0 24px rgba(0,200,255,.25)}
-    50%{box-shadow:0 0 22px rgba(255,200,0,.55),0 0 36px rgba(120,0,255,.35)}
-  }
-  .rar-ultimate{
-    background:linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4,#ff004c);
-    background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
-    color:transparent;-webkit-text-fill-color:transparent;
-    animation:ult-shift 4s linear infinite;font-weight:700;
-  }
-  .rar-ultimate-static{
-    background:linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4);
-    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:700;
-  }
+  @keyframes ult-glow { 0%,100%{box-shadow:0 0 12px rgba(255,0,128,.45),0 0 24px rgba(0,200,255,.25)} 50%{box-shadow:0 0 22px rgba(255,200,0,.55),0 0 36px rgba(120,0,255,.35)} }
+  .rar-ultimate{background:linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4,#ff004c);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:ult-shift 4s linear infinite;font-weight:700;}
+  .rar-ultimate-static{background:linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:700;}
   .rar-ultimate-icon{filter:drop-shadow(0 0 6px rgba(255,0,128,.7)) drop-shadow(0 0 12px rgba(0,200,255,.5));border-radius:8px}
-  .rar-ultimate-card{
-    border:2px solid transparent !important;
-    background:linear-gradient(var(--pan),var(--pan)) padding-box,
-      linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4,#ff004c) border-box;
-    background-size:auto,200% 100%;
-    animation:ult-shift 4s linear infinite,ult-glow 3s ease-in-out infinite;
-  }
-  .inv-item.ultimate::before{
-    background:linear-gradient(180deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4);
-    background-size:100% 200%;animation:ult-shift 4s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce){
-    .rar-ultimate,.rar-ultimate-card,.inv-item.ultimate::before{animation:none}
-  }
+  .rar-ultimate-card{border:2px solid transparent !important;background:linear-gradient(var(--pan),var(--pan)) padding-box,linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4,#ff004c) border-box;background-size:auto,200% 100%;animation:ult-shift 4s linear infinite,ult-glow 3s ease-in-out infinite;}
+  .inv-item.ultimate::before{background:linear-gradient(180deg,#ff004c,#ff8a00,#ffe600,#38ff7a,#00d4ff,#6a5cff,#ff00d4);background-size:100% 200%;animation:ult-shift 4s linear infinite;}
+  @media (prefers-reduced-motion: reduce){.rar-ultimate,.rar-ultimate-card,.inv-item.ultimate::before{animation:none}}
 </style>
 </head>
 <body>
 
-<!-- ЭКРАН АВТОРИЗАЦИИ -->
 <div class="box" id="loginBox">
   <h2>🔐 Админ-панель</h2>
   <div id="setupStep" class="hidden">
@@ -99,7 +73,6 @@
   <div class="msg" id="loginMsg"></div>
 </div>
 
-<!-- ЭКРАН АДМИНКИ -->
 <div class="box hidden" id="adminBox">
   <h2>🛠 Управление игрой</h2>
   <div class="msg" id="adminMsg" style="color:var(--grn)"></div>
@@ -162,21 +135,12 @@
 </div>
 
 <script>
-/* ============================================================
-   ВАЖНО: save.js / state.js / API_URL / tgWebData / loadWithAuth
-   и весь облачный контракт { adminId, saveData } — НЕ ТРОГАЕМ.
-   Здесь только UI админки и безопасная выдача предметов.
-   ============================================================ */
-
 const AUTH_KEY = 'grenko_admin_auth';
-const ADMIN_API = 'https://grenko-api.treugalnik.workers.dev'; // тот же, что в state.js
+const ADMIN_API = 'https://grenko-api.treugalnik.workers.dev';
 
 let currentSave = null;
 let currentUserId = null;
-let currentSave = null;
-let currentUserId = null;
 
-/* ---------- Утилиты ---------- */
 function showAdminMsg(text, color = 'var(--grn)') {
   const el = document.getElementById('adminMsg');
   el.textContent = text;
@@ -193,19 +157,14 @@ function isSecure() {
   return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
 }
 
-/* ---------- Криптография (без изменений) ---------- */
 async function hashPass(pass, salt) {
   if (!isSecure()) throw new Error('crypto.subtle недоступен. Откройте по HTTPS или через localhost.');
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
-    key, 256
-  );
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' }, key, 256);
   return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-/* ---------- Авторизация ---------- */
 function checkAuthExist() {
   const auth = localStorage.getItem(AUTH_KEY);
   const setup = document.getElementById('setupStep');
@@ -263,7 +222,6 @@ function logout() {
   location.reload();
 }
 
-/* ---------- Сервер: КОНТРАКТ НЕ МЕНЯЕМ ---------- */
 async function loadUser() {
   const idInput = document.getElementById('inpUserId');
   const id = idInput.value.trim();
@@ -277,16 +235,13 @@ async function loadUser() {
     const res = await fetch(`${ADMIN_API}/admin/load`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminId: id })   // ← как было
+      body: JSON.stringify({ adminId: id })
     });
 
     currentUserId = id;
 
     if (res.ok) {
       const data = await res.json();
-
-      // ВАЖНО: если сервер вернул пустоту — НЕ подменяем на пустой сейв,
-      // чтобы следующее сохранение не затерло реальные данные.
       if (data && typeof data === 'object' && Object.keys(data).length > 0) {
         currentSave = data;
         if (!Array.isArray(currentSave.inventory)) currentSave.inventory = [];
@@ -295,7 +250,6 @@ async function loadUser() {
         currentSave = { balance: 1000, gems: 50, inventory: [] };
         showAdminMsg('Сервер вернул пустой сейв — показан новый', '#ffaa00');
       }
-
       document.getElementById('inpLuck').value = currentSave.luck ?? 1;
       renderAdmin();
       document.getElementById('userControls').style.display = 'flex';
@@ -323,7 +277,7 @@ async function saveChanges() {
     const res = await fetch(`${ADMIN_API}/admin/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminId: currentUserId, saveData: currentSave }) // ← как было
+      body: JSON.stringify({ adminId: currentUserId, saveData: currentSave })
     });
     if (!res.ok) throw new Error(`Сервер ответил ${res.status}`);
     showAdminMsg('Успешно сохранено на сервере!');
@@ -353,7 +307,6 @@ function setForceDrop() {
   });
 }
 
-/* ---------- Отрисовка ---------- */
 function renderAdmin() {
   document.getElementById('inpBal').value = currentSave.balance ?? 0;
   document.getElementById('inpGems').value = currentSave.gems ?? 0;
@@ -374,7 +327,6 @@ function renderInv() {
 
   const frag = document.createDocumentFragment();
   inv.forEach(item => {
-    // Ищем юнит с нормализацией (trim + lower) — это и чинит «пропавший» Ultimate
     const found = typeof findUnit === 'function' ? findUnit(item.name) : ALL_UNITS.find(u => u.name === item.name);
     const imgUrl = (found && found.img) || FALLBACK_IMG;
     const rKey = typeof normalizeRarity === 'function' ? normalizeRarity(item.r) : (item.r || 'common');
@@ -430,9 +382,6 @@ function renderSpawnGrid() {
         if (!currentSave) return;
         if (currentSave.inventory.length >= 1000) return alert('Инвентарь переполнен!');
 
-        // ГЛАВНЫЙ ФИКС: глубокая копия + нормализация редкости.
-        // Это гарантирует, что Ultimate сохранится с r:'ultimate' и своими stats,
-        // а не ссылкой на объект из ALL_UNITS.
         currentSave.inventory.push({
           name: item.name,
           r: normalizeRarity(item.r),
@@ -469,7 +418,6 @@ function clearInv() {
   renderAdmin();
 }
 
-/* ---------- Старт ---------- */
 function fillForceDropSelect() {
   const forceSelect = document.getElementById('inpForceDrop');
   if (!forceSelect || typeof ALL_UNITS === 'undefined') return;
