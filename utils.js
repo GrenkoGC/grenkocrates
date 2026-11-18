@@ -4,7 +4,7 @@ const $ = id => document.getElementById(id);
 
 function toast(m) {
   const t = $('toast');
-  if (!t) return;
+  if (!t) return; // Если элемента нет (например, в админке), просто выходим
   t.textContent = m;
   t.classList.add('show');
   clearTimeout(t._t);
