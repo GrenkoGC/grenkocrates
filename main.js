@@ -693,37 +693,37 @@ function playGacha() {
   }, 50);
 }
 function sellAll() {
-  console.log("Кнопка нажата. Инвентарь:", inventory);
-  
   if (!inventory || inventory.length === 0) {
-    return alert("Инвентарь пуст! Продавать нечего.");
+    return toast(L10N[lang].emptyInv);
   }
 
-  let sum = 0;
-  inventory.forEach(i => sum += (Number(i.price) || 0));
-  
-  balance += sum;
+  const total = inventory.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
+
+  // Подтверждение с суммой и количеством
+  if (!confirm(`${L10N[lang].sellAll} ${inventory.length} шт. за ${total} $?`)) return;
+
   inventory = [];
-  
-  if (typeof renderInventory === 'function') renderInventory();
-  if (typeof updateUI === 'function') updateUI();
-  if (typeof save === 'function') save();
-  
-  alert('УСПЕХ! Продано всё на ' + sum + ' $. Баланс: ' + balance);
+  balance += total;
+
+  renderInventory();
+  updateUI();
+  save();
+  sfx.sell();
+  toast(`${L10N[lang].soldAll} ${total} $`);
 }
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 
 function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
-  $('autoBtn').onclick = () => {
-      document.getElementById('sellAllBtn').onclick = sellAll;
-    isAutoOpen = !isAutoOpen;
     $('autoBtn').classList.toggle('active', isAutoOpen);
     save();
     if (isAutoOpen && !spinning) processSpin(randomItem(), true);
   };
-
+$('sellAllBtn').onclick = () => {
+  sfx.click();
+  sellAll();
+};
   $('chancesBtn').onclick = () => { sfx.click(); renderChances(); $('chancesOverlay').classList.add('show'); };
   $('indexBtn').onclick = () => { sfx.click(); renderIndex(); $('indexOverlay').classList.add('show'); };
   $('shopBtn').onclick = () => { sfx.click(); renderShop(); $('shopOverlay').classList.add('show'); };
@@ -858,12 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initApp();
 });
-// --- ИСПРАВЛЕНИЕ КНОПКИ "ПРОДАТЬ ВСЁ" ---
-document.getElementById('sellAllBtn').onclick = function() {
-  if (!inventory || inventory.length === 0) {
-    alert("Инвентарь пуст! Продавать нечего.");
-    return;
-  }
+
 
   // Спрашиваем подтверждение, чтобы случайно не продать всё
   if (!confirm(`Вы уверены, что хотите продать ВСЕ предметы (${inventory.length} шт.)?`)) {
