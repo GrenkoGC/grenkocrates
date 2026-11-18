@@ -1,4 +1,4 @@
-// main.js
+// main.js — Часть 1/2: UI
 
 let gameSettings = { luck: 1, forceDrop: null };
 
@@ -60,27 +60,31 @@ function applyLang() {
 
 function renderInventory() {
   invGrid.innerHTML = '';
+  const inv = safeInventory(inventory);
 
-  inventory.forEach((it, i) => {
-    const ult = it.r === 'ultimate';
+  inv.forEach((it, i) => {
+    const rKey = normalizeRarity(it.r);
+    const ult = rKey === 'ultimate';
+    const r = RARITY[rKey] || RARITY.common;
+
     const el = document.createElement('div');
-    el.className = `inv-item ${it.r}`;
+    el.className = `inv-item ${rKey}`;
 
-    const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${RARITY[it.r].color}80)`;
-    const nameCls = rarityTextClass(it.r);
+    const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}80)`;
+    const nameCls = rarityTextClass(rKey);
     const nameStyle = ult ? '' : 'color:var(--txt);';
 
     el.innerHTML = `
-      <div class="icon ${rarityIconClass(it.r)}" style="${iconStyle}">${iconOf(it.name, false)}</div>
-      <div class="${nameCls}" style="${nameStyle}margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${it.name}</div>
+      <div class="icon ${rarityIconClass(rKey)}" style="${iconStyle}">${iconOf(it.name, false)}</div>
+      <div class="${nameCls}" style="${nameStyle}margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${esc(it.name)}</div>
       <div class="price">${it.price} $</div>
     `;
 
     let statsHtml = '';
-    if (it.stats) {
+    if (it.stats && Object.keys(it.stats).length) {
       statsHtml = Object.entries(it.stats).map(([k, v]) => {
         const tk = L10N[lang].typeTrans[k] || k;
-        return `<div class="st-row"><span class="st-name">${tk}:</span><span class="st-val">${v}</span></div>`;
+        return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(v)}</span></div>`;
       }).join('');
     } else {
       statsHtml = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
@@ -100,12 +104,10 @@ function renderInventory() {
     el.onmouseleave = () => tooltip.classList.remove('show');
 
     el.onclick = () => {
-      const r = RARITY[it.r];
-
       $('dIcon').innerHTML = iconOf(it.name, false);
       $('dIcon').style.filter = ult ? '' : `drop-shadow(0 0 20px ${r.color}cc)`;
 
-      $('dName').innerHTML = `<span class="${rarityTextClass(it.r)}">${it.name}</span>`;
+      $('dName').innerHTML = `<span class="${rarityTextClass(rKey)}">${esc(it.name)}</span>`;
       $('dRarity').textContent = r.label;
       $('dRarity').style.color = ult ? '' : r.color;
       $('dPrice').textContent = `${L10N[lang].priceAfter}: ${it.price} $`;
@@ -123,25 +125,26 @@ function renderInventory() {
       }
 
       const s = $('dStats');
-      if (it.stats) {
+      if (it.stats && Object.keys(it.stats).length) {
         s.style.display = 'flex';
         s.innerHTML = Object.entries(it.stats).filter(([k, v]) => v).map(([k, v], idx) => {
           const tk = L10N[lang].typeTrans[k] || k;
-          return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${tk}:</span><span>${v}</span></div>`;
+          return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
         }).join('');
       } else {
         s.style.display = 'none';
       }
 
       const btn = $('dClose');
-      btn.textContent = `Продать за ${it.price} $`;
+      btn.textContent = `${L10N[lang].sold} ${L10N[lang].for} ${it.price} $`;
       btn.style.borderColor = 'var(--red)';
       btn.style.color = 'var(--red)';
 
       btn.onclick = () => {
         sfx.click();
         dropOverlay.classList.remove('show');
-        inventory.splice(i, 1);
+        const idx = inventory.indexOf(it);
+        if (idx !== -1) inventory.splice(idx, 1);
         balance += it.price;
         updateUI();
         renderInventory();
@@ -167,7 +170,7 @@ function renderInventory() {
       };
 
       dropOverlay.classList.add('show');
-      sfx.drop(it.r);
+      sfx.drop(rKey);
     };
 
     invGrid.appendChild(el);
@@ -187,8 +190,9 @@ function renderChances() {
   pool.forEach(entry => {
     const item = getItemData(entry.name);
     if (!item) return;
-    if (!byR[item.r]) byR[item.r] = 0;
-    byR[item.r] += entry.chance;
+    const rKey = normalizeRarity(item.r);
+    if (!byR[rKey]) byR[rKey] = 0;
+    byR[rKey] += entry.chance;
   });
 
   RARITY_ORDER.forEach(k => {
@@ -204,17 +208,18 @@ function renderChances() {
   [...pool].sort((a, b) => b.chance - a.chance).forEach(entry => {
     const it = getItemData(entry.name);
     if (!it) return;
-    const r = RARITY[it.r];
+    const rKey = normalizeRarity(it.r);
+    const r = RARITY[rKey];
     const row = document.createElement('div');
     row.className = 'chance-row';
     row.style.borderLeftColor = r.color;
 
     const displayName = it.secret ? '???' : it.name;
-    const nameCls = it.secret ? '' : rarityTextClass(it.r);
+    const nameCls = it.secret ? '' : rarityTextClass(rKey);
 
     row.innerHTML = `
       <div class="ci" style="width:30px;height:30px;filter:drop-shadow(0 0 4px ${r.color}80)">${iconOf(it.name, true)}</div>
-      <div class="cn ${nameCls}">${displayName}
+      <div class="cn ${nameCls}">${esc(displayName)}
         <div class="cr" style="color:${r.color}">${r.label} · ${it.price} $</div>
         <div class="chance-bar"><div data-w="${Math.min(entry.chance * 10, 100)}" style="background:${r.color}"></div></div>
       </div>
@@ -233,10 +238,11 @@ function renderChances() {
 function renderIndex() {
   const grid = document.getElementById('indexGrid');
   grid.innerHTML = '';
-  const foundItems = new Set(inventory.map(it => it.name));
+  const inv = safeInventory(inventory);
+  const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
 
   RARITY_ORDER.forEach(rKey => {
-    const unitsInRarity = ALL_UNITS.filter(u => u.r === rKey);
+    const unitsInRarity = ALL_UNITS.filter(u => normalizeRarity(u.r) === rKey);
     if (unitsInRarity.length === 0) return;
 
     const r = RARITY[rKey];
@@ -247,20 +253,20 @@ function renderIndex() {
     row.className = 'index-items-row';
 
     unitsInRarity.forEach(it => {
-      const hasFound = foundItems.has(it.name);
+      const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
       const isSecret = it.secret;
       const displayName = (!hasFound || isSecret) ? '???' : it.name;
 
       const el = document.createElement('div');
       el.className = `index-item ${hasFound ? '' : 'locked'}`;
 
-      const iconCls = hasFound && !isSecret ? rarityIconClass(it.r) : '';
-      const nameCls = hasFound && !isSecret ? rarityTextClass(it.r) : '';
+      const iconCls = hasFound && !isSecret ? rarityIconClass(rKey) : '';
+      const nameCls = hasFound && !isSecret ? rarityTextClass(rKey) : '';
       const nameStyle = hasFound && !isSecret ? '' : 'color:var(--txt2)';
 
       el.innerHTML = `
-        <img src="${hasFound && !isSecret ? it.img : 'https://yourimageshare.com/ib/w1HE053pTL.jpg'}" class="${iconCls}" alt="${displayName}">
-        <span class="${nameCls}" style="${nameStyle}">${displayName}</span>
+        <img src="${hasFound && !isSecret ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}">
+        <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
       row.appendChild(el);
     });
@@ -281,7 +287,8 @@ function renderProfile() {
   $('profGems').textContent = Math.floor(gems) + ' 💎';
   $('profWarning').style.display = isGuest ? 'block' : 'none';
 
-  const top3 = [...inventory].sort((a, b) => b.price - a.price).slice(0, 3);
+  const inv = safeInventory(inventory);
+  const top3 = [...inv].sort((a, b) => b.price - a.price).slice(0, 3);
   const container = $('profTopUnits');
   container.innerHTML = '';
 
@@ -289,18 +296,19 @@ function renderProfile() {
     container.innerHTML = '<div style="font-size:12px; color:var(--txt2); text-align:center;">Инвентарь пуст</div>';
   } else {
     top3.forEach(it => {
-      const r = RARITY[it.r];
+      const rKey = normalizeRarity(it.r);
+      const r = RARITY[rKey];
       const el = document.createElement('div');
       el.className = 'profile-unit';
 
-      const iconCls = rarityIconClass(it.r);
-      const nameCls = rarityTextClass(it.r);
-      const iconStyle = it.r === 'ultimate' ? '' : `filter:drop-shadow(0 0 5px ${r.color}aa)`;
-      const nameStyle = it.r === 'ultimate' ? '' : `color:${r.color}`;
+      const iconCls = rarityIconClass(rKey);
+      const nameCls = rarityTextClass(rKey);
+      const iconStyle = rKey === 'ultimate' ? '' : `filter:drop-shadow(0 0 5px ${r.color}aa)`;
+      const nameStyle = rKey === 'ultimate' ? '' : `color:${r.color}`;
 
       el.innerHTML = `
         <div class="${iconCls}" style="width:24px; height:24px; ${iconStyle}">${iconOf(it.name)}</div>
-        <span class="${nameCls}" style="${nameStyle}">${it.name}</span>
+        <span class="${nameCls}" style="${nameStyle}">${esc(it.name)}</span>
         <span class="u-price">${it.price} $</span>
       `;
       container.appendChild(el);
@@ -326,15 +334,17 @@ function renderProfile() {
 
 function renderShop() {
   const item = SHOP_ITEM;
-  const r = RARITY[item.r];
+  if (!item) return;
+  const rKey = normalizeRarity(item.r);
+  const r = RARITY[rKey];
 
-  $('shopItemImg').innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+  $('shopItemImg').innerHTML = `<img src="${esc(item.img)}" alt="${esc(item.name)}">`;
   $('shopItemName').textContent = item.name;
   $('shopItemRarity').textContent = r.label;
   $('shopItemRarity').style.color = r.color;
-  $('shopItemStats').innerHTML = Object.entries(item.stats).map(([k, v], idx) => {
+  $('shopItemStats').innerHTML = Object.entries(item.stats || {}).map(([k, v], idx) => {
     const tk = L10N[lang].typeTrans[k] || k;
-    return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${tk}:</span><span>${v}</span></div>`;
+    return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
   }).join('');
 }
 
@@ -402,7 +412,8 @@ function processSpin(won, isAuto = false) {
         slotIcon.innerHTML = iconOf(won.name, false);
         slotName.textContent = won.secret ? '???' : won.name;
 
-        const isSold = autoSellRarities.has(won.r);
+        const wonRKey = normalizeRarity(won.r);
+        const isSold = autoSellRarities.has(wonRKey);
         if (isSold) {
           balance += won.price;
           updateUI();
@@ -424,7 +435,8 @@ function processSpin(won, isAuto = false) {
         save();
 
         if (!isAuto) {
-          $('history').innerHTML = L10N[lang].history + ': ' + inventory.slice(-5).reverse().map(x => x.secret ? '???' : x.name).join(' · ');
+          const inv = safeInventory(inventory);
+          $('history').innerHTML = L10N[lang].history + ': ' + inv.slice(-5).reverse().map(x => x.secret ? '???' : esc(x.name)).join(' · ');
         } else {
           setTimeout(() => {
             if (isAutoOpen) processSpin(randomItem(), true);
@@ -440,13 +452,14 @@ function processSpin(won, isAuto = false) {
 }
 
 function showDrop(it) {
-  const r = RARITY[it.r];
-  const ult = it.r === 'ultimate';
+  const rKey = normalizeRarity(it.r);
+  const r = RARITY[rKey];
+  const ult = rKey === 'ultimate';
 
   $('dIcon').innerHTML = iconOf(it.name, false);
   $('dIcon').style.filter = ult ? '' : `drop-shadow(0 0 20px ${r.color}cc)`;
 
-  $('dName').innerHTML = `<span class="${rarityTextClass(it.r)}">${it.name}</span>`;
+  $('dName').innerHTML = `<span class="${rarityTextClass(rKey)}">${esc(it.name)}</span>`;
   $('dRarity').textContent = r.label;
   $('dRarity').style.color = ult ? '' : r.color;
   $('dPrice').textContent = `${L10N[lang].priceAfter}: ${it.price} $`;
@@ -469,11 +482,11 @@ function showDrop(it) {
   card.style.flexDirection = 'column';
 
   const s = $('dStats');
-  if (it.stats) {
+  if (it.stats && Object.keys(it.stats).length) {
     s.style.display = 'flex';
     s.innerHTML = Object.entries(it.stats).filter(([k, v]) => v).map(([k, v], idx) => {
       const tk = L10N[lang].typeTrans[k] || k;
-      return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${tk}:</span><span>${v}</span></div>`;
+      return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
     }).join('');
     s.style.maxHeight = '40vh';
     s.style.overflowY = 'auto';
@@ -497,7 +510,7 @@ function showDrop(it) {
   };
 
   dropOverlay.classList.add('show');
-  sfx.drop(it.r);
+  sfx.drop(rKey);
 }
 
 function openCase(isMulti = false) {
@@ -525,7 +538,7 @@ function openCase(isMulti = false) {
 
     for (let i = 0; i < 10; i++) {
       const it = randomItem();
-      if (autoSellRarities.has(it.r)) totalProfit += it.price;
+      if (autoSellRarities.has(normalizeRarity(it.r))) totalProfit += it.price;
       else wonItems.push(it);
     }
 
@@ -545,33 +558,40 @@ function showMultiDrop(items) {
   list.innerHTML = '';
 
   items.forEach(it => {
-    const r = RARITY[it.r];
-    const ult = it.r === 'ultimate';
+    const rKey = normalizeRarity(it.r);
+    const r = RARITY[rKey];
+    const ult = rKey === 'ultimate';
     const el = document.createElement('div');
     el.className = 'multi-item';
 
     const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}cc)`;
 
     el.innerHTML = `
-      <div class="mi-icon ${rarityIconClass(it.r)}" style="${iconStyle}">${iconOf(it.name, false)}</div>
-      <div class="mi-name ${rarityTextClass(it.r)}">${it.name}</div>
+      <div class="mi-icon ${rarityIconClass(rKey)}" style="${iconStyle}">${iconOf(it.name, false)}</div>
+      <div class="mi-name ${rarityTextClass(rKey)}">${esc(it.name)}</div>
     `;
     list.appendChild(el);
   });
 
   multiOverlay.classList.add('show');
 
-  const best = items.reduce((p, c) => Object.keys(RARITY).indexOf(c.r) > Object.keys(RARITY).indexOf(p.r) ? c : p, items[0]);
-  sfx.drop(best.r);
+  if (items.length) {
+    const best = items.reduce((p, c) =>
+      RARITY_ORDER.indexOf(normalizeRarity(c.r)) < RARITY_ORDER.indexOf(normalizeRarity(p.r)) ? c : p,
+      items[0]
+    );
+    sfx.drop(normalizeRarity(best.r));
+  }
 }
 
 function buyShopItem() {
+  if (!SHOP_ITEM) return;
   if (gems < SHOP_ITEM.price) {
     toast('Недостаточно гемов!');
     return;
   }
   gems -= SHOP_ITEM.price;
-  const newItem = { ...SHOP_ITEM };
+  const newItem = { ...SHOP_ITEM, r: normalizeRarity(SHOP_ITEM.r), stats: deepClone(SHOP_ITEM.stats || {}) };
   inventory.push(newItem);
   updateUI();
   renderInventory();
@@ -581,7 +601,7 @@ function buyShopItem() {
   sfx.drop('exclusive');
 }
 
-/* ===== АВТОРИЗАЦИЯ ===== */
+/* ===== АВТОРИЗАЦИЯ (без изменений контракта) ===== */
 
 function linkAccount() {
   const id = $('inpUserId').value.trim();
@@ -692,15 +712,18 @@ function playGacha() {
     }
   }, 50);
 }
+
+/* ===== ПРОДАЖА ВСЕГО ===== */
+
 function sellAll() {
-  if (!inventory || inventory.length === 0) {
+  const inv = safeInventory(inventory);
+  if (inv.length === 0) {
     return toast(L10N[lang].emptyInv);
   }
 
-  const total = inventory.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
+  const total = inv.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
 
-  // Подтверждение с суммой и количеством
-  if (!confirm(`${L10N[lang].sellAll} ${inventory.length} шт. за ${total} $?`)) return;
+  if (!confirm(`${L10N[lang].sellAll} ${inv.length} шт. за ${total} $?`)) return;
 
   inventory = [];
   balance += total;
@@ -711,19 +734,25 @@ function sellAll() {
   sfx.sell();
   toast(`${L10N[lang].soldAll} ${total} $`);
 }
+
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 
 function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
+
+  $('autoBtn').onclick = () => {
+    isAutoOpen = !isAutoOpen;
     $('autoBtn').classList.toggle('active', isAutoOpen);
     save();
     if (isAutoOpen && !spinning) processSpin(randomItem(), true);
   };
-$('sellAllBtn').onclick = () => {
-  sfx.click();
-  sellAll();
-};
+
+  $('sellAllBtn').onclick = () => {
+    sfx.click();
+    sellAll();
+  };
+
   $('chancesBtn').onclick = () => { sfx.click(); renderChances(); $('chancesOverlay').classList.add('show'); };
   $('indexBtn').onclick = () => { sfx.click(); renderIndex(); $('indexOverlay').classList.add('show'); };
   $('shopBtn').onclick = () => { sfx.click(); renderShop(); $('shopOverlay').classList.add('show'); };
@@ -842,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.createElement('button');
     btn.className = `crate-btn ${id === activeCrate ? 'active' : ''}`;
     btn.dataset.id = id;
-    btn.innerHTML = `<img src="${CRATES[id].img}" alt="crate"> ${CRATES[id].name}`;
+    btn.innerHTML = `<img src="${CRATES[id].img}" alt="crate"> ${esc(CRATES[id].name)}`;
     btn.onclick = () => {
       document.querySelectorAll('.crate-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -858,24 +887,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initApp();
 });
-
-
-  // Спрашиваем подтверждение, чтобы случайно не продать всё
-  if (!confirm(`Вы уверены, что хотите продать ВСЕ предметы (${inventory.length} шт.)?`)) {
-    return;
-  }
-
-  let sum = 0;
-  inventory.forEach(i => sum += (Number(i.price) || 0));
-  
-  balance += sum;
-  inventory = [];
-  
-  // Обновляем экран
-  if (typeof renderInventory === 'function') renderInventory();
-  if (typeof updateUI === 'function') updateUI();
-  if (typeof save === 'function') save();
-  
-  // Показываем результат
-  alert('УСПЕХ! Продано всё на ' + sum + ' $. Баланс: ' + balance);
-};
