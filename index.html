@@ -497,13 +497,16 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div class="stat-tooltip" id="invTooltip"></div>
 <div class="sold-toast" id="toast"></div>
 
+<!-- Загружаем конфиги и утилиты первыми -->
 <script src="units.js"></script>
+<script src="config.js"></script> 
 <script src="crates.js"></script>
-<script src="config.js"></script>
+<script src="utils.js"></script>
+
+<!-- Остальная логика -->
 <script src="state.js"></script>
 <script src="audio.js"></script>
 <script src="save.js"></script>
-<script src="utils.js"></script>
 <script src="main.js"></script>
 
 </body>
