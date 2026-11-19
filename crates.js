@@ -29,4 +29,14 @@ const CRATES = {
       { name: 'THE_PC2408', chance: 0.05 }
     ]
   }
+    crate3: {
+    name: 'Chaos Crate',
+    img: 'https://yourimageshare.com/ib/Ayx5zw3U54.jpg',
+    currency: '$',
+    cost: 1000,
+    pool: [
+      { name: 'Bleng', chance: 99.0 },           // Новый Mythic
+      { name: 'Olado', chance: 1.0 },            // Новый Secret
+    ]
+  }
 };
