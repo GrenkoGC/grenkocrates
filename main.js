@@ -239,10 +239,10 @@ function renderIndex() {
   const grid = document.getElementById('indexGrid');
   grid.innerHTML = '';
   const inv = safeInventory(inventory);
-  // Приводим все имена в инвентаре к нижнему регистру для надежного поиска
   const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
   
-  console.log("Ищем в инвентаре:", foundItems); // Проверка в консоли
+  // Ищем наш тултип
+  const tooltip = document.getElementById('indexTooltip');
 
   RARITY_ORDER.forEach(rKey => {
     const unitsInRarity = ALL_UNITS.filter(u => normalizeRarity(u.r) === rKey);
@@ -256,7 +256,6 @@ function renderIndex() {
     row.className = 'index-items-row';
 
     unitsInRarity.forEach(it => {
-      // Ищем по имени без учета регистра
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
       const displayName = hasFound ? it.name : '???';
 
@@ -271,6 +270,33 @@ function renderIndex() {
         <img src="${hasFound ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}">
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
+
+      // === ЛОГИКА ТУЛТИПА ===
+      el.onmouseenter = () => {
+        if (window.innerWidth < 768) return; // На телефонах не показываем
+        if (!hasFound) {
+          tooltip.innerHTML = `<div style="text-align:center; color:var(--txt2); font-style:italic;">Юнит еще не открыт</div>`;
+        } else {
+          if (it.stats && Object.keys(it.stats).length) {
+            tooltip.innerHTML = Object.entries(it.stats).map(([k, v]) => {
+              const tk = L10N[lang].typeTrans[k] || k;
+              return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(transVal(v, lang))}</span></div>`;
+            }).join('');
+          } else {
+            tooltip.innerHTML = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
+          }
+        }
+        
+        tooltip.classList.add('show');
+        const rect = el.getBoundingClientRect();
+        // Позиционируем тултип так, чтобы он не улетал за край экрана
+        tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
+        tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+      };
+
+      el.onmouseleave = () => tooltip.classList.remove('show');
+      // =====================
+
       row.appendChild(el);
     });
 
