@@ -749,7 +749,12 @@ function sellAll() {
 function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
-
+  $('langBtn').onclick = () => {
+    lang = lang === 'ru' ? 'en' : 'ru';
+    sfx.click();
+    applyLang();
+    save();
+  };
   $('autoBtn').onclick = () => {
     isAutoOpen = !isAutoOpen;
     $('autoBtn').classList.toggle('active', isAutoOpen);
