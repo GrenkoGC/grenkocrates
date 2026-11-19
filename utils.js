@@ -1,15 +1,10 @@
 // utils.js
 
-// Страховки от "is not defined"
-const FALLBACK = typeof FALLBACK_IMG !== 'undefined' ? FALLBACK_IMG : 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
-const GIFT = typeof GIFT_IMG !== 'undefined' ? GIFT_IMG : 'https://yourimageshare.com/ib/cwwrwslAaB.png';
-
-const $ = id => document.getElementById(id);
 const $ = id => document.getElementById(id);
 
 function toast(m) {
   const t = $('toast');
-  if (!t) return; // Если элемента нет (например, в админке), просто выходим
+  if (!t) return;
   t.textContent = m;
   t.classList.add('show');
   clearTimeout(t._t);
@@ -18,7 +13,6 @@ function toast(m) {
 
 const getItemData = name => ALL_UNITS.find(u => u.name === name);
 
-/* ===== Безопасные хелперы ===== */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[c]));
@@ -39,9 +33,9 @@ const safeInventory = inv => Array.isArray(inv) ? inv : [];
 
 const iconOf = (name, hide = false) => {
   const it = findUnit(name);
-  if (!it) return `<img src="${GIFT}" alt="">`;
-  if (hide && it.secret) return `<img src="${FALLBACK}" alt="">`;
-  return it.img ? `<img src="${it.img}" alt="${esc(it.name)}">` : `<img src="${GIFT}" alt="">`;
+  if (!it) return `<img src="${GIFT_IMG}" alt="">`;
+  if (hide && it.secret) return `<img src="${FALLBACK_IMG}" alt="">`;
+  return it.img ? `<img src="${it.img}" alt="${esc(it.name)}">` : `<img src="${GIFT_IMG}" alt="">`;
 };
 
 const randomItem = () => {
