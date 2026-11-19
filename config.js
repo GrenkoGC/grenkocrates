@@ -40,7 +40,6 @@ const GACHA_COOLDOWN = 600000;
 const MAX_GACHA_SPINS = 5;
 
 const TYPE_TRANS_RU = {
-  
   'Type': 'Тип',
   'Damage': 'Урон',
   'Range': 'Дальность',
@@ -59,12 +58,12 @@ const TYPE_TRANS_RU = {
   'Slowing': 'Замедление',
   'Critical Damage Multiplier': 'Множитель крит. урона',
   'Critical Damage Chance': 'Шанс крит. урона',
-  'All Stats Nerf': 'Ослабление статов'
-    'Tag': 'Метка',
+  'All Stats Nerf': 'Ослабление статов',
+  'Tag': 'Метка',
   'Tag Time': 'Время метки',
   'Parry': 'Парирование',
   'Parry Slow': 'Замедление при парировании',
-  'Parry Slow Time': 'Время замедления при парировании',
+  'Parry Slow Time': 'Время замедления при парировании'
 };
 
 const TYPE_TRANS_EN = {
@@ -86,12 +85,12 @@ const TYPE_TRANS_EN = {
   'Slowing': 'Slowing',
   'Critical Damage Multiplier': 'Crit Damage Multiplier',
   'Critical Damage Chance': 'Crit Damage Chance',
-  'All Stats Nerf': 'All Stats Nerf'
-    'Tag': 'Tag',
+  'All Stats Nerf': 'All Stats Nerf',
+  'Tag': 'Tag',
   'Tag Time': 'Tag Time',
   'Parry': 'Parry',
   'Parry Slow': 'Parry Slow',
-  'Parry Slow Time': 'Parry Slow Time',
+  'Parry Slow Time': 'Parry Slow Time'
 };
 
 const L10N = {
@@ -121,7 +120,8 @@ const L10N = {
     autoOpen: '⚡ Авто-открытие',
     sellAll: 'Продать всё',
     
-    typeTrans: TYPE_TRANS_RU
+    typeTrans: TYPE_TRANS_RU,
+    
     valTrans: {
       'Single': 'Одиночный',
       'Splash': 'Сплэш (по области)',
@@ -135,7 +135,7 @@ const L10N = {
       'Slow + Stun + Spawner': 'Замедление + Стан + Спавнер',
       'Critical Stun': 'Критический стан',
       'Cheating': 'Читерство',
-      'Switches attack type every 90 seconds (Including Slowing, Critical, Stun and Nerf)': 'Меняет тип атаки каждые 90 секунд',
+      'Switches attack type every 90 seconds (Including Slowing, Critical, Stun and Nerf)': 'Меняет тип атаки каждые 90 секунд (Включая Замедление, Крит, Стан и Ослабление)',
       'Tag': 'Метка',
       'Parry Slow': 'Замедление при парировании',
       'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage': 'При атаке врага, помечает его и всех юнитов на карте, нанося им двойной урон',
@@ -167,7 +167,9 @@ const L10N = {
     noHist: 'Open history will appear here',
     autoOpen: '⚡ Auto-Open',
     sellAll: 'Sell All',
-    typeTrans: TYPE_TRANS_EN
+    
+    typeTrans: TYPE_TRANS_EN,
+    
     valTrans: {
       'Single': 'Single',
       'Splash': 'Splash',
@@ -187,6 +189,5 @@ const L10N = {
       'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage': 'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage',
       'Counter an enemy attack and mirrors the damage with 2x boost': 'Counter an enemy attack and mirrors the damage with 2x boost'
     }
-  }
   }
 };
