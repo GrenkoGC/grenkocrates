@@ -878,7 +878,16 @@ function initApp() {
 }
 
 setInterval(() => { save(); }, 3000);
-
+window.toggleLang = () => {
+  try {
+    lang = lang === 'ru' ? 'en' : 'ru';
+    if (typeof sfx !== 'undefined' && sfx.click) sfx.click();
+    applyLang();
+    if (typeof save === 'function') save();
+  } catch(e) {
+    console.error("Ошибка при смене языка:", e);
+  }
+};
 document.addEventListener('DOMContentLoaded', () => {
   const crateListEl = $('crateList');
   Object.keys(CRATES).forEach(id => {
