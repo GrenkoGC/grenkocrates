@@ -257,6 +257,7 @@ function renderIndex() {
 
     unitsInRarity.forEach(it => {
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
+      // Если не найден - показываем ???
       const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
@@ -274,13 +275,17 @@ function renderIndex() {
       // === ЛОГИКА ТУЛТИПА ===
       el.onmouseenter = () => {
         if (window.innerWidth < 768) return; // На телефонах не показываем
+        
         if (!hasFound) {
-          tooltip.innerHTML = `<div style="text-align:center; color:var(--txt2); font-style:italic;">Юнит еще не открыт</div>`;
+          // Если юнит не найден, показываем просто ???
+          tooltip.innerHTML = `<div style="text-align:center; color:var(--txt2); font-size: 16px; font-weight: bold; font-family: monospace;">???</div>`;
         } else {
+          // Если найден, показываем статы
           if (it.stats && Object.keys(it.stats).length) {
             tooltip.innerHTML = Object.entries(it.stats).map(([k, v]) => {
               const tk = L10N[lang].typeTrans[k] || k;
-              return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(transVal(v, lang))}</span></div>`;
+              const tv = typeof transVal === 'function' ? transVal(v, lang) : v;
+              return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
             }).join('');
           } else {
             tooltip.innerHTML = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
@@ -289,7 +294,6 @@ function renderIndex() {
         
         tooltip.classList.add('show');
         const rect = el.getBoundingClientRect();
-        // Позиционируем тултип так, чтобы он не улетал за край экрана
         tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
       };
@@ -304,7 +308,6 @@ function renderIndex() {
     grid.appendChild(section);
   });
 }
-
 function renderProfile() {
   let username = 'Гость';
   if (tgWebData) username = tgWebData.username ? '@' + tgWebData.username : tgWebData.first_name;
