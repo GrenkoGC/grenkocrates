@@ -25,6 +25,7 @@ const rarityCardClass = r => r === 'ultimate' ? 'rar-ultimate-card' : '';
 
 const GIFT_IMG = 'https://yourimageshare.com/ib/cwwrwslAaB.png';
 const GEM_CRATE_IMG = 'https://yourimageshare.com/ib/fKPwU3NRf6.png';
+const FALLBACK_IMG = 'https://yourimageshare.com/ib/w1HE053pTL.jpg';
 
 const SHOP_ITEM = ALL_UNITS.find(u => u.name === 'Eggren');
 
