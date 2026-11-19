@@ -277,20 +277,27 @@ function renderIndex() {
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
 
-      // ЛОГИКА ТУЛТИПА (показываем статы ВСЕГДА)
+            // ЛОГИКА ТУЛТИПА (статы видны всегда, но имя скрыто для закрытых)
       el.onmouseenter = () => {
         if (window.innerWidth < 768) return; 
         
         let html = '';
+        
+        // --- ЗАГОЛОВОК: имя или ??? ---
+        const displayName = hasFound ? it.name : '???';
+        const titleColor = hasFound ? r.color : 'var(--txt2)';
+        html += `<div style="text-align:center; color:${titleColor}; font-size: 14px; font-weight: bold; font-family: monospace; margin-bottom: 8px; border-bottom: 1px dashed var(--lin); padding-bottom: 4px;">${esc(displayName)}</div>`;
+        // -------------------------------
+
         if (it.stats && Object.keys(it.stats).length) {
-          html = Object.entries(it.stats).map(([k, v]) => {
+          html += Object.entries(it.stats).map(([k, v]) => {
             const tk = L10N[lang].typeTrans[k] || k;
             let tv = v;
             try { if (typeof transVal === 'function') tv = transVal(v, lang); } catch(e) {}
             return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
           }).join('');
         } else {
-          html = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
+          html += '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
         }
         
         tooltip.innerHTML = html;
