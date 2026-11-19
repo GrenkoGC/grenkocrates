@@ -28,7 +28,7 @@ const CRATES = {
       { name: 'Gem Lord Grenko', chance: 1 },
       { name: 'THE_PC2408', chance: 0.05 }
     ]
-  }
+  },
     crate3: {
     name: 'Chaos Crate',
     img: 'https://yourimageshare.com/ib/Ayx5zw3U54.jpg',
