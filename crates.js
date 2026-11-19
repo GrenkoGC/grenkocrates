@@ -35,7 +35,7 @@ const CRATES = {
     name: 'Chaos Crate',
     img: 'https://yourimageshare.com/ib/no9cnHZFNd.png',
     currency: '$',
-    cost: 1000,
+    cost: 2500,
     pool: [
       { name: 'Bleng', chance: 99.0 },
       { name: 'Olado', chance: 1.0 },
