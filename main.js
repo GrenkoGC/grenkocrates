@@ -241,7 +241,6 @@ function renderIndex() {
   const inv = safeInventory(inventory);
   const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
 
-  // Создаем тултип и принудительно вешаем его на body
   let tooltip = document.getElementById('indexTooltip');
   if (!tooltip) {
     tooltip = document.createElement('div');
@@ -263,6 +262,7 @@ function renderIndex() {
 
     unitsInRarity.forEach(it => {
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
+      // Если не найден - показываем ???
       const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
@@ -277,30 +277,25 @@ function renderIndex() {
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
 
-      // ЛОГИКА ТУЛТИПА
-      el.onmouseenter = (e) => {
+      // ЛОГИКА ТУЛТИПА (показываем статы всегда, даже если юнит закрыт)
+      el.onmouseenter = () => {
         if (window.innerWidth < 768) return; 
         
         let html = '';
-        if (!hasFound) {
-          html = `<div style="text-align:center; color:var(--txt2); font-size: 16px; font-weight: bold; font-family: monospace;">???</div>`;
+        if (it.stats && Object.keys(it.stats).length) {
+          html = Object.entries(it.stats).map(([k, v]) => {
+            const tk = L10N[lang].typeTrans[k] || k;
+            let tv = v;
+            try { if (typeof transVal === 'function') tv = transVal(v, lang); } catch(e) {}
+            return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
+          }).join('');
         } else {
-          if (it.stats && Object.keys(it.stats).length) {
-            html = Object.entries(it.stats).map(([k, v]) => {
-              const tk = L10N[lang].typeTrans[k] || k;
-              let tv = v;
-              try { if (typeof transVal === 'function') tv = transVal(v, lang); } catch(e) {}
-              return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
-            }).join('');
-          } else {
-            html = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
-          }
+          html = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
         }
         
         tooltip.innerHTML = html;
         tooltip.classList.add('show');
         
-        // Позиционируем прямо по курсору мыши
         const rect = el.getBoundingClientRect();
         tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
