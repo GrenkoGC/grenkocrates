@@ -40,6 +40,7 @@ const GACHA_COOLDOWN = 600000;
 const MAX_GACHA_SPINS = 5;
 
 const TYPE_TRANS_RU = {
+  
   'Type': 'Тип',
   'Damage': 'Урон',
   'Range': 'Дальность',
@@ -59,6 +60,11 @@ const TYPE_TRANS_RU = {
   'Critical Damage Multiplier': 'Множитель крит. урона',
   'Critical Damage Chance': 'Шанс крит. урона',
   'All Stats Nerf': 'Ослабление статов'
+    'Tag': 'Метка',
+  'Tag Time': 'Время метки',
+  'Parry': 'Парирование',
+  'Parry Slow': 'Замедление при парировании',
+  'Parry Slow Time': 'Время замедления при парировании',
 };
 
 const TYPE_TRANS_EN = {
@@ -81,6 +87,11 @@ const TYPE_TRANS_EN = {
   'Critical Damage Multiplier': 'Crit Damage Multiplier',
   'Critical Damage Chance': 'Crit Damage Chance',
   'All Stats Nerf': 'All Stats Nerf'
+    'Tag': 'Tag',
+  'Tag Time': 'Tag Time',
+  'Parry': 'Parry',
+  'Parry Slow': 'Parry Slow',
+  'Parry Slow Time': 'Parry Slow Time',
 };
 
 const L10N = {
