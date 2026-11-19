@@ -239,7 +239,10 @@ function renderIndex() {
   const grid = document.getElementById('indexGrid');
   grid.innerHTML = '';
   const inv = safeInventory(inventory);
+  // Приводим все имена в инвентаре к нижнему регистру для надежного поиска
   const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
+  
+  console.log("Ищем в инвентаре:", foundItems); // Проверка в консоли
 
   RARITY_ORDER.forEach(rKey => {
     const unitsInRarity = ALL_UNITS.filter(u => normalizeRarity(u.r) === rKey);
@@ -253,14 +256,13 @@ function renderIndex() {
     row.className = 'index-items-row';
 
     unitsInRarity.forEach(it => {
+      // Ищем по имени без учета регистра
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
-      // УБРАЛИ ПРОВЕРКУ НА SECRET: если найден, показываем всегда
       const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
       el.className = `index-item ${hasFound ? '' : 'locked'}`;
 
-      // Если найден, применяем радугу или цвет редкости
       const iconCls = hasFound ? rarityIconClass(rKey) : '';
       const nameCls = hasFound ? rarityTextClass(rKey) : '';
       const nameStyle = hasFound ? '' : 'color:var(--txt2)';
