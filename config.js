@@ -120,7 +120,27 @@ const L10N = {
     noHist: 'История открытий появится здесь',
     autoOpen: '⚡ Авто-открытие',
     sellAll: 'Продать всё',
+    
     typeTrans: TYPE_TRANS_RU
+    valTrans: {
+      'Single': 'Одиночный',
+      'Splash': 'Сплэш (по области)',
+      'Stun': 'Стан',
+      'Support': 'Поддержка',
+      'Double': 'Двойной',
+      'Spawner + Pierce': 'Спавнер + Пробитие',
+      'Knockback': 'Отбрасывание',
+      'Slow': 'Замедление',
+      'Stun + Double': 'Стан + Двойной',
+      'Slow + Stun + Spawner': 'Замедление + Стан + Спавнер',
+      'Critical Stun': 'Критический стан',
+      'Cheating': 'Читерство',
+      'Switches attack type every 90 seconds (Including Slowing, Critical, Stun and Nerf)': 'Меняет тип атаки каждые 90 секунд',
+      'Tag': 'Метка',
+      'Parry Slow': 'Замедление при парировании',
+      'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage': 'При атаке врага, помечает его и всех юнитов на карте, нанося им двойной урон',
+      'Counter an enemy attack and mirrors the damage with 2x boost': 'Отражает атаку врага, нанося ответный удар с двойным уроном'
+    }
   },
   en: {
     title: 'Grenko Crates',
@@ -148,5 +168,25 @@ const L10N = {
     autoOpen: '⚡ Auto-Open',
     sellAll: 'Sell All',
     typeTrans: TYPE_TRANS_EN
+    valTrans: {
+      'Single': 'Single',
+      'Splash': 'Splash',
+      'Stun': 'Stun',
+      'Support': 'Support',
+      'Double': 'Double',
+      'Spawner + Pierce': 'Spawner + Pierce',
+      'Knockback': 'Knockback',
+      'Slow': 'Slow',
+      'Stun + Double': 'Stun + Double',
+      'Slow + Stun + Spawner': 'Slow + Stun + Spawner',
+      'Critical Stun': 'Critical Stun',
+      'Cheating': 'Cheating',
+      'Switches attack type every 90 seconds (Including Slowing, Critical, Stun and Nerf)': 'Switches attack type every 90 seconds (Including Slowing, Critical, Stun and Nerf)',
+      'Tag': 'Tag',
+      'Parry Slow': 'Parry Slow',
+      'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage': 'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage',
+      'Counter an enemy attack and mirrors the damage with 2x boost': 'Counter an enemy attack and mirrors the damage with 2x boost'
+    }
+  }
   }
 };
