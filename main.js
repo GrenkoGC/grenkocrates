@@ -2,15 +2,15 @@
 
 let gameSettings = { luck: 1, forceDrop: null };
 
-const scene = $('scene');
-const slotIcon = $('slotIcon');
-const slotName = $('slotName');
-const flash = $('flash');
-const dropOverlay = $('dropOverlay');
-const multiOverlay = $('multiOverlay');
-const invGrid = $('invGrid');
-const bgMusic = $('bgMusic');
-const volumeSlider = $('volumeSlider');
+const scene = gid('scene');
+const slotIcon = gid('slotIcon');
+const slotName = gid('slotName');
+const flash = gid('flash');
+const dropOverlay = gid('dropOverlay');
+const multiOverlay = gid('multiOverlay');
+const invGrid = gid('invGrid');
+const bgMusic = gid('bgMusic');
+const volumeSlider = gid('volumeSlider');
 
 /* ===== UI ===== */
 
