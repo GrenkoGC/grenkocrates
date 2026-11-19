@@ -254,18 +254,19 @@ function renderIndex() {
 
     unitsInRarity.forEach(it => {
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
-      const isSecret = it.secret;
-      const displayName = (!hasFound || isSecret) ? '???' : it.name;
+      // УБРАЛИ ПРОВЕРКУ НА SECRET: если найден, показываем всегда
+      const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
       el.className = `index-item ${hasFound ? '' : 'locked'}`;
 
-      const iconCls = hasFound && !isSecret ? rarityIconClass(rKey) : '';
-      const nameCls = hasFound && !isSecret ? rarityTextClass(rKey) : '';
-      const nameStyle = hasFound && !isSecret ? '' : 'color:var(--txt2)';
+      // Если найден, применяем радугу или цвет редкости
+      const iconCls = hasFound ? rarityIconClass(rKey) : '';
+      const nameCls = hasFound ? rarityTextClass(rKey) : '';
+      const nameStyle = hasFound ? '' : 'color:var(--txt2)';
 
       el.innerHTML = `
-        <img src="${hasFound && !isSecret ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}">
+        <img src="${hasFound ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}">
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
       row.appendChild(el);
