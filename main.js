@@ -241,7 +241,7 @@ function renderIndex() {
   const inv = safeInventory(inventory);
   const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
 
-  // Создаем тултип динамически, если его нет в HTML
+  // Создаем тултип и принудительно вешаем его на body
   let tooltip = document.getElementById('indexTooltip');
   if (!tooltip) {
     tooltip = document.createElement('div');
@@ -277,8 +277,8 @@ function renderIndex() {
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
 
-      // --- ТУЛТИП ---
-      el.onmouseenter = () => {
+      // ЛОГИКА ТУЛТИПА
+      el.onmouseenter = (e) => {
         if (window.innerWidth < 768) return; 
         
         let html = '';
@@ -300,13 +300,13 @@ function renderIndex() {
         tooltip.innerHTML = html;
         tooltip.classList.add('show');
         
+        // Позиционируем прямо по курсору мыши
         const rect = el.getBoundingClientRect();
         tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
       };
 
       el.onmouseleave = () => tooltip.classList.remove('show');
-      // -------------
 
       row.appendChild(el);
     });
