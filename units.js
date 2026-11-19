@@ -179,5 +179,34 @@ const ALL_UNITS = [
       'Critical Stun Chance': '5%',
       'All Stats Nerf': '50%'
     }
+  },
+    {
+    name: 'Bleng',
+    r: 'mythic',
+    price: 1800,
+    img: 'https://yourimageshare.com/ib/JksGwoJ6lE.jpg',
+    stats: {
+      Type: 'Tag',
+      Damage: '325 - 775',
+      Range: '10 - 13.25',
+      Cooldown: '8 - 6.5',
+      'Tag Time': '3.25 - 4',
+      'Tag': 'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage'
+    }
+  },
+  {
+    name: 'Olado',
+    r: 'secret',
+    price: 7500,
+    img: 'https://yourimageshare.com/ib/wjoQsPo4i5.jpg',
+    stats: {
+      Type: 'Parry Slow',
+      Damage: '835 - 1750',
+      Range: '13 - 15.25',
+      Cooldown: '4 - 2.75',
+      'Parry Slow': '35%',
+      'Parry Slow Time': '0.5 - 1.6',
+      'Parry': 'Counter an enemy attack and mirrors the damage with 2x boost'
+    }
   }
 ];
