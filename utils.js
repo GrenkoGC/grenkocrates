@@ -1,9 +1,9 @@
 // utils.js
 
-const $ = id => document.getElementById(id);
+window.$ = window.$ || function(id) { return document.getElementById(id); };
 
 function toast(m) {
-  const t = $('toast');
+  const t = window.$('toast');
   if (!t) return;
   t.textContent = m;
   t.classList.add('show');
