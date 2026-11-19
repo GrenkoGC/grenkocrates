@@ -1,9 +1,10 @@
 // utils.js
 
-window.$ = window.$ || function(id) { return document.getElementById(id); };
+const gid = id => document.getElementById(id);
+const $ = gid; // Оставляем алиас, чтобы ничего не сломалось
 
 function toast(m) {
-  const t = window.$('toast');
+  const t = gid('toast');
   if (!t) return;
   t.textContent = m;
   t.classList.add('show');
