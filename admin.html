@@ -273,16 +273,47 @@ async function loadUser() {
 }
 
 async function saveChanges() {
-  if (!currentUserId || !currentSave) return false;
-  showAdminMsg('Сохранение...', 'var(--blue)');
+  if (!currentUserId) return false;
+  
+  showAdminMsg('Синхронизация с сервером...', 'var(--blue)');
+
   try {
+    // 1. Сначала СКАЧИВАЕМ свежие данные с сервера (вдруг игрок что-то сделал в игре)
+    const loadRes = await fetch(`${ADMIN_API}/admin/load`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminId: currentUserId })
+    });
+
+    if (loadRes.ok) {
+      const freshData = await loadRes.json();
+      // Если на сервере есть данные, обновляем нашу переменную
+      if (freshData && Object.keys(freshData).length > 0) {
+        // Сохраняем то, что мы хотим изменить (баланс, гемы, инвентарь), 
+        // но берем свежую базу
+        const oldInv = currentSave.inventory; // наш текущий инвентарь (с новыми предметами)
+        const oldBal = currentSave.balance;
+        const oldGems = currentSave.gems;
+        
+        currentSave = freshData;
+        
+        // Принудительно применяем наши изменения
+        currentSave.balance = oldBal;
+        currentSave.gems = oldGems;
+        currentSave.inventory = oldInv;
+      }
+    }
+
+    // 2. Теперь СОХРАНЯЕМ обновленные данные обратно
+    showAdminMsg('Сохранение...', 'var(--blue)');
     const res = await fetch(`${ADMIN_API}/admin/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminId: currentUserId, saveData: currentSave })
     });
-    if (!res.ok) throw new Error(`Ошибка ${res.status}`);
-    showAdminMsg('Сохранено!');
+    
+    if (!res.ok) throw new Error(`Сервер ответил ${res.status}`);
+    showAdminMsg('Успешно сохранено!');
     setTimeout(() => showAdminMsg(''), 2000);
     return true;
   } catch (e) {
