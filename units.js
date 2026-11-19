@@ -30,7 +30,7 @@ const ALL_UNITS = [
   {
     name: 'Gronke',
     r: 'epic',
-    price: 400,
+    price: 250,
     img: 'https://yourimageshare.com/ib/u4qJyiSjUY.jpg',
     stats: {
       Type: 'Stun',
@@ -56,7 +56,7 @@ const ALL_UNITS = [
   {
     name: 'The ElderGrenk',
     r: 'mythic',
-    price: 1800,
+    price: 1300,
     img: 'https://yourimageshare.com/ib/yScfKp7Eir.jpg',
     stats: {
       Type: 'Double',
@@ -69,7 +69,7 @@ const ALL_UNITS = [
   {
     name: 'Grenko',
     r: 'leader',
-    price: 3500,
+    price: 4000,
     img: 'https://yourimageshare.com/ib/iCcdyCqr3N.jpg',
     secret: true,
     stats: {
@@ -86,7 +86,7 @@ const ALL_UNITS = [
   {
     name: 'Paradoxed Grenko',
     r: 'secret',
-    price: 7500,
+    price: 8500,
     img: 'https://yourimageshare.com/ib/qqH26h3kBO.jpg',
     secret: true,
     stats: {
@@ -101,7 +101,7 @@ const ALL_UNITS = [
   {
     name: 'Gem GrenkTurret-A3',
     r: 'exclusive',
-    price: 500,
+    price: 450,
     img: 'https://yourimageshare.com/ib/uEaf0uwYY6.jpg',
     stats: {
       Type: 'Slow',
@@ -114,7 +114,7 @@ const ALL_UNITS = [
   {
     name: 'Gem The ElderGrenk',
     r: 'exclusive',
-    price: 1200,
+    price: 1100,
     img: 'https://yourimageshare.com/ib/98RnJ4wA8h.jpg',
     stats: {
       Type: 'Stun + Double',
@@ -128,7 +128,7 @@ const ALL_UNITS = [
   {
     name: 'Gem Lord Grenko',
     r: 'exclusive',
-    price: 2500,
+    price: 6500,
     img: 'https://yourimageshare.com/ib/RNK5BcpZQ2.jpg',
     secret: true,
     stats: {
@@ -183,7 +183,7 @@ const ALL_UNITS = [
   {
     name: 'Bleng',
     r: 'mythic',
-    price: 1800,
+    price: 1500,
     img: 'https://yourimageshare.com/ib/JksGwoJ6lE.jpg',
     stats: {
       Type: 'Tag',
@@ -198,7 +198,7 @@ const ALL_UNITS = [
   {
     name: 'Olado',
     r: 'secret',
-    price: 7500,
+    price: 9000,
     img: 'https://yourimageshare.com/ib/wjoQsPo4i5.jpg',
     stats: {
       Type: 'Parry Slow',
