@@ -351,11 +351,13 @@ function renderShop() {
 /* ===== ЛОГИКА ===== */
 
 function processSpin(won, isAuto = false) {
+  if (spinning) return; // Защита от двойного запуска
   spinning = true;
   updateUI();
 
   const c = CRATES[activeCrate];
 
+  // Проверка баланса
   if (c.currency === '💎') {
     if (gems < c.cost) {
       spinning = false;
@@ -382,6 +384,7 @@ function processSpin(won, isAuto = false) {
   updateUI();
   save();
 
+  // Настройка анимации
   const duration = isAuto ? 800 : 2600;
   const startT = performance.now();
   const ease = t => t * t * t;
@@ -391,22 +394,27 @@ function processSpin(won, isAuto = false) {
     const prog = Math.min(el / duration, 1);
     const interval = 170 - 135 * ease(prog);
     const pool = c.pool;
+    
+    // Для анимации берем случайный предмет
     const it = pool[Math.floor(Math.random() * pool.length)];
     const displayItem = getItemData(it.name);
 
     slotIcon.innerHTML = iconOf(displayItem.name, true);
     slotName.textContent = displayItem.secret ? '???' : displayItem.name;
     slotIcon.classList.remove('tick');
-    void slotIcon.offsetWidth;
+    void slotIcon.offsetWidth; // Сброс анимации CSS
     slotIcon.classList.add('tick');
-    sfx.tick(prog);
+    
+    if (typeof sfx !== 'undefined' && sfx.tick) sfx.tick(prog);
 
     if (prog >= 1) {
+      // Анимация завершена, показываем результат
       scene.classList.remove('tension');
       flash.classList.remove('on');
       void flash.offsetWidth;
       flash.classList.add('on');
-      sfx.flash();
+      
+      if (typeof sfx !== 'undefined' && sfx.flash) sfx.flash();
 
       setTimeout(() => {
         slotIcon.innerHTML = iconOf(won.name, false);
@@ -414,10 +422,11 @@ function processSpin(won, isAuto = false) {
 
         const wonRKey = normalizeRarity(won.r);
         const isSold = autoSellRarities.has(wonRKey);
+        
         if (isSold) {
           balance += won.price;
           updateUI();
-          sfx.sell();
+          if (typeof sfx !== 'undefined' && sfx.sell) sfx.sell();
           toast(`${L10N[lang].sold} ${won.name}`);
         } else if (inventory.length >= 1000) {
           balance += won.price;
@@ -430,7 +439,7 @@ function processSpin(won, isAuto = false) {
 
         if (!isAuto) showDrop(won);
 
-        spinning = false;
+        spinning = false; // Разблокируем кнопки
         updateUI();
         save();
 
@@ -444,13 +453,13 @@ function processSpin(won, isAuto = false) {
         }
       }, isAuto ? 200 : 800 * .35);
     } else {
+      // Продолжаем крутить
       setTimeout(spin, interval);
     }
   })();
 
   scene.classList.add('tension');
 }
-
 function showDrop(it) {
   const rKey = normalizeRarity(it.r);
   const r = RARITY[rKey];
