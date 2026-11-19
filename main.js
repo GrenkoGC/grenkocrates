@@ -240,9 +240,15 @@ function renderIndex() {
   grid.innerHTML = '';
   const inv = safeInventory(inventory);
   const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
-  
-  // Ищем наш тултип
-  const tooltip = document.getElementById('indexTooltip');
+
+  // Создаем тултип динамически, если его нет в HTML
+  let tooltip = document.getElementById('indexTooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'indexTooltip';
+    tooltip.className = 'stat-tooltip';
+    document.body.appendChild(tooltip);
+  }
 
   RARITY_ORDER.forEach(rKey => {
     const unitsInRarity = ALL_UNITS.filter(u => normalizeRarity(u.r) === rKey);
@@ -257,7 +263,6 @@ function renderIndex() {
 
     unitsInRarity.forEach(it => {
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
-      // Если не найден - показываем ???
       const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
@@ -272,34 +277,36 @@ function renderIndex() {
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
 
-      // === ЛОГИКА ТУЛТИПА ===
+      // --- ТУЛТИП ---
       el.onmouseenter = () => {
-        if (window.innerWidth < 768) return; // На телефонах не показываем
+        if (window.innerWidth < 768) return; 
         
+        let html = '';
         if (!hasFound) {
-          // Если юнит не найден, показываем просто ???
-          tooltip.innerHTML = `<div style="text-align:center; color:var(--txt2); font-size: 16px; font-weight: bold; font-family: monospace;">???</div>`;
+          html = `<div style="text-align:center; color:var(--txt2); font-size: 16px; font-weight: bold; font-family: monospace;">???</div>`;
         } else {
-          // Если найден, показываем статы
           if (it.stats && Object.keys(it.stats).length) {
-            tooltip.innerHTML = Object.entries(it.stats).map(([k, v]) => {
+            html = Object.entries(it.stats).map(([k, v]) => {
               const tk = L10N[lang].typeTrans[k] || k;
-              const tv = typeof transVal === 'function' ? transVal(v, lang) : v;
+              let tv = v;
+              try { if (typeof transVal === 'function') tv = transVal(v, lang); } catch(e) {}
               return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
             }).join('');
           } else {
-            tooltip.innerHTML = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
+            html = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
           }
         }
         
+        tooltip.innerHTML = html;
         tooltip.classList.add('show');
+        
         const rect = el.getBoundingClientRect();
         tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
       };
 
       el.onmouseleave = () => tooltip.classList.remove('show');
-      // =====================
+      // -------------
 
       row.appendChild(el);
     });
