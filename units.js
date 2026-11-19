@@ -180,7 +180,7 @@ const ALL_UNITS = [
       'All Stats Nerf': '50%'
     }
   },
-    {
+  {
     name: 'Bleng',
     r: 'mythic',
     price: 1800,
@@ -191,7 +191,8 @@ const ALL_UNITS = [
       Range: '10 - 13.25',
       Cooldown: '8 - 6.5',
       'Tag Time': '3.25 - 4',
-      'Tag': 'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage'
+      'Tag': 'When attacked an enemy, tagging him and all units on map deals for that enemy 2x damage',
+      Limit: '3'
     }
   },
   {
@@ -206,7 +207,8 @@ const ALL_UNITS = [
       Cooldown: '4 - 2.75',
       'Parry Slow': '35%',
       'Parry Slow Time': '0.5 - 1.6',
-      'Parry': 'Counter an enemy attack and mirrors the damage with 2x boost'
+      'Parry': 'Counter an enemy attack and mirrors the damage with 2x boost',
+      Limit: '2'
     }
   }
 ];
