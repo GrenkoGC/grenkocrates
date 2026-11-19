@@ -47,7 +47,7 @@ h1::before,h1::after{content:'';display:block;width:30px;height:1px;background:l
 .scene:hover::before,.scene:hover::after{opacity:1;transform:scale(1.05)}
 .scene.tension{border-color:var(--acc);animation:ten 1.1s infinite alternate}
 @keyframes ten{to{box-shadow:var(--sh),inset 0 0 80px rgba(255,255,255,.15)}}
-.slot{display:flex;flex-direction:column;align-items:center;gap:12px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:12px;flex-shrink:0;}
 .slot .icon{width:90px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 10px rgba(0,0,0,.8))}
 .slot .name{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#fff;min-height:18px;text-align:center;font-family:monospace}
 .slot .icon.tick img{animation:tk .12s}
@@ -258,6 +258,36 @@ button:disabled{opacity:.4;cursor:not-allowed}
   background-size: 100% 200%;
   animation: ult-shift 4s linear infinite;
 }
+  /* --- ФИКС СЦЕНЫ КРУТКИ --- */
+.scene {
+  height: 300px !important;
+  min-height: 300px !important;
+  max-height: 300px !important;
+  flex-shrink: 0 !important;
+}
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0 !important;
+}
+.slot .icon {
+  width: 90px !important;
+  height: 90px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,.8));
+}
+.slot .icon img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+/* -------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .rar-ultimate,
   .rar-ultimate-card,
