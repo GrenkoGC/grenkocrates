@@ -40,7 +40,7 @@ h1::before,h1::after{content:'';display:block;width:30px;height:1px;background:l
 .pill span{color:var(--acc);font-weight:700}
 .pill .val{text-overflow:ellipsis;overflow:hidden;max-width:120px;}
 .icon-btn{background:var(--pan);border:1px solid var(--lin);border-radius:3px;padding:9px 12px;font-size:14px;color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.scene{position:relative;width:100%;max-width:800px;height:300px;display:flex;align-items:center;justify-content:center;background:var(--pan);border:1px solid var(--lin);border-radius:4px;overflow:hidden;box-shadow:var(--sh)}
+.scene{position:relative;width:100%;max-width:800px;height:300px;min-height:300px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--pan);border:1px solid var(--lin);border-radius:4px;overflow:hidden;box-shadow:var(--sh)}
 .scene::before,.scene::after{content:'';position:absolute;width:20px;height:20px;border:1px solid var(--acc);opacity:.5;transition:.2s}
 .scene::before{top:8px;left:8px;border-right:none;border-bottom:none}
 .scene::after{bottom:8px;right:8px;border-left:none;border-top:none}
@@ -48,11 +48,11 @@ h1::before,h1::after{content:'';display:block;width:30px;height:1px;background:l
 .scene.tension{border-color:var(--acc);animation:ten 1.1s infinite alternate}
 @keyframes ten{to{box-shadow:var(--sh),inset 0 0 80px rgba(255,255,255,.15)}}
 .slot{display:flex;flex-direction:column;align-items:center;gap:12px}
-.slot .icon{width:90px;height:90px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 10px rgba(0,0,0,.8))}
+.slot .icon{width:90px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 10px rgba(0,0,0,.8))}
 .slot .name{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#fff;min-height:18px;text-align:center;font-family:monospace}
 .slot .icon.tick img{animation:tk .12s}
 @keyframes tk{45%{transform:scale(1.1)}}
-.btn-group{display:flex;gap:8px;width:100%;max-width:800px}
+.btn-group{display:flex;gap:8px;width:100%;max-width:800px;flex-shrink:0;}
 button{background:var(--pan);border:1px solid var(--lin);padding:13px 20px;border-radius:3px;font-family:inherit;font-size:14px;font-weight:600;color:var(--txt);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1}
 button:hover:not(:disabled){border-color:var(--acc);color:var(--acc);background:var(--pan2)}
 button:disabled{opacity:.4;cursor:not-allowed}
