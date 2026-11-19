@@ -277,7 +277,7 @@ function renderIndex() {
         <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
       `;
 
-      // ЛОГИКА ТУЛТИПА (показываем статы всегда, даже если юнит закрыт)
+      // ЛОГИКА ТУЛТИПА (показываем статы ВСЕГДА)
       el.onmouseenter = () => {
         if (window.innerWidth < 768) return; 
         
