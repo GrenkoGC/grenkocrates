@@ -4,7 +4,6 @@ let gameSettings = { luck: 1, forceDrop: null };
 
 const scene = $('scene');
 const slotIcon = $('slotIcon');
-const slotName = $('slotName');
 const flash = $('flash');
 const dropOverlay = $('dropOverlay');
 const multiOverlay = $('multiOverlay');
@@ -18,14 +17,10 @@ function updateUI() {
   $('invCount').textContent = inventory.length;
   $('balance').textContent = Math.floor(balance);
   $('gems').textContent = Math.floor(gems);
-  $('openBtn').disabled = spinning;
-  $('open10Btn').disabled = spinning;
-
-  const c = CRATES[activeCrate], l = L10N[lang];
   
+  const c = CRATES[activeCrate];
   $('sceneTitle').textContent = c.name;
   
-  // Обновляем текст на кнопках открытия (стоимость)
   if (c.currency === '💎') {
     $('openBtn').innerHTML = `Открыть <small>${c.cost} 💎</small>`;
     $('open10Btn').innerHTML = `Открыть x10 <small>${c.cost * 10} 💎</small>`;
@@ -34,18 +29,17 @@ function updateUI() {
     $('open10Btn').innerHTML = `Открыть x10 <small>${c.cost * 10} $</small>`;
   }
   
-  $('sellAllBtn').textContent = l.sellAll;
+  $('openBtn').disabled = spinning;
+  $('open10Btn').disabled = spinning;
+  $('sellAllBtn').textContent = L10N[lang].sellAll;
 }
 
 function applyLang() {
   const t = L10N[lang];
-  // Если захочешь переводить заголовки кнопок - добавь сюда
   $('langBtn').textContent = lang === 'ru' ? 'EN' : 'RU';
-  
   $('lblInvHint').textContent = t.lblInvHint;
   $('invGrid').setAttribute('data-empty', t.emptyInv);
   $('dClose').textContent = t.takeInv;
-  
   updateUI();
   renderInventory();
 }
@@ -60,28 +54,28 @@ function renderInventory() {
     const r = RARITY[rKey] || RARITY.common;
 
     const el = document.createElement('div');
-    el.className = `inv-item ${rKey}`;
-    // Внутренние стили оставляем как были в старой версии
-    el.style.cssText = `position:relative;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;text-align:center;background:var(--btn-bg);border:1px solid var(--border);cursor:pointer;border-radius:6px;`;
+    el.style.cssText = `position:relative; padding:10px 5px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11px; text-align:center; background:var(--btn-bg); border:2px solid var(--border); cursor:pointer; border-radius:8px; transition:0.2s;`;
+    el.onmouseover = () => el.style.borderColor = 'var(--txt)';
+    el.onmouseout = () => el.style.borderColor = 'var(--border)';
 
     const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}80)`;
     const nameCls = rarityTextClass(rKey);
     const nameStyle = ult ? '' : 'color:var(--txt);';
 
     el.innerHTML = `
-      <div class="icon ${rarityIconClass(rKey)}" style="width:36px;height:36px;${iconStyle}">${iconOf(it.name, false)}</div>
-      <div class="${nameCls}" style="${nameStyle}margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${esc(it.name)}</div>
-      <div class="price" style="font-size:10px;color:var(--acc);font-family:monospace;">${it.price} $</div>
+      <div class="icon ${rarityIconClass(rKey)}" style="width:45px;height:45px;${iconStyle}">${iconOf(it.name, false)}</div>
+      <div class="${nameCls}" style="${nameStyle}font-weight:600;word-break:break-word;line-height:1.1">${esc(it.name)}</div>
+      <div class="price" style="color:var(--acc);font-family:monospace;">${it.price} $</div>
     `;
 
     let statsHtml = '';
     if (it.stats && Object.keys(it.stats).length) {
       statsHtml = Object.entries(it.stats).map(([k, v]) => {
         const tk = L10N[lang].typeTrans[k] || k;
-        return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(v)}</span></div>`;
+        return `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:2px 0;"><span style="color:var(--txt2);">${esc(tk)}:</span><span style="color:var(--acc);font-weight:bold;text-align:right;">${esc(v)}</span></div>`;
       }).join('');
     } else {
-      statsHtml = '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
+      statsHtml = '<div style="text-align:center;color:var(--txt2)">Нет характеристик</div>';
     }
 
     const tooltip = document.getElementById('invTooltip');
@@ -90,17 +84,20 @@ function renderInventory() {
       if (window.innerWidth < 768) return;
       tooltip.innerHTML = statsHtml;
       tooltip.classList.add('show');
+      tooltip.style.opacity = '1'; tooltip.style.visibility = 'visible';
       const rect = el.getBoundingClientRect();
-      tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
+      tooltip.style.left = Math.min(window.innerWidth - 230, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
       tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
     };
 
-    el.onmouseleave = () => tooltip.classList.remove('show');
+    el.onmouseleave = () => {
+      tooltip.classList.remove('show');
+      tooltip.style.opacity = '0'; tooltip.style.visibility = 'hidden';
+    };
 
     el.onclick = () => {
       $('dIcon').innerHTML = iconOf(it.name, false);
       $('dIcon').style.filter = ult ? '' : `drop-shadow(0 0 20px ${r.color}cc)`;
-
       $('dName').innerHTML = `<span class="${rarityTextClass(rKey)}">${esc(it.name)}</span>`;
       $('dRarity').textContent = r.label;
       $('dRarity').style.color = ult ? '' : r.color;
@@ -111,11 +108,9 @@ function renderInventory() {
       if (ult) {
         card.classList.add('rar-ultimate-card');
         card.style.borderColor = '';
-        card.style.boxShadow = '';
       } else {
         card.classList.remove('rar-ultimate-card');
         card.style.borderColor = r.color;
-        card.style.boxShadow = `0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
       }
 
       const s = $('dStats');
@@ -123,7 +118,7 @@ function renderInventory() {
         s.style.display = 'flex';
         s.innerHTML = Object.entries(it.stats).filter(([k, v]) => v).map(([k, v], idx) => {
           const tk = L10N[lang].typeTrans[k] || k;
-          return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
+          return `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:4px 0;${idx === 0 ? 'color:#fff;font-weight:bold;' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
         }).join('');
       } else {
         s.style.display = 'none';
@@ -140,19 +135,13 @@ function renderInventory() {
         const idx = inventory.indexOf(it);
         if (idx !== -1) inventory.splice(idx, 1);
         balance += it.price;
-        updateUI();
-        renderInventory();
-        sfx.sell();
-        toast(`${L10N[lang].sold} ${it.name}`);
-        save();
+        updateUI(); renderInventory(); save();
+        sfx.sell(); toast(`${L10N[lang].sold} ${it.name}`);
 
         btn.textContent = L10N[lang].takeInv;
         btn.style.borderColor = 'var(--border)';
         btn.style.color = 'var(--txt)';
-        btn.onclick = () => {
-          sfx.click();
-          dropOverlay.classList.remove('show');
-        };
+        btn.onclick = () => { sfx.click(); dropOverlay.classList.remove('show'); };
       };
 
       dropOverlay.classList.add('show');
@@ -169,8 +158,7 @@ function renderChances() {
   const pool = CRATES[activeCrate].pool;
   const list = $('chancesList');
   const sum = $('raritySummary');
-  list.innerHTML = '';
-  sum.innerHTML = '';
+  list.innerHTML = ''; sum.innerHTML = '';
 
   const byR = {};
   pool.forEach(entry => {
@@ -197,19 +185,17 @@ function renderChances() {
     const rKey = normalizeRarity(it.r);
     const r = RARITY[rKey];
     const row = document.createElement('div');
-    row.className = 'chance-row';
-    row.style.borderLeftColor = r.color;
-    row.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,.02);border-left:3px solid ${r.color};margin-bottom:4px;`;
+    row.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,.02);border-left:4px solid ${r.color};margin-bottom:6px;border-radius:4px;`;
 
     const displayName = it.secret ? '???' : it.name;
     const nameCls = it.secret ? '' : rarityTextClass(rKey);
 
     row.innerHTML = `
       <div style="width:30px;height:30px;filter:drop-shadow(0 0 4px ${r.color}80)">${iconOf(it.name, true)}</div>
-      <div class="${nameCls}" style="flex:1;font-size:13px;font-weight:600;line-height:1.1;">${esc(displayName)}
-        <div style="font-size:9px;opacity:.7;text-transform:uppercase;font-family:monospace;margin-top:2px;color:${r.color}">${r.label} · ${it.price} $</div>
+      <div class="${nameCls}" style="flex:1;font-size:14px;font-weight:600;line-height:1.1;">${esc(displayName)}
+        <div style="font-size:10px;opacity:.7;text-transform:uppercase;font-family:monospace;margin-top:2px;color:${r.color}">${r.label} · ${it.price} $</div>
       </div>
-      <div style="font-size:13px;font-weight:700;font-family:monospace;color:${r.color}">${entry.chance.toFixed(2)}%</div>
+      <div style="font-size:14px;font-weight:700;font-family:monospace;color:${r.color}">${entry.chance.toFixed(2)}%</div>
     `;
     list.appendChild(row);
   });
@@ -229,25 +215,25 @@ function renderIndex() {
 
     const r = RARITY[rKey];
     const section = document.createElement('div');
-    section.innerHTML = `<div style="font-size:14px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; padding:5px 0; border-bottom:1px solid var(--border); margin-bottom:8px; text-align:left; color:${r.color}" class="${rarityTextClass(rKey)}">${r.label}</div>`;
+    section.innerHTML = `<div style="font-size:16px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; padding-bottom:6px; border-bottom:2px solid var(--border); margin-bottom:10px; text-align:left; color:${r.color}" class="${rarityTextClass(rKey)}">${r.label}</div>`;
 
     const row = document.createElement('div');
-    row.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px;';
+    row.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(85px, 1fr)); gap:10px;';
 
     unitsInRarity.forEach(it => {
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
       const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
-      el.style.cssText = `background:var(--btn-bg); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; flex-direction:column; align-items:center; text-align:center; cursor:pointer; ${hasFound ? '' : 'filter:grayscale(100%) opacity(0.3);'}`;
+      el.style.cssText = `background:var(--btn-bg); border:2px solid var(--border); border-radius:8px; padding:10px; display:flex; flex-direction:column; align-items:center; text-align:center; cursor:pointer; ${hasFound ? '' : 'filter:grayscale(100%) opacity(0.3);'}`;
 
       const iconCls = hasFound ? rarityIconClass(rKey) : '';
       const nameCls = hasFound ? rarityTextClass(rKey) : '';
       const nameStyle = hasFound ? '' : 'color:var(--txt2)';
 
       el.innerHTML = `
-        <img src="${hasFound ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}" style="width:36px; height:36px; object-fit:contain; margin-bottom:5px;">
-        <span class="${nameCls}" style="${nameStyle} font-size:10px; font-weight:bold; line-height:1.1;">${esc(displayName)}</span>
+        <img src="${hasFound ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}" style="width:45px; height:45px; object-fit:contain; margin-bottom:8px;">
+        <span class="${nameCls}" style="${nameStyle} font-size:11px; font-weight:bold; line-height:1.1;">${esc(displayName)}</span>
       `;
 
       el.onmouseenter = () => {
@@ -258,16 +244,17 @@ function renderIndex() {
             const tk = L10N[lang].typeTrans[k] || k;
             let tv = v;
             try { if (typeof transVal === 'function') tv = transVal(v, lang); } catch(e) {}
-            return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
+            return `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:2px 0;"><span style="color:var(--txt2);">${esc(tk)}:</span><span style="color:var(--acc);font-weight:bold;text-align:right;">${esc(tv)}</span></div>`;
           }).join('');
         }
         tooltip.innerHTML = html;
         tooltip.classList.add('show');
+        tooltip.style.opacity = '1'; tooltip.style.visibility = 'visible';
         const rect = el.getBoundingClientRect();
-        tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
+        tooltip.style.left = Math.min(window.innerWidth - 230, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
       };
-      el.onmouseleave = () => tooltip.classList.remove('show');
+      el.onmouseleave = () => { tooltip.classList.remove('show'); tooltip.style.opacity = '0'; tooltip.style.visibility = 'hidden'; };
 
       row.appendChild(el);
     });
@@ -300,8 +287,7 @@ function renderProfile() {
       const rKey = normalizeRarity(it.r);
       const r = RARITY[rKey];
       const el = document.createElement('div');
-      el.className = 'profile-unit';
-      el.style.cssText = 'display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:5px 10px;border-radius:4px;font-size:12px;margin-bottom:5px;';
+      el.style.cssText = 'display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:8px 10px;border-radius:6px;font-size:13px;';
 
       const iconCls = rarityIconClass(rKey);
       const nameCls = rarityTextClass(rKey);
@@ -309,9 +295,9 @@ function renderProfile() {
       const nameStyle = rKey === 'ultimate' ? '' : `color:${r.color}`;
 
       el.innerHTML = `
-        <div class="${iconCls}" style="width:24px; height:24px; ${iconStyle}">${iconOf(it.name)}</div>
-        <span class="${nameCls}" style="${nameStyle}">${esc(it.name)}</span>
-        <span class="u-price" style="color:var(--acc);margin-left:auto;font-family:monospace;">${it.price} $</span>
+        <div class="${iconCls}" style="width:28px; height:28px; ${iconStyle}">${iconOf(it.name)}</div>
+        <span class="${nameCls}" style="${nameStyle} font-weight:bold;">${esc(it.name)}</span>
+        <span style="color:var(--acc);margin-left:auto;font-family:monospace;">${it.price} $</span>
       `;
       container.appendChild(el);
     });
@@ -322,15 +308,15 @@ function renderProfile() {
 
   if (isGuest) {
     actionsContainer.innerHTML = `
-      <div style="text-align:center; margin-bottom:10px; font-size:12px;">Войдите, чтобы сохранять прогресс в облаке:</div>
-      <div class="tg-login-form">
-        <input type="text" id="inpUserId" placeholder="Ваш Telegram ID (цифры)">
-        <button class="tg-login-btn" onclick="linkAccount()">Привязать аккаунт</button>
+      <div style="text-align:center; margin-bottom:10px; font-size:13px;">Войдите, чтобы сохранять прогресс:</div>
+      <div style="display:flex; flex-direction:column; gap:10px; background:rgba(255,255,255,0.02); padding:15px; border-radius:6px; border:1px solid var(--border);">
+        <input type="text" id="inpUserId" placeholder="Ваш Telegram ID (цифры)" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--acc); font-size:14px; outline:none; text-align:center;">
+        <button onclick="linkAccount()" style="width:100%; padding:10px; font-size:14px; background:var(--btn-bg); color:var(--acc); border:2px solid var(--border); border-radius:6px; cursor:pointer; font-weight:bold;">Привязать</button>
       </div>
-      <div style="font-size:11px; color:var(--txt2); text-align:center; margin-top:5px;">Узнать свой ID можно у бота <b>@userinfobot</b></div>
+      <div style="font-size:11px; color:var(--txt2); text-align:center; margin-top:5px;">ID можно узнать у бота <b>@userinfobot</b></div>
     `;
   } else {
-    actionsContainer.innerHTML = `<button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent); padding:10px; border-radius:4px; cursor:pointer;" onclick="logoutProfile()">Выйти из профиля</button>`;
+    actionsContainer.innerHTML = `<button style="width:100%; border:2px solid var(--red); color:var(--red); background:rgba(255,68,68,0.1); padding:10px; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="logoutProfile()">Выйти из профиля</button>`;
   }
 }
 
@@ -346,7 +332,7 @@ function renderShop() {
   $('shopItemRarity').style.color = r.color;
   $('shopItemStats').innerHTML = Object.entries(item.stats || {}).map(([k, v], idx) => {
     const tk = L10N[lang].typeTrans[k] || k;
-    return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
+    return `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:4px 0;${idx === 0 ? 'color:#fff;font-weight:bold;' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
   }).join('');
 }
 
@@ -361,22 +347,19 @@ function processSpin(won, isAuto = false) {
 
   if (c.currency === '💎') {
     if (gems < c.cost) {
-      spinning = false; isAutoOpen = false;
-      updateUI(); save();
+      spinning = false; isAutoOpen = false; updateUI(); save();
       return toast('Не хватает 💎!');
     }
     gems -= c.cost;
   } else {
     if (balance < c.cost) {
-      spinning = false; isAutoOpen = false;
-      updateUI(); save();
+      spinning = false; isAutoOpen = false; updateUI(); save();
       return toast('Недостаточно $');
     }
     balance -= c.cost;
   }
 
-  casesOpened++;
-  updateUI(); save();
+  casesOpened++; updateUI(); save();
 
   const duration = isAuto ? 800 : 2600;
   const startT = performance.now();
@@ -390,9 +373,8 @@ function processSpin(won, isAuto = false) {
     const it = pool[Math.floor(Math.random() * pool.length)];
     const displayItem = getItemData(it.name);
 
-    slotIcon.innerHTML = iconOf(displayItem.name, true);
-    slotIcon.classList.remove('tick');
-    void slotIcon.offsetWidth;
+    // Картинка строго внутри круга
+    slotIcon.innerHTML = `<div class="icon tick" style="width:100%; height:100%;">${iconOf(displayItem.name, true)}</div>`;
     slotIcon.classList.add('tick');
     if (typeof sfx !== 'undefined' && sfx.tick) sfx.tick(prog);
 
@@ -403,30 +385,25 @@ function processSpin(won, isAuto = false) {
       if (typeof sfx !== 'undefined' && sfx.flash) sfx.flash();
 
       setTimeout(() => {
-        slotIcon.innerHTML = iconOf(won.name, false);
+        slotIcon.innerHTML = `<div class="icon" style="width:100%; height:100%;">${iconOf(won.name, false)}</div>`;
 
         const wonRKey = normalizeRarity(won.r);
         const isSold = autoSellRarities.has(wonRKey);
         
         if (isSold) {
-          balance += won.price;
-          updateUI();
+          balance += won.price; updateUI();
           if (typeof sfx !== 'undefined' && sfx.sell) sfx.sell();
           toast(`${L10N[lang].sold} ${won.name}`);
         } else if (inventory.length >= 1000) {
-          balance += won.price;
-          toast('Инвентарь полон — юнит продан');
+          balance += won.price; toast('Инвентарь полон — юнит продан');
         } else {
           inventory.push(won);
         }
 
         renderInventory();
-
         if (!isAuto) showDrop(won);
 
-        spinning = false;
-        updateUI();
-        save();
+        spinning = false; updateUI(); save();
 
         if (isAuto) {
           setTimeout(() => { if (isAutoOpen) processSpin(randomItem(), true); }, 500);
@@ -445,7 +422,6 @@ function showDrop(it) {
 
   $('dIcon').innerHTML = iconOf(it.name, false);
   $('dIcon').style.filter = ult ? '' : `drop-shadow(0 0 20px ${r.color}cc)`;
-
   $('dName').innerHTML = `<span class="${rarityTextClass(rKey)}">${esc(it.name)}</span>`;
   $('dRarity').textContent = r.label;
   $('dRarity').style.color = ult ? '' : r.color;
@@ -456,11 +432,9 @@ function showDrop(it) {
   if (ult) {
     card.classList.add('rar-ultimate-card');
     card.style.borderColor = '';
-    card.style.boxShadow = '';
   } else {
     card.classList.remove('rar-ultimate-card');
     card.style.borderColor = r.color;
-    card.style.boxShadow = `0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
   }
 
   const s = $('dStats');
@@ -468,7 +442,7 @@ function showDrop(it) {
     s.style.display = 'flex';
     s.innerHTML = Object.entries(it.stats).filter(([k, v]) => v).map(([k, v], idx) => {
       const tk = L10N[lang].typeTrans[k] || k;
-      return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
+      return `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,0.1);padding:4px 0;${idx === 0 ? 'color:#fff;font-weight:bold;' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
     }).join('');
   } else {
     s.style.display = 'none';
@@ -478,10 +452,7 @@ function showDrop(it) {
   btn.textContent = L10N[lang].takeInv;
   btn.style.borderColor = 'var(--border)';
   btn.style.color = 'var(--txt)';
-  btn.onclick = () => {
-    sfx.click();
-    dropOverlay.classList.remove('show');
-  };
+  btn.onclick = () => { sfx.click(); dropOverlay.classList.remove('show'); };
 
   dropOverlay.classList.add('show');
   sfx.drop(rKey);
@@ -506,8 +477,7 @@ function openCase(isMulti = false) {
     if (c.currency === '💎') gems -= totalCost;
     else balance -= totalCost;
 
-    casesOpened += 10;
-    updateUI(); save();
+    casesOpened += 10; updateUI(); save();
 
     for (let i = 0; i < 10; i++) {
       const it = randomItem();
@@ -517,8 +487,7 @@ function openCase(isMulti = false) {
 
     balance += totalProfit;
     inventory.push(...wonItems);
-    renderInventory();
-    updateUI(); save();
+    renderInventory(); updateUI(); save();
     showMultiDrop(wonItems);
   } else {
     processSpin(randomItem(), false);
@@ -528,20 +497,19 @@ function openCase(isMulti = false) {
 function showMultiDrop(items) {
   const list = $('multiList');
   list.innerHTML = '';
-  list.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;margin-bottom:20px;';
 
   items.forEach(it => {
     const rKey = normalizeRarity(it.r);
     const r = RARITY[rKey];
     const ult = rKey === 'ultimate';
     const el = document.createElement('div');
-    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03);padding:6px;border-radius:6px;border:1px solid var(--border);text-align:center;';
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03);padding:8px;border-radius:6px;border:1px solid var(--border);text-align:center;';
 
     const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}cc)`;
 
     el.innerHTML = `
-      <div class="${rarityIconClass(rKey)}" style="width:48px;height:48px;display:flex;justify-content:center;align-items:center;${iconStyle}">${iconOf(it.name, false)}</div>
-      <div class="${rarityTextClass(rKey)}" style="font-size:9px;font-weight:600;word-break:break-word;line-height:1.1;color:#fff;">${esc(it.name)}</div>
+      <div class="${rarityIconClass(rKey)}" style="width:45px;height:45px;display:flex;justify-content:center;align-items:center;${iconStyle}">${iconOf(it.name, false)}</div>
+      <div class="${rarityTextClass(rKey)}" style="font-size:10px;font-weight:600;word-break:break-word;line-height:1.1;color:#fff;">${esc(it.name)}</div>
     `;
     list.appendChild(el);
   });
@@ -627,14 +595,14 @@ function playGacha() {
   const interval = setInterval(() => {
     ticks++;
     const rand = GACHA_POOL[Math.floor(Math.random() * GACHA_POOL.length)];
-    reel.innerHTML = `<div style="color:${rand.color};font-size:24px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:8px;width:80px;height:80px;">${rand.amount}</div>`;
+    reel.innerHTML = `<div style="color:${rand.color};font-size:28px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:8px;width:80px;height:80px;">${rand.amount}</div>`;
     sfx.tick(ticks / maxTicks);
     if (ticks >= maxTicks) {
       clearInterval(interval);
       const totalW = GACHA_POOL.reduce((s, i) => s + i.w, 0);
       let r = Math.random() * totalW; let won = GACHA_POOL[0];
       for (const it of GACHA_POOL) { r -= it.w; if (r <= 0) { won = it; break; } }
-      reel.innerHTML = `<div style="color:${won.color};font-size:32px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border-radius:8px;width:80px;height:80px;">${won.amount}</div>`;
+      reel.innerHTML = `<div style="color:${won.color};font-size:36px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border-radius:8px;width:80px;height:80px;">${won.amount}</div>`;
       $('gachaResult').innerHTML = `Вы выиграли <span style="color:${won.color}">${won.amount} 💎</span>!`;
       gems += won.amount; updateUI(); save();
       sfx.drop('exclusive');
@@ -652,62 +620,47 @@ function sellAll() {
   inventory = [];
   balance += total;
   renderInventory(); updateUI(); save();
-  sfx.sell();
-  toast(`Продано ${total} $`);
+  sfx.sell(); toast(`Продано ${total} $`);
 }
 
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
 function initApp() {
-  $('openBtn').onclick = () => openCase(false);
-  $('open10Btn').onclick = () => openCase(true);
-
-  $('autoBtn').onclick = () => {
-    isAutoOpen = !isAutoOpen;
-    $('autoBtn').classList.toggle('active', isAutoOpen);
-    save();
-    if (isAutoOpen && !spinning) processSpin(randomItem(), true);
+  if ($('openBtn')) $('openBtn').onclick = () => openCase(false);
+  if ($('open10Btn')) $('open10Btn').onclick = () => openCase(true);
+  if ($('sellAllBtn')) $('sellAllBtn').onclick = () => { sfx.click(); sellAll(); };
+  if ($('chancesBtn')) $('chancesBtn').onclick = () => { sfx.click(); renderChances(); $('chancesOverlay').classList.add('show'); };
+  if ($('indexBtn')) $('indexBtn').onclick = () => { sfx.click(); renderIndex(); $('indexOverlay').classList.add('show'); };
+  if ($('shopBtn')) $('shopBtn').onclick = () => { sfx.click(); renderShop(); $('shopOverlay').classList.add('show'); };
+  if ($('profileBtn')) $('profileBtn').onclick = () => { sfx.click(); renderProfile(); $('profileOverlay').classList.add('show'); };
+  
+  if ($('invBtn')) $('invBtn').onclick = () => {
+    sfx.click(); renderInventory(); $('inventoryOverlay').classList.add('show');
   };
 
-  $('sellAllBtn').onclick = () => { sfx.click(); sellAll(); };
-
-  $('chancesBtn').onclick = () => { sfx.click(); renderChances(); $('chancesOverlay').classList.add('show'); };
-  $('indexBtn').onclick = () => { sfx.click(); renderIndex(); $('indexOverlay').classList.add('show'); };
-  $('shopBtn').onclick = () => { sfx.click(); renderShop(); $('shopOverlay').classList.add('show'); };
-  $('profileBtn').onclick = () => { sfx.click(); renderProfile(); $('profileOverlay').classList.add('show'); };
-
-  $('invBtn').onclick = () => {
-    sfx.click();
-    renderInventory();
-    $('inventoryOverlay').classList.add('show');
-  };
-
-  $('muteBtn').onclick = () => {
+  if ($('muteBtn')) $('muteBtn').onclick = () => {
     muted = !muted;
-    $('musicIcon').src = muted 
-      ? 'https://yourimageshare.com/ib/gZjZUKCOGU.png'
-      : 'https://yourimageshare.com/ib/5XIcp7m5ke.png';
+    $('musicIcon').src = muted ? 'https://yourimageshare.com/ib/gZjZUKCOGU.png' : 'https://yourimageshare.com/ib/5XIcp7m5ke.png';
     if (!muted) sfx.click();
     save();
   };
 
-  $('langBtn').onclick = () => {
+  if ($('langBtn')) $('langBtn').onclick = () => {
     lang = lang === 'ru' ? 'en' : 'ru';
-    sfx.click();
-    applyLang();
-    save();
+    sfx.click(); applyLang(); save();
   };
 
-  $('gachaBtn').onclick = () => {
+  if ($('gachaBtn')) $('gachaBtn').onclick = () => {
     sfx.click(); $('gachaOverlay').classList.add('show');
     updateGachaUI(); $('gachaResult').textContent = '';
   };
-  $('gachaSpinBtn').onclick = playGacha;
+  if ($('gachaSpinBtn')) $('gachaSpinBtn').onclick = playGacha;
+  if ($('multiClose')) $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); };
 
-  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); };
-
-  bgMusic.volume = 0.2; volumeSlider.value = 0.2;
-  volumeSlider.addEventListener('input', e => { bgMusic.volume = e.target.value; save(); });
-  document.addEventListener('click', () => { bgMusic.play().catch(() => {}); }, { once: true });
+  if (bgMusic && volumeSlider) {
+    bgMusic.volume = 0.2; volumeSlider.value = 0.2;
+    volumeSlider.addEventListener('input', e => { bgMusic.volume = e.target.value; save(); });
+    document.addEventListener('click', () => { bgMusic.play().catch(() => {}); }, { once: true });
+  }
 
   document.querySelectorAll('.auto-btn').forEach(btn => {
     btn.onclick = () => {
@@ -727,16 +680,12 @@ function initApp() {
     if (typeof gems === 'undefined' || gems === null) gems = 50;
     if (!Array.isArray(inventory)) inventory = [];
 
-    document.querySelectorAll('.crate-btn').forEach(b => b.classList.toggle('active', b.dataset.id === activeCrate));
     document.querySelectorAll('.auto-btn').forEach(b => b.classList.toggle('active', autoSellRarities.has(b.dataset.r)));
     
-    $('musicIcon').src = muted 
-      ? 'https://yourimageshare.com/ib/gZjZUKCOGU.png'
-      : 'https://yourimageshare.com/ib/5XIcp7m5ke.png';
-      
-    if (CRATES[activeCrate]) {
-       slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
+    if ($('musicIcon')) {
+      $('musicIcon').src = muted ? 'https://yourimageshare.com/ib/gZjZUKCOGU.png' : 'https://yourimageshare.com/ib/5XIcp7m5ke.png';
     }
+    
     applyLang();
     updateGachaUI();
   });
@@ -750,14 +699,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.createElement('button');
     btn.className = `crate-btn ${id === activeCrate ? 'active' : ''}`;
     btn.dataset.id = id;
-    btn.innerHTML = `<span style="font-size:14px;">${esc(CRATES[id].name)}</span>`;
+    btn.innerHTML = `<span>${esc(CRATES[id].name)}</span>`;
     btn.onclick = () => {
       document.querySelectorAll('.crate-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       sfx.click();
       activeCrate = id;
-      slotIcon.innerHTML = `<img src="${CRATES[id].img}">`;
-      renderChances();
       updateUI();
       save();
     };
