@@ -1,16 +1,16 @@
-// main.js — Часть 1/2: UI
+// main.js
 
 let gameSettings = { luck: 1, forceDrop: null };
 
-const scene = gid('scene');
-const slotIcon = gid('slotIcon');
-const slotName = gid('slotName');
-const flash = gid('flash');
-const dropOverlay = gid('dropOverlay');
-const multiOverlay = gid('multiOverlay');
-const invGrid = gid('invGrid');
-const bgMusic = gid('bgMusic');
-const volumeSlider = gid('volumeSlider');
+const scene = $('scene');
+const slotIcon = $('slotIcon');
+const slotName = $('slotName');
+const flash = $('flash');
+const dropOverlay = $('dropOverlay');
+const multiOverlay = $('multiOverlay');
+const invGrid = $('invGrid');
+const bgMusic = $('bgMusic');
+const volumeSlider = $('volumeSlider');
 
 /* ===== UI ===== */
 
@@ -22,38 +22,30 @@ function updateUI() {
   $('open10Btn').disabled = spinning;
 
   const c = CRATES[activeCrate], l = L10N[lang];
-  $('lblOpen').textContent = `${l.lblOpen} · ${c.cost} ${c.currency}`;
-  $('lblOpen10').textContent = `${l.lblOpen10} · ${c.cost * 10} ${c.currency}`;
+  
+  $('sceneTitle').textContent = c.name;
+  
+  // Обновляем текст на кнопках открытия (стоимость)
+  if (c.currency === '💎') {
+    $('openBtn').innerHTML = `Открыть <small>${c.cost} 💎</small>`;
+    $('open10Btn').innerHTML = `Открыть x10 <small>${c.cost * 10} 💎</small>`;
+  } else {
+    $('openBtn').innerHTML = `Открыть <small>${c.cost} $</small>`;
+    $('open10Btn').innerHTML = `Открыть x10 <small>${c.cost * 10} $</small>`;
+  }
+  
   $('sellAllBtn').textContent = l.sellAll;
 }
 
 function applyLang() {
   const t = L10N[lang];
-  $('title').textContent = t.title;
-  $('lblBal').textContent = t.lblBal;
-  $('lblGems').textContent = t.lblGems;
-  $('lblInv').textContent = t.lblInv;
-  $('lblChances').textContent = t.lblChances;
-
-  const elIndex = $('lblIndex'); if (elIndex) elIndex.textContent = t.lblIndex || 'Индекс';
-  const elShop = $('lblShop'); if (elShop) elShop.textContent = t.lblShop || 'Магазин';
-  const elProfile = $('lblProfile'); if (elProfile) elProfile.textContent = t.lblProfile || 'Профиль';
-
-  $('lblInvTitle').textContent = t.lblInvTitle;
+  // Если захочешь переводить заголовки кнопок - добавь сюда
+  $('langBtn').textContent = lang === 'ru' ? 'EN' : 'RU';
+  
   $('lblInvHint').textContent = t.lblInvHint;
   $('invGrid').setAttribute('data-empty', t.emptyInv);
-  $('lblChancesTitle').textContent = t.lblChancesTitle;
   $('dClose').textContent = t.takeInv;
-  $('langBtn').textContent = lang === 'ru' ? 'EN' : 'RU';
-  $('autoBtn').textContent = t.autoOpen;
-
-  if (!inventory.length) $('history').textContent = t.noHist;
-  if (!spinning && !dropOverlay.classList.contains('show') && !multiOverlay.classList.contains('show')) {
-    $('slotName').textContent = t.clickOpen;
-  }
-
-  if ($('chancesOverlay').classList.contains('show')) renderChances();
-
+  
   updateUI();
   renderInventory();
 }
@@ -69,15 +61,17 @@ function renderInventory() {
 
     const el = document.createElement('div');
     el.className = `inv-item ${rKey}`;
+    // Внутренние стили оставляем как были в старой версии
+    el.style.cssText = `position:relative;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;text-align:center;background:var(--btn-bg);border:1px solid var(--border);cursor:pointer;border-radius:6px;`;
 
     const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}80)`;
     const nameCls = rarityTextClass(rKey);
     const nameStyle = ult ? '' : 'color:var(--txt);';
 
     el.innerHTML = `
-      <div class="icon ${rarityIconClass(rKey)}" style="${iconStyle}">${iconOf(it.name, false)}</div>
+      <div class="icon ${rarityIconClass(rKey)}" style="width:36px;height:36px;${iconStyle}">${iconOf(it.name, false)}</div>
       <div class="${nameCls}" style="${nameStyle}margin-top:4px;font-size:10px;word-break:break-word;line-height:1.1">${esc(it.name)}</div>
-      <div class="price">${it.price} $</div>
+      <div class="price" style="font-size:10px;color:var(--acc);font-family:monospace;">${it.price} $</div>
     `;
 
     let statsHtml = '';
@@ -153,20 +147,12 @@ function renderInventory() {
         save();
 
         btn.textContent = L10N[lang].takeInv;
-        btn.style.borderColor = 'var(--lin)';
+        btn.style.borderColor = 'var(--border)';
         btn.style.color = 'var(--txt)';
         btn.onclick = () => {
           sfx.click();
           dropOverlay.classList.remove('show');
-          setTimeout(() => {
-            slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
-            slotName.textContent = L10N[lang].clickOpen;
-          }, 320);
         };
-        setTimeout(() => {
-          slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
-          slotName.textContent = L10N[lang].clickOpen;
-        }, 320);
       };
 
       dropOverlay.classList.add('show');
@@ -213,26 +199,20 @@ function renderChances() {
     const row = document.createElement('div');
     row.className = 'chance-row';
     row.style.borderLeftColor = r.color;
+    row.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,.02);border-left:3px solid ${r.color};margin-bottom:4px;`;
 
     const displayName = it.secret ? '???' : it.name;
     const nameCls = it.secret ? '' : rarityTextClass(rKey);
 
     row.innerHTML = `
-      <div class="ci" style="width:30px;height:30px;filter:drop-shadow(0 0 4px ${r.color}80)">${iconOf(it.name, true)}</div>
-      <div class="cn ${nameCls}">${esc(displayName)}
-        <div class="cr" style="color:${r.color}">${r.label} · ${it.price} $</div>
-        <div class="chance-bar"><div data-w="${Math.min(entry.chance * 10, 100)}" style="background:${r.color}"></div></div>
+      <div style="width:30px;height:30px;filter:drop-shadow(0 0 4px ${r.color}80)">${iconOf(it.name, true)}</div>
+      <div class="${nameCls}" style="flex:1;font-size:13px;font-weight:600;line-height:1.1;">${esc(displayName)}
+        <div style="font-size:9px;opacity:.7;text-transform:uppercase;font-family:monospace;margin-top:2px;color:${r.color}">${r.label} · ${it.price} $</div>
       </div>
-      <div class="cp" style="color:${r.color}">${entry.chance.toFixed(2)}%</div>
+      <div style="font-size:13px;font-weight:700;font-family:monospace;color:${r.color}">${entry.chance.toFixed(2)}%</div>
     `;
     list.appendChild(row);
   });
-
-  setTimeout(() => {
-    list.querySelectorAll('.chance-bar div').forEach(el => {
-      el.style.width = el.dataset.w + '%';
-    });
-  }, 50);
 }
 
 function renderIndex() {
@@ -241,13 +221,7 @@ function renderIndex() {
   const inv = safeInventory(inventory);
   const foundItems = new Set(inv.map(it => String(it.name).trim().toLowerCase()));
 
-  let tooltip = document.getElementById('indexTooltip');
-  if (!tooltip) {
-    tooltip = document.createElement('div');
-    tooltip.id = 'indexTooltip';
-    tooltip.className = 'stat-tooltip';
-    document.body.appendChild(tooltip);
-  }
+  let tooltip = document.getElementById('invTooltip');
 
   RARITY_ORDER.forEach(rKey => {
     const unitsInRarity = ALL_UNITS.filter(u => normalizeRarity(u.r) === rKey);
@@ -255,59 +229,44 @@ function renderIndex() {
 
     const r = RARITY[rKey];
     const section = document.createElement('div');
-    section.innerHTML = `<div class="index-section-title ${rarityTextClass(rKey)}" style="color:${r.color}">${r.label}</div>`;
+    section.innerHTML = `<div style="font-size:14px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; padding:5px 0; border-bottom:1px solid var(--border); margin-bottom:8px; text-align:left; color:${r.color}" class="${rarityTextClass(rKey)}">${r.label}</div>`;
 
     const row = document.createElement('div');
-    row.className = 'index-items-row';
+    row.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px;';
 
     unitsInRarity.forEach(it => {
       const hasFound = foundItems.has(String(it.name).trim().toLowerCase());
-      // Если не найден - показываем ???
       const displayName = hasFound ? it.name : '???';
 
       const el = document.createElement('div');
-      el.className = `index-item ${hasFound ? '' : 'locked'}`;
+      el.style.cssText = `background:var(--btn-bg); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; flex-direction:column; align-items:center; text-align:center; cursor:pointer; ${hasFound ? '' : 'filter:grayscale(100%) opacity(0.3);'}`;
 
       const iconCls = hasFound ? rarityIconClass(rKey) : '';
       const nameCls = hasFound ? rarityTextClass(rKey) : '';
       const nameStyle = hasFound ? '' : 'color:var(--txt2)';
 
       el.innerHTML = `
-        <img src="${hasFound ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}">
-        <span class="${nameCls}" style="${nameStyle}">${esc(displayName)}</span>
+        <img src="${hasFound ? esc(it.img) : FALLBACK_IMG}" class="${iconCls}" alt="${esc(displayName)}" style="width:36px; height:36px; object-fit:contain; margin-bottom:5px;">
+        <span class="${nameCls}" style="${nameStyle} font-size:10px; font-weight:bold; line-height:1.1;">${esc(displayName)}</span>
       `;
 
-            // ЛОГИКА ТУЛТИПА (статы видны всегда, но имя скрыто для закрытых)
       el.onmouseenter = () => {
-        if (window.innerWidth < 768) return; 
-        
+        if (window.innerWidth < 768) return;
         let html = '';
-        
-        // --- ЗАГОЛОВОК: имя или ??? ---
-        const displayName = hasFound ? it.name : '???';
-        const titleColor = hasFound ? r.color : 'var(--txt2)';
-        html += `<div style="text-align:center; color:${titleColor}; font-size: 14px; font-weight: bold; font-family: monospace; margin-bottom: 8px; border-bottom: 1px dashed var(--lin); padding-bottom: 4px;">${esc(displayName)}</div>`;
-        // -------------------------------
-
         if (it.stats && Object.keys(it.stats).length) {
-          html += Object.entries(it.stats).map(([k, v]) => {
+          html = Object.entries(it.stats).map(([k, v]) => {
             const tk = L10N[lang].typeTrans[k] || k;
             let tv = v;
             try { if (typeof transVal === 'function') tv = transVal(v, lang); } catch(e) {}
             return `<div class="st-row"><span class="st-name">${esc(tk)}:</span><span class="st-val">${esc(tv)}</span></div>`;
           }).join('');
-        } else {
-          html += '<div class="st-row" style="justify-content:center;color:var(--txt2)">Нет характеристик</div>';
         }
-        
         tooltip.innerHTML = html;
         tooltip.classList.add('show');
-        
         const rect = el.getBoundingClientRect();
         tooltip.style.left = Math.min(window.innerWidth - 210, Math.max(10, rect.left + rect.width / 2 - 100)) + 'px';
         tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
       };
-
       el.onmouseleave = () => tooltip.classList.remove('show');
 
       row.appendChild(el);
@@ -317,6 +276,7 @@ function renderIndex() {
     grid.appendChild(section);
   });
 }
+
 function renderProfile() {
   let username = 'Гость';
   if (tgWebData) username = tgWebData.username ? '@' + tgWebData.username : tgWebData.first_name;
@@ -341,6 +301,7 @@ function renderProfile() {
       const r = RARITY[rKey];
       const el = document.createElement('div');
       el.className = 'profile-unit';
+      el.style.cssText = 'display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:5px 10px;border-radius:4px;font-size:12px;margin-bottom:5px;';
 
       const iconCls = rarityIconClass(rKey);
       const nameCls = rarityTextClass(rKey);
@@ -350,7 +311,7 @@ function renderProfile() {
       el.innerHTML = `
         <div class="${iconCls}" style="width:24px; height:24px; ${iconStyle}">${iconOf(it.name)}</div>
         <span class="${nameCls}" style="${nameStyle}">${esc(it.name)}</span>
-        <span class="u-price">${it.price} $</span>
+        <span class="u-price" style="color:var(--acc);margin-left:auto;font-family:monospace;">${it.price} $</span>
       `;
       container.appendChild(el);
     });
@@ -369,7 +330,7 @@ function renderProfile() {
       <div style="font-size:11px; color:var(--txt2); text-align:center; margin-top:5px;">Узнать свой ID можно у бота <b>@userinfobot</b></div>
     `;
   } else {
-    actionsContainer.innerHTML = `<button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent);" onclick="logoutProfile()">Выйти из профиля</button>`;
+    actionsContainer.innerHTML = `<button class="btn-danger" style="width:100%; border-color:var(--red); color:var(--red); background:linear-gradient(180deg, rgba(255,68,68,0.1), transparent); padding:10px; border-radius:4px; cursor:pointer;" onclick="logoutProfile()">Выйти из профиля</button>`;
   }
 }
 
@@ -379,7 +340,7 @@ function renderShop() {
   const rKey = normalizeRarity(item.r);
   const r = RARITY[rKey];
 
-  $('shopItemImg').innerHTML = `<img src="${esc(item.img)}" alt="${esc(item.name)}">`;
+  $('shopItemImg').innerHTML = `<img src="${esc(item.img)}" alt="${esc(item.name)}" style="width:120px;height:120px;object-fit:contain;">`;
   $('shopItemName').textContent = item.name;
   $('shopItemRarity').textContent = r.label;
   $('shopItemRarity').style.color = r.color;
@@ -392,40 +353,31 @@ function renderShop() {
 /* ===== ЛОГИКА ===== */
 
 function processSpin(won, isAuto = false) {
-  if (spinning) return; // Защита от двойного запуска
+  if (spinning) return;
   spinning = true;
   updateUI();
 
   const c = CRATES[activeCrate];
 
-  // Проверка баланса
   if (c.currency === '💎') {
     if (gems < c.cost) {
-      spinning = false;
-      isAutoOpen = false;
-      $('autoBtn').classList.remove('active');
-      updateUI();
-      save();
-      return toast(L10N[lang].lblGems + ' не хватает!');
+      spinning = false; isAutoOpen = false;
+      updateUI(); save();
+      return toast('Не хватает 💎!');
     }
     gems -= c.cost;
   } else {
     if (balance < c.cost) {
-      spinning = false;
-      isAutoOpen = false;
-      $('autoBtn').classList.remove('active');
-      updateUI();
-      save();
+      spinning = false; isAutoOpen = false;
+      updateUI(); save();
       return toast('Недостаточно $');
     }
     balance -= c.cost;
   }
 
   casesOpened++;
-  updateUI();
-  save();
+  updateUI(); save();
 
-  // Настройка анимации
   const duration = isAuto ? 800 : 2600;
   const startT = performance.now();
   const ease = t => t * t * t;
@@ -435,31 +387,23 @@ function processSpin(won, isAuto = false) {
     const prog = Math.min(el / duration, 1);
     const interval = 170 - 135 * ease(prog);
     const pool = c.pool;
-    
-    // Для анимации берем случайный предмет
     const it = pool[Math.floor(Math.random() * pool.length)];
     const displayItem = getItemData(it.name);
 
     slotIcon.innerHTML = iconOf(displayItem.name, true);
-    slotName.textContent = displayItem.secret ? '???' : displayItem.name;
     slotIcon.classList.remove('tick');
-    void slotIcon.offsetWidth; // Сброс анимации CSS
+    void slotIcon.offsetWidth;
     slotIcon.classList.add('tick');
-    
     if (typeof sfx !== 'undefined' && sfx.tick) sfx.tick(prog);
 
     if (prog >= 1) {
-      // Анимация завершена, показываем результат
-      scene.classList.remove('tension');
       flash.classList.remove('on');
       void flash.offsetWidth;
       flash.classList.add('on');
-      
       if (typeof sfx !== 'undefined' && sfx.flash) sfx.flash();
 
       setTimeout(() => {
         slotIcon.innerHTML = iconOf(won.name, false);
-        slotName.textContent = won.secret ? '???' : won.name;
 
         const wonRKey = normalizeRarity(won.r);
         const isSold = autoSellRarities.has(wonRKey);
@@ -480,27 +424,20 @@ function processSpin(won, isAuto = false) {
 
         if (!isAuto) showDrop(won);
 
-        spinning = false; // Разблокируем кнопки
+        spinning = false;
         updateUI();
         save();
 
-        if (!isAuto) {
-          const inv = safeInventory(inventory);
-          $('history').innerHTML = L10N[lang].history + ': ' + inv.slice(-5).reverse().map(x => x.secret ? '???' : esc(x.name)).join(' · ');
-        } else {
-          setTimeout(() => {
-            if (isAutoOpen) processSpin(randomItem(), true);
-          }, 500);
+        if (isAuto) {
+          setTimeout(() => { if (isAutoOpen) processSpin(randomItem(), true); }, 500);
         }
       }, isAuto ? 200 : 800 * .35);
     } else {
-      // Продолжаем крутить
       setTimeout(spin, interval);
     }
   })();
-
-  scene.classList.add('tension');
 }
+
 function showDrop(it) {
   const rKey = normalizeRarity(it.r);
   const r = RARITY[rKey];
@@ -526,11 +463,6 @@ function showDrop(it) {
     card.style.boxShadow = `0 0 30px ${r.color}33, inset 0 0 20px ${r.color}11`;
   }
 
-  card.style.maxHeight = '85vh';
-  card.style.overflow = 'hidden';
-  card.style.display = 'flex';
-  card.style.flexDirection = 'column';
-
   const s = $('dStats');
   if (it.stats && Object.keys(it.stats).length) {
     s.style.display = 'flex';
@@ -538,25 +470,17 @@ function showDrop(it) {
       const tk = L10N[lang].typeTrans[k] || k;
       return `<div class="stat-row" style="${idx === 0 ? 'color:#fff;font-weight:bold;margin-bottom:4px' : ''}"><span>${esc(tk)}:</span><span>${esc(v)}</span></div>`;
     }).join('');
-    s.style.maxHeight = '40vh';
-    s.style.overflowY = 'auto';
-    s.style.flexShrink = '0';
-    s.style.paddingRight = '8px';
   } else {
     s.style.display = 'none';
   }
 
   const btn = $('dClose');
   btn.textContent = L10N[lang].takeInv;
-  btn.style.borderColor = 'var(--lin)';
+  btn.style.borderColor = 'var(--border)';
   btn.style.color = 'var(--txt)';
   btn.onclick = () => {
     sfx.click();
     dropOverlay.classList.remove('show');
-    setTimeout(() => {
-      slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
-      slotName.textContent = L10N[lang].clickOpen;
-    }, 320);
   };
 
   dropOverlay.classList.add('show');
@@ -567,10 +491,10 @@ function openCase(isMulti = false) {
   if (spinning) return;
   const c = CRATES[activeCrate];
   const needSpace = isMulti ? 10 : 1;
-  if (inventory.length + needSpace > 1000) return toast('Инвентарь переполнен! Продай что-нибудь');
+  if (inventory.length + needSpace > 1000) return toast('Инвентарь переполнен!');
 
   const totalCost = isMulti ? c.cost * 10 : c.cost;
-  if (c.currency === '💎' && gems < totalCost) return toast(L10N[lang].lblGems + ' не хватает!');
+  if (c.currency === '💎' && gems < totalCost) return toast('Не хватает 💎!');
   if (c.currency === '$' && balance < totalCost) return toast('Недостаточно $');
 
   sfx.click();
@@ -583,8 +507,7 @@ function openCase(isMulti = false) {
     else balance -= totalCost;
 
     casesOpened += 10;
-    updateUI();
-    save();
+    updateUI(); save();
 
     for (let i = 0; i < 10; i++) {
       const it = randomItem();
@@ -595,8 +518,7 @@ function openCase(isMulti = false) {
     balance += totalProfit;
     inventory.push(...wonItems);
     renderInventory();
-    updateUI();
-    save();
+    updateUI(); save();
     showMultiDrop(wonItems);
   } else {
     processSpin(randomItem(), false);
@@ -606,19 +528,20 @@ function openCase(isMulti = false) {
 function showMultiDrop(items) {
   const list = $('multiList');
   list.innerHTML = '';
+  list.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;margin-bottom:20px;';
 
   items.forEach(it => {
     const rKey = normalizeRarity(it.r);
     const r = RARITY[rKey];
     const ult = rKey === 'ultimate';
     const el = document.createElement('div');
-    el.className = 'multi-item';
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03);padding:6px;border-radius:6px;border:1px solid var(--border);text-align:center;';
 
     const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}cc)`;
 
     el.innerHTML = `
-      <div class="mi-icon ${rarityIconClass(rKey)}" style="${iconStyle}">${iconOf(it.name, false)}</div>
-      <div class="mi-name ${rarityTextClass(rKey)}">${esc(it.name)}</div>
+      <div class="${rarityIconClass(rKey)}" style="width:48px;height:48px;display:flex;justify-content:center;align-items:center;${iconStyle}">${iconOf(it.name, false)}</div>
+      <div class="${rarityTextClass(rKey)}" style="font-size:9px;font-weight:600;word-break:break-word;line-height:1.1;color:#fff;">${esc(it.name)}</div>
     `;
     list.appendChild(el);
   });
@@ -636,126 +559,84 @@ function showMultiDrop(items) {
 
 function buyShopItem() {
   if (!SHOP_ITEM) return;
-  if (gems < SHOP_ITEM.price) {
-    toast('Недостаточно гемов!');
-    return;
-  }
+  if (gems < SHOP_ITEM.price) return toast('Недостаточно гемов!');
   gems -= SHOP_ITEM.price;
   const newItem = { ...SHOP_ITEM, r: normalizeRarity(SHOP_ITEM.r), stats: deepClone(SHOP_ITEM.stats || {}) };
   inventory.push(newItem);
-  updateUI();
-  renderInventory();
-  save();
+  updateUI(); renderInventory(); save();
   toast(`Куплен ${SHOP_ITEM.name}!`);
   $('shopOverlay').classList.remove('show');
   sfx.drop('exclusive');
 }
 
-/* ===== АВТОРИЗАЦИЯ (без изменений контракта) ===== */
-
 function linkAccount() {
   const id = $('inpUserId').value.trim();
   if (!id || isNaN(id)) return toast('Введите корректный цифровой ID');
-
   toast('Проверка ID...');
-
   fetch(`${API_URL}/auth`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: id })
   })
     .then(res => res.ok ? res.json() : Promise.reject())
     .then(user => {
       tgWebData = user;
       localStorage.setItem('grenko_tg_user', JSON.stringify(user));
-      toast('Аккаунт успешно привязан!');
-      load().then(() => {
-        renderInventory();
-        updateUI();
+      toast('Аккаунт привязан!');
+      loadWithAuth().then(() => {
+        renderInventory(); updateUI();
         $('profileOverlay').classList.remove('show');
-        renderProfile();
       });
     })
     .catch(() => toast('Ошибка: неверный ID или проблемы с сервером'));
 }
 
 function logoutProfile() {
-  if (!confirm('Выйти из профиля? Ваш прогресс сохранится в облаке, но локальный кэш будет удалён.')) return;
+  if (!confirm('Выйти из профиля?')) return;
   localStorage.removeItem('grenko_tg_user');
   localStorage.removeItem(SAVE_KEY);
   tgWebData = null;
-  toast('Вы вышли из профиля');
-  $('profileOverlay').classList.remove('show');
-  setTimeout(() => { window.location.reload(); }, 1000);
+  toast('Вы вышли');
+  location.reload();
 }
 
 /* ===== ГАЧА ===== */
-
 function updateGachaUI() {
   const now = Date.now();
   const timePassed = now - gachaLastTick;
   const earnedSpins = Math.floor(timePassed / GACHA_COOLDOWN);
-
   if (earnedSpins > 0) {
     gachaSpins = Math.min(gachaSpins + earnedSpins, MAX_GACHA_SPINS);
     gachaLastTick = now - (timePassed % GACHA_COOLDOWN);
     save();
   }
-
-  const badge = $('gachaBadge');
-  if (gachaSpins > 0) {
-    badge.style.display = 'flex';
-    badge.textContent = gachaSpins;
-  } else {
-    badge.style.display = 'none';
-  }
-
-  if (gachaSpins >= MAX_GACHA_SPINS) {
-    $('gachaTimer').textContent = 'Максимум спинов!';
-  } else {
+  if (gachaSpins >= MAX_GACHA_SPINS) $('gachaTimer').textContent = 'Максимум спинов!';
+  else {
     const nextSpin = GACHA_COOLDOWN - (now - gachaLastTick);
-    const m = Math.floor(nextSpin / 60000);
-    const s = Math.floor((nextSpin % 60000) / 1000);
-    $('gachaTimer').textContent = `Спинов: ${gachaSpins}. Следующий через: ${m}м ${s}с`;
+    const m = Math.floor(nextSpin / 60000), s = Math.floor((nextSpin % 60000) / 1000);
+    $('gachaTimer').textContent = `Спинов: ${gachaSpins}. Следующий: ${m}м ${s}с`;
   }
 }
-
 setInterval(updateGachaUI, 1000);
 
 function playGacha() {
   if (gachaSpins <= 0) return;
-  gachaSpins--;
-  save();
-  updateGachaUI();
+  gachaSpins--; save(); updateGachaUI();
   $('gachaSpinBtn').disabled = true;
-
-  const reel = $('gachaReel');
-  reel.innerHTML = '';
-  let ticks = 0;
-  const maxTicks = 20;
-
+  const reel = $('gachaReel'); reel.innerHTML = '';
+  let ticks = 0; const maxTicks = 20;
   const interval = setInterval(() => {
     ticks++;
     const rand = GACHA_POOL[Math.floor(Math.random() * GACHA_POOL.length)];
-    reel.innerHTML = `<div class="gacha-item" style="color:${rand.color};font-size:24px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:8px;width:100%;max-width:80px;transform:scale(1.1);transition:transform .1s;">${rand.amount}</div>`;
+    reel.innerHTML = `<div style="color:${rand.color};font-size:24px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border-radius:8px;width:80px;height:80px;">${rand.amount}</div>`;
     sfx.tick(ticks / maxTicks);
-
     if (ticks >= maxTicks) {
       clearInterval(interval);
-
       const totalW = GACHA_POOL.reduce((s, i) => s + i.w, 0);
-      let r = Math.random() * totalW;
-      let won = GACHA_POOL[0];
-      for (const it of GACHA_POOL) {
-        r -= it.w;
-        if (r <= 0) { won = it; break; }
-      }
-
-      reel.innerHTML = `<div class="gacha-item" style="color:${won.color};font-size:32px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border-radius:8px;width:100%;max-width:80px;transform:scale(1.2);transition:transform .3s var(--ease);">${won.amount}</div>`;
+      let r = Math.random() * totalW; let won = GACHA_POOL[0];
+      for (const it of GACHA_POOL) { r -= it.w; if (r <= 0) { won = it; break; } }
+      reel.innerHTML = `<div style="color:${won.color};font-size:32px;font-weight:bold;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border-radius:8px;width:80px;height:80px;">${won.amount}</div>`;
       $('gachaResult').innerHTML = `Вы выиграли <span style="color:${won.color}">${won.amount} 💎</span>!`;
-      gems += won.amount;
-      updateUI();
-      save();
+      gems += won.amount; updateUI(); save();
       sfx.drop('exclusive');
       $('gachaSpinBtn').disabled = false;
       updateGachaUI();
@@ -763,39 +644,23 @@ function playGacha() {
   }, 50);
 }
 
-/* ===== ПРОДАЖА ВСЕГО ===== */
-
 function sellAll() {
   const inv = safeInventory(inventory);
-  if (inv.length === 0) {
-    return toast(L10N[lang].emptyInv);
-  }
-
+  if (inv.length === 0) return toast(L10N[lang].emptyInv);
   const total = inv.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
-
-  if (!confirm(`${L10N[lang].sellAll} ${inv.length} шт. за ${total} $?`)) return;
-
+  if (!confirm(`Продать ${inv.length} шт. за ${total} $?`)) return;
   inventory = [];
   balance += total;
-
-  renderInventory();
-  updateUI();
-  save();
+  renderInventory(); updateUI(); save();
   sfx.sell();
-  toast(`${L10N[lang].soldAll} ${total} $`);
+  toast(`Продано ${total} $`);
 }
 
 /* ===== ИНИЦИАЛИЗАЦИЯ ===== */
-
 function initApp() {
   $('openBtn').onclick = () => openCase(false);
   $('open10Btn').onclick = () => openCase(true);
-  $('langBtn').onclick = () => {
-    lang = lang === 'ru' ? 'en' : 'ru';
-    sfx.click();
-    applyLang();
-    save();
-  };
+
   $('autoBtn').onclick = () => {
     isAutoOpen = !isAutoOpen;
     $('autoBtn').classList.toggle('active', isAutoOpen);
@@ -803,103 +668,58 @@ function initApp() {
     if (isAutoOpen && !spinning) processSpin(randomItem(), true);
   };
 
-  $('sellAllBtn').onclick = () => {
-    sfx.click();
-    sellAll();
-  };
+  $('sellAllBtn').onclick = () => { sfx.click(); sellAll(); };
 
   $('chancesBtn').onclick = () => { sfx.click(); renderChances(); $('chancesOverlay').classList.add('show'); };
   $('indexBtn').onclick = () => { sfx.click(); renderIndex(); $('indexOverlay').classList.add('show'); };
   $('shopBtn').onclick = () => { sfx.click(); renderShop(); $('shopOverlay').classList.add('show'); };
   $('profileBtn').onclick = () => { sfx.click(); renderProfile(); $('profileOverlay').classList.add('show'); };
 
+  $('invBtn').onclick = () => {
+    sfx.click();
+    renderInventory();
+    $('inventoryOverlay').classList.add('show');
+  };
+
   $('muteBtn').onclick = () => {
     muted = !muted;
-    $('soundOn').style.display = muted ? 'none' : 'block';
-    $('soundOff').style.display = muted ? 'block' : 'none';
+    $('musicIcon').src = muted 
+      ? 'https://yourimageshare.com/ib/gZjZUKCOGU.png'
+      : 'https://yourimageshare.com/ib/5XIcp7m5ke.png';
     if (!muted) sfx.click();
     save();
   };
 
-  $('resetBtn').onclick = () => {
-    if (!confirm('Сбросить весь прогресс? Это нельзя отменить.')) return;
-    localStorage.removeItem(SAVE_KEY);
-    balance = 1000;
-    gems = 50;
-    inventory = [];
-    activeCrate = 'crate1';
-    lang = 'ru';
-    autoSellRarities = new Set();
-    gachaSpins = 0;
-    gachaLastTick = Date.now();
-    muted = false;
-    casesOpened = 0;
-    gameSettings = { luck: 1, forceDrop: null };
-    document.querySelectorAll('.auto-sell-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.crate-btn').forEach(b => b.classList.toggle('active', b.dataset.id === 'crate1'));
-    $('soundOn').style.display = 'block';
-    $('soundOff').style.display = 'none';
-    slotIcon.innerHTML = `<img src="${CRATES.crate1.img}">`;
-    renderInventory();
-    updateUI();
-    updateGachaUI();
+  $('langBtn').onclick = () => {
+    lang = lang === 'ru' ? 'en' : 'ru';
+    sfx.click();
     applyLang();
-    toast('Прогресс сброшен');
+    save();
   };
 
   $('gachaBtn').onclick = () => {
-    sfx.click();
-    $('gachaOverlay').classList.add('show');
-    updateGachaUI();
-    $('gachaResult').textContent = '';
+    sfx.click(); $('gachaOverlay').classList.add('show');
+    updateGachaUI(); $('gachaResult').textContent = '';
   };
   $('gachaSpinBtn').onclick = playGacha;
 
-  $('multiClose').onclick = () => {
-    sfx.click();
-    multiOverlay.classList.remove('show');
-    setTimeout(() => {
-      slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
-      slotName.textContent = L10N[lang].clickOpen;
-    }, 320);
-  };
+  $('multiClose').onclick = () => { sfx.click(); multiOverlay.classList.remove('show'); };
 
-  bgMusic.volume = 0.2;
-  volumeSlider.value = 0.2;
-  volumeSlider.addEventListener('input', e => {
-    bgMusic.volume = e.target.value;
-    save();
-  });
-
+  bgMusic.volume = 0.2; volumeSlider.value = 0.2;
+  volumeSlider.addEventListener('input', e => { bgMusic.volume = e.target.value; save(); });
   document.addEventListener('click', () => { bgMusic.play().catch(() => {}); }, { once: true });
 
-  document.querySelectorAll('.auto-sell-btn').forEach(btn => {
+  document.querySelectorAll('.auto-btn').forEach(btn => {
     btn.onclick = () => {
       const r = btn.dataset.r;
-      if (autoSellRarities.has(r)) {
-        autoSellRarities.delete(r);
-        btn.classList.remove('active');
-      } else {
-        autoSellRarities.add(r);
-        btn.classList.add('active');
-      }
-      sfx.click();
-      save();
+      if (autoSellRarities.has(r)) { autoSellRarities.delete(r); btn.classList.remove('active'); }
+      else { autoSellRarities.add(r); btn.classList.add('active'); }
+      sfx.click(); save();
     };
   });
 
   document.querySelectorAll('.overlay').forEach(el => {
-    el.onclick = e => {
-      if (e.target === el) {
-        el.classList.remove('show');
-        if (el.id === 'dropOverlay' || el.id === 'multiOverlay') {
-          setTimeout(() => {
-            slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
-            slotName.textContent = L10N[lang].clickOpen;
-          }, 320);
-        }
-      }
-    };
+    el.onclick = e => { if (e.target === el) el.classList.remove('show'); };
   });
 
   loadWithAuth().then(() => {
@@ -908,34 +728,29 @@ function initApp() {
     if (!Array.isArray(inventory)) inventory = [];
 
     document.querySelectorAll('.crate-btn').forEach(b => b.classList.toggle('active', b.dataset.id === activeCrate));
-    document.querySelectorAll('.auto-sell-btn').forEach(b => b.classList.toggle('active', autoSellRarities.has(b.dataset.r)));
-    $('soundOn').style.display = muted ? 'none' : 'block';
-    $('soundOff').style.display = muted ? 'block' : 'none';
-    $('autoBtn').classList.toggle('active', isAutoOpen);
-    slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
+    document.querySelectorAll('.auto-btn').forEach(b => b.classList.toggle('active', autoSellRarities.has(b.dataset.r)));
+    
+    $('musicIcon').src = muted 
+      ? 'https://yourimageshare.com/ib/gZjZUKCOGU.png'
+      : 'https://yourimageshare.com/ib/5XIcp7m5ke.png';
+      
+    if (CRATES[activeCrate]) {
+       slotIcon.innerHTML = `<img src="${CRATES[activeCrate].img}">`;
+    }
     applyLang();
     updateGachaUI();
   });
 }
 
 setInterval(() => { save(); }, 3000);
-window.toggleLang = () => {
-  try {
-    lang = lang === 'ru' ? 'en' : 'ru';
-    if (typeof sfx !== 'undefined' && sfx.click) sfx.click();
-    applyLang();
-    if (typeof save === 'function') save();
-  } catch(e) {
-    console.error("Ошибка при смене языка:", e);
-  }
-};
+
 document.addEventListener('DOMContentLoaded', () => {
   const crateListEl = $('crateList');
   Object.keys(CRATES).forEach(id => {
     const btn = document.createElement('button');
     btn.className = `crate-btn ${id === activeCrate ? 'active' : ''}`;
     btn.dataset.id = id;
-    btn.innerHTML = `<img src="${CRATES[id].img}" alt="crate"> ${esc(CRATES[id].name)}`;
+    btn.innerHTML = `<span style="font-size:14px;">${esc(CRATES[id].name)}</span>`;
     btn.onclick = () => {
       document.querySelectorAll('.crate-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
