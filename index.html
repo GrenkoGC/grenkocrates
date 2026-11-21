@@ -8,6 +8,44 @@
 <title>Grenko Crates</title>
 
 <style>
+  /* ===== ГЛОБАЛЬНЫЙ ФИКС ИКОНОК ===== */
+/* Заставляем картинки занимать 100% контейнера и сохранять пропорции */
+#invGrid img,
+#dIcon img,
+#profTopUnits img,
+#multiList img,
+#shopItemImg img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important; /* Картинка вписывается, не обрезаясь */
+  display: block !important;
+}
+
+/* Контейнеры для иконок */
+#invGrid > div > div:first-child,
+#profTopUnits > div > div,
+#multiList > div > div {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+/* Фикс для профиля (иконка ровно 28x28) */
+#profTopUnits > div > div {
+  width: 28px !important;
+  height: 28px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Фикс для окна дропа (120x120) */
+#dIcon {
+  width: 120px !important;
+  height: 120px !important;
+  overflow: hidden !important;
+}
 /* --- ЦВЕТА --- */
 :root {
   --bg: #121212;
