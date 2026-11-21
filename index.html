@@ -189,20 +189,28 @@ body {
 @keyframes tk{45%{transform:scale(1.1)}}
 .slot .icon.tick img{animation:tk .12s}
 
-/* ФИКС: общие стили для слотов инвентаря */
-.inv-grid > div {
-  min-width: 0;
-  overflow: hidden;
+/* --- ФИКС ИКОНОК (ГЛАВНОЕ ЛЕКАРСТВО) --- */
+#dIcon img, #invGrid img, #profTopUnits img, #multiList img, #shopItemImg img, #indexGrid img {
+  width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important;
 }
-#invGrid {
-  grid-auto-rows: min-content;
-}
+#invGrid > div { min-width: 0 !important; overflow: hidden !important; }
+#profTopUnits > div > div { width: 28px !important; height: 28px !important; flex-shrink: 0 !important; overflow: hidden !important; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+#dIcon { overflow: hidden !important; }
 
-/* ФИКС: градиент Ultimate */
+/* --- ГРАДИЕНТ ULTIMATE --- */
+.rar-ultimate-text, .rar-ultimate {
+  background: linear-gradient(90deg, #ff00d4, #8a2be2, #00ffff, #ff00d4);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ultimate-glow 3s linear infinite;
+  font-weight: bold;
+}
 .rar-ultimate-card {
   border: 2px solid transparent !important;
   background: linear-gradient(var(--panel-bg), var(--panel-bg)) padding-box,
-              linear-gradient(45deg, #ff00ff, #8a2be2, #00ffff, #ff00ff) border-box;
+              linear-gradient(45deg, #ff00d4, #8a2be2, #00ffff, #ff00d4) border-box !important;
   background-size: 100% 100%, 300% 300%;
   animation: ultimate-glow 3s linear infinite;
 }
@@ -210,15 +218,6 @@ body {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
-.rar-ultimate-text {
-  background: linear-gradient(90deg, #ff00ff, #8a2be2, #00ffff, #ff00ff);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: bold;
-  animation: ultimate-glow 3s linear infinite;
 }
 
 ::-webkit-scrollbar { width: 6px; }
