@@ -512,13 +512,16 @@ function showMultiDrop(items) {
     const r = RARITY[rKey];
     const ult = rKey === 'ultimate';
     const el = document.createElement('div');
-    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03);padding:8px;border-radius:6px;border:1px solid var(--border);text-align:center;min-width:0;';
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03);padding:8px;border-radius:6px;border:1px solid var(--border);text-align:center;min-width:0;overflow:hidden;';
 
     const iconStyle = ult ? '' : `filter:drop-shadow(0 0 6px ${r.color}cc)`;
 
+    // Обертка для иконки с жесткими размерами
     el.innerHTML = `
-      <div class="${rarityIconClass(rKey)}" style="width:45px;height:45px;display:flex;justify-content:center;align-items:center;${iconStyle}">${iconOf(it.name, false)}</div>
-      <div class="${rarityTextClass(rKey)}${ult ? ' rar-ultimate-text' : ''}" style="font-size:10px;font-weight:600;word-break:break-word;line-height:1.1;color:#fff;">${esc(it.name)}</div>
+      <div style="width:45px; height:45px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; ${iconStyle}">
+        ${iconOf(it.name, false)}
+      </div>
+      <div class="${rarityTextClass(rKey)}${ult ? ' rar-ultimate-text' : ''}" style="font-size:10px;font-weight:600;word-break:break-word;line-height:1.1;color:#fff; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(it.name)}</div>
     `;
     list.appendChild(el);
   });
