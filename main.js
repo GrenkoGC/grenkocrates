@@ -45,11 +45,10 @@ function applyLang() {
   renderInventory();
 }
 
-/* ===== ИНВЕНТАРЬ (ФИКС: слоты больше не пустые/съехавшие) ===== */
 function renderInventory() {
   invGrid.innerHTML = '';
   const inv = safeInventory(inventory);
-  const tooltip = document.getElementById('invTooltip'); // вынесено из цикла
+  const tooltip = document.getElementById('invTooltip');
 
   inv.forEach((it) => {
     const rKey = normalizeRarity(it.r);
@@ -57,7 +56,6 @@ function renderInventory() {
     const r = RARITY[rKey] || RARITY.common;
 
     const el = document.createElement('div');
-    // ФИКС: min-width:0 + overflow:hidden, чтобы grid не ломался
     el.style.cssText = `position:relative; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; text-align:center; background:var(--btn-bg); border:2px solid var(--border); cursor:pointer; border-radius:8px; transition:0.2s; min-width:0; overflow:hidden;`;
     el.onmouseover = () => el.style.borderColor = 'var(--txt)';
     el.onmouseout = () => el.style.borderColor = 'var(--border)';
@@ -66,7 +64,6 @@ function renderInventory() {
     const nameCls = rarityTextClass(rKey);
     const nameStyle = ult ? '' : 'color:var(--txt);';
 
-    // ФИКС: обёртка 100%x100% для иконки
     el.innerHTML = `
       <div style="width:45px;height:45px;display:flex;align-items:center;justify-content:center;${iconStyle}">
         <div class="icon ${rarityIconClass(rKey)}" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${iconOf(it.name, false)}</div>
@@ -101,7 +98,6 @@ function renderInventory() {
     };
 
     el.onclick = () => {
-      // ФИКС: обёртка для dIcon
       $('dIcon').innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${iconOf(it.name, false)}</div>`;
       $('dIcon').style.filter = ult ? '' : `drop-shadow(0 0 20px ${r.color}cc)`;
       $('dName').innerHTML = `<span class="${rarityTextClass(rKey)}${ult ? ' rar-ultimate-text' : ''}">${esc(it.name)}</span>`;
@@ -160,7 +156,6 @@ function renderInventory() {
   updateUI();
 }
 
-/* ===== ШАНСЫ (ФИКС: полосы не обрезаются) ===== */
 function renderChances() {
   const pool = CRATES[activeCrate].pool;
   const list = $('chancesList');
@@ -192,7 +187,6 @@ function renderChances() {
     const rKey = normalizeRarity(it.r);
     const r = RARITY[rKey];
     const row = document.createElement('div');
-    // ФИКС: min-height, чтобы border-left не схлопывался
     row.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,.02);border-left:4px solid ${r.color};margin-bottom:6px;border-radius:4px;min-height:50px;`;
 
     const displayName = it.secret ? '???' : it.name;
@@ -209,7 +203,6 @@ function renderChances() {
   });
 }
 
-/* ===== ИНДЕКС (без изменений, но с обёрткой иконок) ===== */
 function renderIndex() {
   const grid = document.getElementById('indexGrid');
   grid.innerHTML = '';
@@ -275,7 +268,6 @@ function renderIndex() {
   });
 }
 
-/* ===== ПРОФИЛЬ (ФИКС: защита от undefined) ===== */
 function renderProfile() {
   if (typeof balance === 'undefined' || balance === null || !Array.isArray(inventory)) {
     toast('Данные ещё загружаются...');
@@ -306,15 +298,16 @@ function renderProfile() {
       const el = document.createElement('div');
       el.style.cssText = 'display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);padding:8px 10px;border-radius:6px;font-size:13px;';
 
-      const iconCls = rarityIconClass(rKey);
       const nameCls = rarityTextClass(rKey);
       const iconStyle = rKey === 'ultimate' ? '' : `filter:drop-shadow(0 0 5px ${r.color}aa)`;
       const nameStyle = rKey === 'ultimate' ? '' : `color:${r.color}`;
 
       el.innerHTML = `
-        <div class="${iconCls}" style="width:28px; height:28px; display:flex;align-items:center;justify-content:center; ${iconStyle}">${iconOf(it.name)}</div>
-        <span class="${nameCls}${rKey === 'ultimate' ? ' rar-ultimate-text' : ''}" style="${nameStyle} font-weight:bold;">${esc(it.name)}</span>
-        <span style="color:var(--acc);margin-left:auto;font-family:monospace;">${it.price} $</span>
+        <div style="width:28px; height:28px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; ${iconStyle}">
+            ${iconOf(it.name)}
+        </div>
+        <span class="${nameCls}${rKey === 'ultimate' ? ' rar-ultimate-text' : ''}" style="${nameStyle} font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(it.name)}</span>
+        <span style="color:var(--acc);margin-left:auto;font-family:monospace; flex-shrink:0;">${it.price} $</span>
       `;
       container.appendChild(el);
     });
@@ -337,7 +330,6 @@ function renderProfile() {
   }
 }
 
-/* ===== МАГАЗИН ===== */
 function renderShop() {
   const item = SHOP_ITEM;
   if (!item) return;
@@ -391,7 +383,6 @@ function processSpin(won, isAuto = false) {
     const it = pool[Math.floor(Math.random() * pool.length)];
     const displayItem = getItemData(it.name);
 
-    // Картинка строго внутри круга
     slotIcon.innerHTML = `<div class="icon tick" style="width:100%; height:100%;display:flex;align-items:center;justify-content:center;">${iconOf(displayItem.name, true)}</div>`;
     slotIcon.classList.add('tick');
     if (typeof sfx !== 'undefined' && sfx.tick) sfx.tick(prog);
@@ -433,7 +424,6 @@ function processSpin(won, isAuto = false) {
   })();
 }
 
-/* ===== ДРОП (ФИКС: обёртка + Ultimate градиент) ===== */
 function showDrop(it) {
   const rKey = normalizeRarity(it.r);
   const r = RARITY[rKey];
