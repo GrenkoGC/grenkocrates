@@ -177,7 +177,7 @@ body {
 /* --- МОДАЛКИ И СЛУЖЕБНЫЕ ЭЛЕМЕНТЫ --- */
 .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:85;opacity:0;visibility:hidden;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);transition:all .3s;padding:20px}
 .overlay.show{opacity:1;visibility:visible}
-.modal-card{background:var(--panel-bg);border:2px solid var(--border);border-radius:12px;padding:24px 20px;text-align:center;width:100%;max-width:400px;max-height:90vh;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;box-shadow: 0 10px 30px rgba(0,0,0,0.8);transform:translateY(20px);transition:0.3s;}
+.modal-card{background:var(--panel-bg);border:2px solid var(--border);border-radius:12px;padding:24px 20px;text-align:center;width:100%;max-width:400px;max-height:90vh;display:flex;flex-direction:column;align-items:center;position:relative;overflow:visible;box-shadow: 0 10px 30px rgba(0,0,0,0.8);transform:translateY(20px);transition:0.3s;}
 .overlay.show .modal-card{transform:translateY(0);}
 .close-x{position:absolute;top:15px;right:15px;background:transparent;border:none;color:var(--txt2);font-size:20px;cursor:pointer;transition:0.2s;}
 .close-x:hover{color:var(--txt);}
@@ -188,6 +188,38 @@ body {
 @keyframes fl{0%{opacity:0}20%{opacity:1}55%{opacity:1}100%{opacity:0}}
 @keyframes tk{45%{transform:scale(1.1)}}
 .slot .icon.tick img{animation:tk .12s}
+
+/* ФИКС: общие стили для слотов инвентаря */
+.inv-grid > div {
+  min-width: 0;
+  overflow: hidden;
+}
+#invGrid {
+  grid-auto-rows: min-content;
+}
+
+/* ФИКС: градиент Ultimate */
+.rar-ultimate-card {
+  border: 2px solid transparent !important;
+  background: linear-gradient(var(--panel-bg), var(--panel-bg)) padding-box,
+              linear-gradient(45deg, #ff00ff, #8a2be2, #00ffff, #ff00ff) border-box;
+  background-size: 100% 100%, 300% 300%;
+  animation: ultimate-glow 3s linear infinite;
+}
+@keyframes ultimate-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.rar-ultimate-text {
+  background: linear-gradient(90deg, #ff00ff, #8a2be2, #00ffff, #ff00ff);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+  animation: ultimate-glow 3s linear infinite;
+}
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
