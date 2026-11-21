@@ -8,39 +8,66 @@
 <title>Grenko Crates</title>
 
 <style>
-  /* ===== ГЛОБАЛЬНЫЙ ФИКС ИКОНОК ===== */
-/* Заставляем картинки занимать 100% контейнера и сохранять пропорции */
+/* ===== ФИКС ИКОНОК (ЖЕСТКИЙ) ===== */
 #invGrid img,
 #dIcon img,
 #profTopUnits img,
 #multiList img,
-#shopItemImg img {
+#shopItemImg img,
+#indexGrid img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important; /* Картинка вписывается, не обрезаясь */
+  object-fit: contain !important;
   display: block !important;
 }
 
-/* Контейнеры для иконок */
-#invGrid > div > div:first-child,
-#profTopUnits > div > div,
-#multiList > div > div {
-  width: 100% !important;
+/* Задаем жесткую высоту для карточек инвентаря, чтобы они не схлопывались */
+#invGrid {
+  grid-auto-rows: 100px !important; /* Высота карточки */
+}
+
+#invGrid > div {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
   height: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  padding: 5px !important;
+}
+
+/* Контейнер под иконку в инвентаре */
+#invGrid > div > div:first-child {
+  flex: 1 1 auto !important; /* Занимает всё свободное место */
+  width: 100% !important;
+  min-height: 0 !important; /* Важно для flex-контейнеров */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   overflow: hidden !important;
 }
 
-/* Фикс для профиля (иконка ровно 28x28) */
+/* Контейнер в x10 */
+#multiList > div > div:first-child {
+  width: 45px !important;
+  height: 45px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Контейнер в профиле */
 #profTopUnits > div > div {
   width: 28px !important;
   height: 28px !important;
   flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-/* Фикс для окна дропа (120x120) */
+/* Окно дропа */
 #dIcon {
   width: 120px !important;
   height: 120px !important;
